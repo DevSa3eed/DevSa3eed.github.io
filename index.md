@@ -8,11 +8,11 @@
     <link rel="stylesheet" href="css/all.min.css" />
     <link rel="stylesheet" href="css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/templatemo-style.css" />
-    <title>Mini Profile - Free Bootstrap CSS Template</title>
+    <title>My Poftfolio</title>
     
 <!--
-Mini Profile Template
-https://templatemo.com/tm-530-mini-profile
+My Portfolio
+didosaeed.github.io
 -->
   </head>
   <body>
@@ -25,8 +25,8 @@ https://templatemo.com/tm-530-mini-profile
             <!-- Black transparent bg -->
             <div class="ml-auto mr-0 tm-bg-black-transparent text-white tm-brand-container-inner">
               <div class="tm-brand-container text-center">
-                <h1 class="tm-brand-name">Mini Profile</h1>
-                <p class="tm-brand-description mb-0">simple parallax template</p>
+                <h1 class="tm-brand-name">My Poftfolio</h1>
+                <p class="tm-brand-description mb-0">web developer - software engineer</p>
               </div>
             </div>
           </div>
@@ -40,7 +40,7 @@ https://templatemo.com/tm-530-mini-profile
             <!-- White transparent bg -->
             <div class="col-md-7 tm-welcome-left-col">
               <div class="tm-welcome-left">
-                <h2 class="tm-welcome-title">Welcome to Mini Profile Page</h2>
+                <h2 class="tm-welcome-title">Welcome to My Poftfolio Page</h2>
                 <p class="pb-0">
                   This is Bootstrap v4.3.1 parallax layout for you. Credit goes to <a rel="nofollow" href="https://www.pexels.com">Pexels</a> for 2 background images. In
                   odio sapien, commodo id ullamcorper ac, dignissim at sapien.
@@ -161,7 +161,7 @@ https://templatemo.com/tm-530-mini-profile
               <div class="tm-contact-item">
                 <i class="fas fa-5x fa-building tm-contact-item-icon"></i>
                 <p class="mb-0">
-                  You can absolutely feel free to use Mini Profile for your web page or any usage for your website.
+                  You can absolutely feel free to use My Poftfolio for your web page or any usage for your website.
                 </p>
               </div>
 
@@ -228,7 +228,7 @@ https://templatemo.com/tm-530-mini-profile
         <div class="row">
           <footer class="col-12">
             <p class="text-center tm-copyright-text">
-            Copyright 2020 Mini Profile Page 
+            Copyright 2020 My Poftfolio Page 
             
             - Design: Template Mo</p>
           </footer>
