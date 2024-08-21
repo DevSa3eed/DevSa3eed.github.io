@@ -1,5 +1,5 @@
-# didosaeed.github.io
-My Portfolio page where i showcase contacts and some experience
+# DevSa3eed.github.io
+My Portfolio page, where i showcase contacts and some experience
 
 Icons:
 	Font Awesome (fontawesome.io)
