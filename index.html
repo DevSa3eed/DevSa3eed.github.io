@@ -9,6 +9,58 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="icon" href="favicon.png" />
+		<style>
+			@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+			
+			:root {
+				--apple-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+			}
+			
+			body {
+				font-family: var(--apple-system);
+				-webkit-font-smoothing: antialiased;
+				-moz-osx-font-smoothing: grayscale;
+			}
+
+			h1, h2, h3, h4, h5, h6 {
+				font-family: var(--apple-system);
+				font-weight: 500;
+				letter-spacing: -0.02em;
+			}
+
+			.gradient-text {
+				background: linear-gradient(
+					120deg,
+					#3498db,
+					#2ecc71,
+					#3498db
+				);
+				background-size: 200% auto;
+				color: transparent;
+				-webkit-background-clip: text;
+				background-clip: text;
+				animation: shine 8s linear infinite;
+				text-shadow: 0 0 30px rgba(52, 152, 219, 0.2);
+				display: inline-block;
+			}
+
+			@keyframes shine {
+				to {
+					background-position: 200% center;
+				}
+			}
+
+			.project-description {
+				font-size: 1.1em;
+				line-height: 1.5;
+				letter-spacing: -0.01em;
+			}
+
+			.project-highlights li {
+				letter-spacing: -0.01em;
+				line-height: 1.6;
+			}
+		</style>
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
@@ -23,16 +75,16 @@
 				</div>
 				<div class="content">
 					<div class="inner">
-						<h1>Mohamed Saeed</h1>
+						<h1 class="gradient-text">Mohamed Saeed</h1>
 						<p>Mobile App Developer</p>
 					</div>
 				</div>
 				<nav>
 					<ul>
-						<li><a href="#profile">Profile</a></li>
 						<li><a href="#work">Work</a></li>
+						<li><a href="#services">Services</a></li>
+						<li><a href="#profile">About Me</a></li>
 						<li><a href="#skills">Skills</a></li>
-						<li><a href="#about">About</a></li>
 						<li><a href="#contact">Contact</a></li>
 					</ul>
 				</nav>
@@ -40,6 +92,103 @@
 
 			<!-- Main -->
 			<div id="main">
+
+				<!-- Work -->
+				<article id="work">
+					<h2 class="major">Featured Project</h2>
+					<div class="work-showcase">
+						<p class="project-description">
+							A comprehensive ride-hailing application built for Sharm el Sheikh's tourism market. This app connects tourists with reliable local taxi services, offering a seamless booking experience with real-time tracking and secure payments.
+						</p>
+						
+						<div class="images-row" style="display: flex; justify-content: center; gap: 2rem; margin: 2rem auto;">
+							<div class="app-image" style="width: 200px; height: 400px; position: relative; border-radius: 24px; background: #1a1a1a; padding: 9px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
+								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
+									<img src="images/sharm/splash.png" alt="Sharm Taxi Logo" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
+								</div>
+							</div>
+							<div class="app-image" style="width: 200px; height: 400px; position: relative; border-radius: 24px; background: #1a1a1a; padding: 9px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
+								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
+									<img src="images/sharm/Map.png" alt="Booking Screen" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
+								</div>
+							</div>
+							<div class="app-image" style="width: 200px; height: 400px; position: relative; border-radius: 24px; background: #1a1a1a; padding: 9px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
+								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
+									<img src="images/sharm/Trips.png" alt="Rides History Screen" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
+								</div>
+							</div>
+						</div>
+
+						<div class="project-details">
+							<div class="project-section">
+								<h4>Key Features</h4>
+								<ul class="project-highlights">
+									<li>Real-time taxi tracking and location updates</li>
+									<li>Multi-language support (Arabic, English, French, Spanish, Italian, Russian, German)</li>
+									<li>Smart fare estimation system</li>
+									<li>Multiple taxi types (Normal Taxi, Airport Taxi, Limousine)</li>
+									<li>In-app payment processing</li>
+									<li>Emergency and incident reporting</li>
+									<li>Lost item recovery system</li>
+									<li>Trip history and ratings</li>
+								</ul>
+							</div>
+							<div class="project-section">
+								<h4>Technical Highlights</h4>
+								<ul class="project-highlights">
+									<li>Built with Flutter for cross-platform deployment</li>
+									<li>Google Maps integration with real-time tracking</li>
+									<li>Multi-language localization with UTF-8 support</li>
+									<li>Secure payment gateway integration</li>
+									<li>Location services and permission handling</li>
+									<li>Real-time driver-passenger communication</li>
+									<li>State management using Provider</li>
+								</ul>
+							</div>
+							<div class="project-section">
+								<h4>Impact</h4>
+								<ul class="project-highlights">
+									<li>Operating in Sharm el Sheikh, Egypt</li>
+									<li>Comprehensive trip tracking and analytics</li>
+									<li>Enhanced tourist transportation with multi-language support</li>
+									<li>Emergency response system</li>
+									<li>Driver rating and feedback system</li>
+									<li>Integrated customer support system</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</article>
+
+				<!-- Services -->
+				<article id="services">
+					<h2 class="major">Services</h2>
+					<div class="services-grid">
+						<div class="service">
+							<span class="icon solid fas fa-mobile-alt"></span>
+							<h3>Mobile App Development</h3>
+							<p>Cross-platform applications that work seamlessly on both iOS and Android</p>
+						</div>
+						<div class="service">
+							<span class="icon solid fas fa-paint-brush"></span>
+							<h3>UI/UX Design</h3>
+							<p>Beautiful, intuitive interfaces that users love to interact with</p>
+						</div>
+						<div class="service">
+							<span class="icon solid fas fa-code"></span>
+							<h3>Custom Solutions</h3>
+							<p>Tailored mobile solutions to meet your specific business needs</p>
+						</div>
+						<div class="service">
+							<span class="icon solid fas fa-sync"></span>
+							<h3>Maintenance & Support</h3>
+							<p>Ongoing support and updates to keep your app running smoothly</p>
+						</div>
+					</div>
+				</article>
 
 				<!-- Profile -->
 				<article id="profile">
@@ -49,33 +198,14 @@
 						I am a <strong>Flutter Developer</strong> with extensive experience in crafting exceptional cross-platform mobile experiences. My expertise spans the entire mobile development ecosystem, including:
 					</p>
 					<ul class="feature-list">
-						<li>🔹 Cross-platform development with Flutter and Dart</li>
-						<li>🔹 State Management and Architecture Patterns</li>
-						<li>🔹 Custom UI/UX & Complex Animations</li>
-						<li>🔹 Firebase Integration & Backend Services</li>
-						<li>🔹 Native iOS development using Swift</li>
+						<li>Cross-platform development with Flutter and Dart</li>
+						<li>State Management and Architecture Patterns</li>
+						<li>Custom UI/UX & Complex Animations</li>
+						<li>Firebase Integration & Backend Services</li>
+						<li>Native iOS development using Swift</li>
 					</ul>
 					<p>
 						I hold a Bachelor's degree in Electrical Engineering from the University of Wales and maintain active engagement with the Flutter development community through conferences and continuous learning.
-					</p>
-				</article>
-
-				<!-- Work -->
-				<article id="work">
-					<h2 class="major">Work</h2>
-					<span class="image main"><img src="images/work.jpg" alt="Work Image" /></span>
-					<p>
-						I have worked extensively as a Flutter Developer, contributing to several high-impact cross-platform applications. My notable projects include:
-					</p>
-					<ul class="feature-list">
-						<li>🔹 <strong>EnConnect</strong> - A sophisticated battery monitoring solution using Modbus & Flutter, featuring real-time data visualization and alerts.</li>
-						<li>🔹 <strong>Sharm Taxi</strong> - A comprehensive ride-hailing application built for Sharm el Sheikh, incorporating maps, real-time tracking, and payment integration.</li>
-					</ul>
-					<p>
-						As a mobile developer, I specialize in delivering cross-platform applications with rich user experiences, focusing on efficient state management, responsive UI, and seamless integration with backend APIs. You can view my <a href="https://drive.google.com/file/d/1Ojsh7bmzUxMTDz1tt8TPcBhza5JYodOB/view?usp=sharing">Résumé</a> for further details.
-					</p>
-					<p>
-						My technology stack primarily focuses on Flutter and Dart, complemented by extensive experience with Firebase, REST APIs, and native iOS development. I excel at creating intuitive UI/UX designs, implementing robust state management solutions, and ensuring efficient CI/CD pipelines for smooth deployments to both the Play Store and App Store.
 					</p>
 				</article>
 
@@ -153,7 +283,7 @@
 			<!-- Footer -->
 			<footer id="footer">
 				<p class="copyright">
-					&copy; 2024 Mohamed Saeed. All rights reserved.
+					&copy; <span id="currentYear"></span> Mohamed Saeed. All rights reserved.
 				</p>
 			</footer>
 		</div>
@@ -167,18 +297,9 @@
 		<script src="assets/js/breakpoints.min.js"></script>
 		<script src="assets/js/util.js"></script>
 		<script src="assets/js/main.js"></script>
-
-		<style>
-		.feature-list {
-			list-style: none;
-			padding-left: 1em;
-			margin: 1em 0;
-		}
-
-		.feature-list li {
-			margin-bottom: 0.5em;
-		}
-		</style>
+		<script>
+			document.getElementById('currentYear').textContent = new Date().getFullYear();
+		</script>
 
 	</body>
 </html>

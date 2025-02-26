@@ -21,23 +21,24 @@
 
 // Font.
 	$font: (
-		family:						('Source Sans Pro', sans-serif),
+		family:						(-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif),
 		family-fixed:				('Courier New', monospace),
-		weight:						300,
+		weight:						400,
 		weight-bold:				600,
-		letter-spacing:				0.2rem,
+		letter-spacing:				-0.01em,
 		letter-spacing-heading:		0.5rem
 	);
 
 // Palette.
 	$palette: (
-		bg:							#1b1f22,
-		bg-alt:						#000000,
+		bg:							#1a1a1a,
+		bg-alt:						#242424,
 		bg-overlay:					rgba(19,21,25,0.5),
-		fg:							#ffffff,
-		fg-bold:					#ffffff,
-		fg-light:					rgba(255,255,255,0.5),
-		border:						#ffffff,
-		border-bg:					rgba(255,255,255,0.075),
-		border-bg-alt:				rgba(255,255,255,0.175)
+		fg:							rgba(255,255,255,0.75),
+		fg-bold:					rgba(255,255,255,0.85),
+		fg-light:					rgba(255,255,255,0.4),
+		border:						rgba(255,255,255,0.1),
+		border-bg:					rgba(255,255,255,0.05),
+		border-bg-alt:				rgba(255,255,255,0.075),
+		accent:						#3498db
 	);

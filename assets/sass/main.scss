@@ -4,10 +4,16 @@
 @import 'libs/vendor';
 @import 'libs/breakpoints';
 @import 'fontawesome-all.min.css';
-@import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:300italic,600italic,300,600');
 
-// Breakpoints.
+// Base typography variables
+$font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+$font-family-fixed: 'SF Mono', SFMono-Regular, ui-monospace, monospace;
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 600;
 
+// Breakpoints
 @include breakpoints((
   xlarge:   ( 1281px,  1680px ),
   large:    ( 981px,   1280px ),
@@ -18,13 +24,11 @@
 ));
 
 // Base.
-
 @import 'base/reset';
 @import 'base/page';
 @import 'base/typography';
 
 // Component.
-
 @import 'components/form';
 @import 'components/box';
 @import 'components/icon';
@@ -34,9 +38,9 @@
 @import 'components/icons';
 @import 'components/table';
 @import 'components/button';
+@import 'components/grid';
 
 // Layout.
-
 @import 'layout/bg';
 @import 'layout/wrapper';
 @import 'layout/header';

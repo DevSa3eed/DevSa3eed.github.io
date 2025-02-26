@@ -1,0 +1,162 @@
+/* Grid */
+
+.work-showcase {
+	@include vendor('transition', 'transform 0.3s ease-in-out');
+	background: transparentize(_palette(bg), 0.1);
+	border-radius: _size(border-radius);
+	padding: 2rem;
+	margin: 2rem 0;
+
+	.brand-header {
+		text-align: center;
+		margin-bottom: 2rem;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 2rem;
+		flex-wrap: nowrap;
+		max-width: 100%;
+		padding: 1rem 0;
+
+		.project-logo {
+			flex: 0 0 auto;
+			width: 250px;
+			height: auto;
+			margin-bottom: 0;
+			border-radius: _size(border-radius);
+			background: transparentize(_palette(bg), 0.5);
+			padding: 1rem;
+		}
+
+		.brand-colors {
+			display: none;  // Hide color swatches for now
+		}
+	}
+
+	.project-description {
+		margin: 1.5rem 0;
+		font-size: 1.1em;
+		line-height: 1.6;
+		text-align: center;
+		max-width: 800px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.images-row {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 1rem;
+		margin: 2rem auto;
+		max-width: 100%;
+
+		.app-image {
+			width: 80px;  /* Fixed small width */
+			height: 160px; /* Fixed height maintaining aspect ratio */
+			overflow: hidden;
+			border-radius: 8px;
+			background: #1a1a1a;
+			padding: 4px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+
+			img {
+				width: 100%;
+				height: 100%;
+				object-fit: cover;
+				border-radius: 6px;
+			}
+
+			&:hover {
+				transform: scale(1.1);
+				transition: transform 0.3s ease;
+			}
+		}
+	}
+
+	.project-details {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 2rem;
+		margin-top: 2rem;
+	}
+
+	.project-section {
+		h4 {
+			color: _palette(fg-bold);
+			margin-bottom: 1rem;
+			font-size: 1.1em;
+		}
+	}
+
+	.project-highlights {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+
+		li {
+			margin: 0.75rem 0;
+			color: _palette(fg);
+			font-size: 0.9em;
+		}
+	}
+
+	@include breakpoint('<=small') {
+		padding: 1.5rem;
+		
+		.images-row {
+			gap: 0.5rem;
+			
+			.app-image {
+				width: 60px;
+				height: 120px;
+			}
+		}
+
+		.project-details {
+			grid-template-columns: 1fr;
+			gap: 1.5rem;
+		}
+
+		.project-description {
+			font-size: 1em;
+		}
+	}
+}
+
+.services-grid {
+	@include vendor('display', 'grid');
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 2rem;
+	margin: 2rem 0;
+
+	.service {
+		text-align: center;
+		padding: 1.5rem;
+		@include vendor('transition', 'transform 0.3s ease-in-out');
+
+		&:hover {
+			@include vendor('transform', 'translateY(-5px)');
+		}
+
+		.icon {
+			font-size: 2.5rem;
+			margin-bottom: 1rem;
+			color: _palette(fg-bold);
+		}
+
+		h3 {
+			margin: 1rem 0;
+			color: _palette(fg-bold);
+		}
+
+		p {
+			color: _palette(fg);
+		}
+	}
+
+	@include breakpoint('<=small') {
+		grid-template-columns: 1fr;
+		gap: 1.5rem;
+	}
+} 
