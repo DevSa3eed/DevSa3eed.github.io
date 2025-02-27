@@ -60,6 +60,51 @@
 				letter-spacing: -0.01em;
 				line-height: 1.6;
 			}
+
+			/* Responsive styles for images */
+			.images-row {
+				display: flex;
+				justify-content: center;
+				gap: 2rem;
+				margin: 2rem auto;
+				flex-wrap: wrap;
+			}
+
+			.app-image {
+				width: 200px;
+				height: 400px;
+				position: relative;
+				border-radius: 24px;
+				background: #1a1a1a;
+				padding: 9px;
+				box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+				transition: all 0.3s ease;
+			}
+
+			@media screen and (max-width: 736px) {
+				.images-row {
+					gap: 1rem;
+				}
+
+				.app-image {
+					width: 280px;
+					height: 320px;
+					margin-bottom: 1rem;
+				}
+
+				.app-image > div:first-child {
+					width: 100px;
+					height: 24px;
+				}
+			}
+
+			@media screen and (max-width: 480px) {
+				.app-image {
+					width: 100%;
+					max-width: 300px;
+					height: 280px;
+				}
+			}
 		</style>
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 	</head>
@@ -101,20 +146,20 @@
 							A comprehensive ride-hailing application built for Sharm el Sheikh's tourism market. This app connects tourists with reliable local taxi services, offering a seamless booking experience with real-time tracking and secure payments.
 						</p>
 						
-						<div class="images-row" style="display: flex; justify-content: center; gap: 2rem; margin: 2rem auto;">
-							<div class="app-image" style="width: 200px; height: 400px; position: relative; border-radius: 24px; background: #1a1a1a; padding: 9px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+						<div class="images-row">
+							<div class="app-image">
 								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
 								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
 									<img src="images/sharm/splash.png" alt="Sharm Taxi Logo" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
 								</div>
 							</div>
-							<div class="app-image" style="width: 200px; height: 400px; position: relative; border-radius: 24px; background: #1a1a1a; padding: 9px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+							<div class="app-image">
 								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
 								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
 									<img src="images/sharm/Map.png" alt="Booking Screen" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
 								</div>
 							</div>
-							<div class="app-image" style="width: 200px; height: 400px; position: relative; border-radius: 24px; background: #1a1a1a; padding: 9px; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
+							<div class="app-image">
 								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
 								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
 									<img src="images/sharm/Trips.png" alt="Rides History Screen" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
