@@ -973,4 +973,236 @@ footer a {
     .calendar-day {
         font-size: var(--font-size-md);
     }
+}
+
+/* Sharing banner */
+.sharing-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    color: white;
+    z-index: 1000;
+    padding: 0;
+    box-shadow: var(--shadow);
+}
+
+.sharing-banner-content {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
+.sharing-info {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.sharing-info i {
+    font-size: 1.5rem;
+    margin-top: var(--spacing-xs);
+}
+
+.sharing-info h3 {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--spacing-xs);
+    font-weight: 600;
+}
+
+.sharing-info p {
+    font-size: var(--font-size-sm);
+    opacity: 0.9;
+}
+
+.sharing-actions {
+    display: flex;
+    gap: var(--spacing-md);
+}
+
+.sharing-actions .share-now-btn {
+    background-color: white;
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.dismiss-banner-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.dismiss-banner-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Share reminder */
+.share-reminder {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--card-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    max-width: 90%;
+    width: 350px;
+    animation: slideUp var(--transition);
+}
+
+.share-reminder-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+}
+
+.share-reminder p {
+    font-weight: 500;
+    text-align: center;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* Enhanced share modal */
+.share-link {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin: var(--spacing-lg) 0;
+}
+
+.share-link input {
+    flex: 1;
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--background-color);
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
+}
+
+.share-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+}
+
+.share-option {
+    padding: var(--spacing-md);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--primary-light);
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);
+    font-weight: 500;
+}
+
+.share-option:hover {
+    opacity: 0.9;
+}
+
+.share-option i {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-xs);
+}
+
+/* Tablet styles */
+@media (min-width: 768px) {
+    .sharing-banner-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .sharing-info {
+        margin-bottom: 0;
+    }
+    
+    .share-reminder {
+        width: 400px;
+    }
+}
+
+/* Collaboration status indicator */
+.collaboration-status {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  background-color: var(--card-color);
+  border-radius: var(--radius-full);
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: var(--shadow);
+  z-index: 90;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-indicator i {
+  font-size: 10px;
+}
+
+.status-indicator.offline i {
+  color: var(--danger-color);
+}
+
+.status-indicator.online i {
+  color: var(--success-color);
+}
+
+.status-indicator.syncing i {
+  color: var(--warning-color);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.5;
+  }
 } 

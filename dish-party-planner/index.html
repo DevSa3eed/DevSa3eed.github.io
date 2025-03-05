@@ -6,6 +6,35 @@
     <title>Iftar Scheduler</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+      import { getDatabase } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+      
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCeEW1P6kUbFPLYcIeKQeh7UAVtp8KjQAM",
+        authDomain: "scheduler-79bb6.firebaseapp.com",
+        projectId: "scheduler-79bb6",
+        storageBucket: "scheduler-79bb6.firebasestorage.app",
+        messagingSenderId: "414053080251",
+        appId: "1:414053080251:web:f12e93dfcdd93f0739dd9e",
+        measurementId: "G-JZBFLDS406",
+        databaseURL: "https://scheduler-79bb6-default-rtdb.firebaseio.com" // Add this line for Realtime Database
+      };
+      
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const database = getDatabase(app);
+      
+      // Make Firebase available globally
+      window.firebaseApp = app;
+      window.firebaseDatabase = database;
+    </script>
 </head>
 <body>
     <div class="container">
@@ -232,6 +261,15 @@
         </div>
     </div>
     
+    <!-- Collaboration Status Indicator -->
+    <div class="collaboration-status" id="collaboration-status">
+        <div class="status-indicator">
+            <i class="fas fa-circle"></i>
+        </div>
+        <span class="status-text">Checking connection...</span>
+    </div>
+    
+    <!-- Scripts -->
     <script src="script.js"></script>
 </body>
 </html> 

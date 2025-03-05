@@ -1,5 +1,22 @@
 // Iftar Scheduler - Main JavaScript
 
+// Firebase access
+let database;
+
+// Wait for Firebase to initialize
+document.addEventListener('DOMContentLoaded', () => {
+  // Check if Firebase is available
+  if (window.firebaseDatabase) {
+    database = window.firebaseDatabase;
+    console.log("Firebase Realtime Database initialized successfully");
+  } else {
+    console.error("Firebase Database not available. Some features may not work.");
+  }
+  
+  // Initialize the app
+  initializeApp();
+});
+
 // DOM Elements - General
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
@@ -37,56 +54,322 @@ const dishesList = document.getElementById('dishes-list');
 const totalDishesElement = document.getElementById('total-dishes');
 
 // State
-let dishes = JSON.parse(localStorage.getItem('dishes')) || [];
-let participants = JSON.parse(localStorage.getItem('participants')) || [];
-let availabilityData = JSON.parse(localStorage.getItem('availabilityData')) || {};
+let dishes = [];
+let participants = [];
+let availabilityData = {};
 let currentDate = new Date();
 let selectedDates = [];
 let selectedTimeSlots = [];
-let selectedFinalDate = localStorage.getItem('selectedFinalDate') || null;
+let selectedFinalDate = null;
+let isSharedSession = false;
+let sessionId = '';
+let isOnline = navigator.onLine;
+let isSyncing = false;
+let collaborationStatusElement = document.getElementById('collaboration-status');
+let statusIndicator = document.querySelector('.status-indicator');
+let statusText = document.querySelector('.status-text');
 
 // Initialize
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+
+// Check for shared session in URL
 function initializeApp() {
-    // Set up tabs
-    setupTabs();
+  // Check if URL has a session parameter
+  const urlParams = new URLSearchParams(window.location.search);
+  const urlSessionId = urlParams.get('session');
+  
+  if (urlSessionId) {
+    // We have a shared session
+    sessionId = urlSessionId;
+    isSharedSession = true;
+    localStorage.setItem('sessionId', sessionId);
     
-    // Schedule tab initialization
-    initializeCalendar();
-    renderAvailabilityResults();
-    updateSummary();
+    // Load data from Firebase
+    loadDataFromFirebase(sessionId);
+  } else {
+    // Generate a new session ID if none exists
+    sessionId = localStorage.getItem('sessionId') || generateSessionId();
+    localStorage.setItem('sessionId', sessionId);
     
-    // Dishes tab initialization
-    renderDishes();
+    // Try to load data from localStorage first (for backward compatibility)
+    loadDataFromLocalStorage();
     
-    // Event Listeners - General
-    shareButton.addEventListener('click', handleShare);
-    printButton.addEventListener('click', handlePrint);
-    clearAllButton.addEventListener('click', handleClearAll);
-    closeModalButton.addEventListener('click', () => shareModal.style.display = 'none');
-    copyLinkButton.addEventListener('click', handleCopyLink);
+    // Then sync with Firebase if online
+    if (isOnline) {
+      syncWithFirebase();
+    }
+  }
+  
+  // Set up tabs
+  setupTabs();
+  
+  // Initialize the rest of the app
+  initCalendar();
+  renderDishes();
+  renderParticipants();
+  renderAvailabilityCalendar();
+  renderBestTimes();
+  updateSummary();
+  updateOnlineStatus();
+  
+  // Event Listeners - General
+  shareButton.addEventListener('click', handleShare);
+  printButton.addEventListener('click', handlePrint);
+  clearAllButton.addEventListener('click', handleClearAll);
+  closeModalButton.addEventListener('click', () => shareModal.style.display = 'none');
+  copyLinkButton.addEventListener('click', handleCopyLink);
+  
+  // Event Listeners - Schedule Tab
+  prevMonthButton.addEventListener('click', () => navigateMonth(-1));
+  nextMonthButton.addEventListener('click', () => navigateMonth(1));
+  submitAvailabilityButton.addEventListener('click', handleSubmitAvailability);
+  selectDateButton.addEventListener('click', handleSelectFinalDate);
+  
+  // Event Listeners - Dishes Tab
+  dishForm.addEventListener('submit', handleAddDish);
+  filterSelect.addEventListener('change', renderDishes);
+  
+  // Close modal when clicking outside
+  window.addEventListener('click', (event) => {
+      if (event.target === shareModal) {
+          shareModal.style.display = 'none';
+      }
+  });
+  
+  // Update final date display
+  if (selectedFinalDate) {
+      finalDateDisplay.textContent = selectedFinalDate;
+      selectDateButton.textContent = 'Change Date';
+  }
+  
+  // Check for shared data in URL (legacy support)
+  const sharedData = urlParams.get('share');
+  if (sharedData && !urlSessionId) {
+      try {
+          const data = JSON.parse(atob(sharedData));
+          
+          if (data && confirm('Would you like to load the shared Iftar plan?')) {
+              if (data.dishes) dishes = data.dishes;
+              if (data.participants) participants = data.participants;
+              if (data.availabilityData) availabilityData = data.availabilityData;
+              if (data.selectedFinalDate) selectedFinalDate = data.selectedFinalDate;
+              if (data.sessionId) {
+                  sessionId = data.sessionId;
+                  localStorage.setItem('sessionId', sessionId);
+              }
+              
+              // Save to Firebase
+              if (isOnline) {
+                  syncWithFirebase();
+              }
+              
+              // Update UI
+              renderDishes();
+              renderParticipants();
+              renderAvailabilityCalendar();
+              renderBestTimes();
+              updateSummary();
+              
+              // Set shared session flag
+              isSharedSession = true;
+          }
+      } catch (error) {
+          console.error('Error parsing shared data:', error);
+          showNotification('Error loading shared data. The link may be invalid.');
+      }
+      
+      // Remove the share parameter from URL to avoid confusion
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+  }
+}
+
+// Update online status indicator
+function updateOnlineStatus() {
+  isOnline = navigator.onLine;
+  
+  if (isOnline) {
+    if (isSyncing) {
+      statusIndicator.className = 'status-indicator syncing';
+      statusText.textContent = 'Syncing...';
+    } else {
+      statusIndicator.className = 'status-indicator online';
+      statusText.textContent = 'Online - Collaborative';
+    }
     
-    // Event Listeners - Schedule Tab
-    prevMonthButton.addEventListener('click', () => navigateMonth(-1));
-    nextMonthButton.addEventListener('click', () => navigateMonth(1));
-    submitAvailabilityButton.addEventListener('click', handleSubmitAvailability);
-    selectDateButton.addEventListener('click', handleSelectFinalDate);
+    // Try to sync with Firebase when coming online
+    syncWithFirebase();
+  } else {
+    statusIndicator.className = 'status-indicator offline';
+    statusText.textContent = 'Offline - Local Only';
+  }
+}
+
+// Generate a unique session ID
+function generateSessionId() {
+  return 'iftar-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+}
+
+// Load data from Firebase
+function loadDataFromFirebase(sid) {
+  isSyncing = true;
+  updateOnlineStatus();
+  
+  // Import needed Firebase functions
+  import('https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js').then(module => {
+    const { ref, get, onValue } = module;
     
-    // Event Listeners - Dishes Tab
-    dishForm.addEventListener('submit', handleAddDish);
-    filterSelect.addEventListener('change', renderDishes);
-    
-    // Close modal when clicking outside
-    window.addEventListener('click', (event) => {
-        if (event.target === shareModal) {
-            shareModal.style.display = 'none';
+    get(ref(database, `sessions/${sid}`))
+      .then((snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+          dishes = data.dishes || [];
+          participants = data.participants || [];
+          availabilityData = data.availabilityData || {};
+          selectedFinalDate = data.selectedFinalDate || null;
+          
+          // Update UI
+          renderDishes();
+          renderParticipants();
+          renderAvailabilityCalendar();
+          renderBestTimes();
+          updateSummary();
+          
+          // Set up real-time listeners
+          setupRealtimeListeners(sid);
         }
+        
+        isSyncing = false;
+        updateOnlineStatus();
+      })
+      .catch((error) => {
+        console.error("Error loading data from Firebase:", error);
+        isSyncing = false;
+        updateOnlineStatus();
+        
+        // Fallback to localStorage if Firebase fails
+        loadDataFromLocalStorage();
+      });
+  }).catch(error => {
+    console.error("Error importing Firebase modules:", error);
+    loadDataFromLocalStorage();
+  });
+}
+
+// Load data from localStorage (for backward compatibility)
+function loadDataFromLocalStorage() {
+  dishes = JSON.parse(localStorage.getItem('dishes')) || [];
+  participants = JSON.parse(localStorage.getItem('participants')) || [];
+  availabilityData = JSON.parse(localStorage.getItem('availabilityData')) || {};
+  selectedFinalDate = localStorage.getItem('selectedFinalDate') || null;
+}
+
+// Set up real-time listeners for collaborative updates
+function setupRealtimeListeners(sid) {
+  // Import needed Firebase functions
+  import('https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js').then(module => {
+    const { ref, onValue } = module;
+    
+    // Listen for dishes changes
+    onValue(ref(database, `sessions/${sid}/dishes`), (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        dishes = data;
+        renderDishes();
+        updateSummary();
+      }
     });
     
-    // Update final date display
-    if (selectedFinalDate) {
-        finalDateDisplay.textContent = selectedFinalDate;
-        selectDateButton.textContent = 'Change Date';
-    }
+    // Listen for participants changes
+    onValue(ref(database, `sessions/${sid}/participants`), (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        participants = data;
+        renderParticipants();
+        updateSummary();
+      }
+    });
+    
+    // Listen for availability data changes
+    onValue(ref(database, `sessions/${sid}/availabilityData`), (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        availabilityData = data;
+        renderAvailabilityCalendar();
+        renderBestTimes();
+      }
+    });
+    
+    // Listen for final date selection
+    onValue(ref(database, `sessions/${sid}/selectedFinalDate`), (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        selectedFinalDate = data;
+        updateSummary();
+      }
+    });
+  }).catch(error => {
+    console.error("Error importing Firebase modules:", error);
+  });
+}
+
+// Sync local data with Firebase
+function syncWithFirebase() {
+  if (!isOnline) return;
+  
+  return new Promise((resolve, reject) => {
+    isSyncing = true;
+    updateOnlineStatus();
+    
+    // Import needed Firebase functions
+    import('https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js').then(module => {
+      const { ref, update } = module;
+      
+      const dataToSync = {
+        dishes: dishes,
+        participants: participants,
+        availabilityData: availabilityData,
+        selectedFinalDate: selectedFinalDate
+      };
+      
+      update(ref(database, `sessions/${sessionId}`), dataToSync)
+        .then(() => {
+          // Set up real-time listeners after successful sync
+          setupRealtimeListeners(sessionId);
+          isSyncing = false;
+          updateOnlineStatus();
+          resolve();
+        })
+        .catch((error) => {
+          console.error("Error syncing with Firebase:", error);
+          isSyncing = false;
+          updateOnlineStatus();
+          reject(error);
+        });
+    }).catch(error => {
+      console.error("Error importing Firebase modules:", error);
+      isSyncing = false;
+      updateOnlineStatus();
+      reject(error);
+    });
+  });
+}
+
+// Save data to both localStorage and Firebase
+function saveData() {
+  // Save to localStorage for offline access
+  localStorage.setItem('dishes', JSON.stringify(dishes));
+  localStorage.setItem('participants', JSON.stringify(participants));
+  localStorage.setItem('availabilityData', JSON.stringify(availabilityData));
+  if (selectedFinalDate) {
+    localStorage.setItem('selectedFinalDate', selectedFinalDate);
+  }
+  
+  // Sync with Firebase if online
+  if (isOnline) {
+    syncWithFirebase();
+  }
 }
 
 // Tab Navigation
@@ -243,8 +526,8 @@ function handleSubmitAvailability() {
     // Update availability data
     updateAvailabilityData();
     
-    // Save to localStorage
-    saveParticipants();
+    // Save data (this will update both localStorage and Firebase)
+    saveData();
     
     // Reset form
     participantNameInput.value = '';
@@ -254,10 +537,48 @@ function handleSubmitAvailability() {
     
     // Rerender calendar and availability results
     renderCalendar();
-    renderAvailabilityResults();
+    renderAvailabilityCalendar();
+    renderParticipants();
+    renderBestTimes();
     updateSummary();
     
+    // Show notification
     showNotification('Availability submitted successfully!');
+    
+    // Update share link with current session ID
+    updateShareLink();
+    
+    // Show collaboration status
+    updateOnlineStatus();
+}
+
+// Show share reminder
+function showShareReminder() {
+    const reminder = document.createElement('div');
+    reminder.className = 'share-reminder';
+    reminder.innerHTML = `
+        <div class="share-reminder-content">
+            <p>Don't forget to share this plan with others!</p>
+            <button class="btn-primary share-now-btn">
+                <i class="fas fa-share-alt"></i> Share Now
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(reminder);
+    
+    // Add event listener
+    reminder.querySelector('.share-now-btn').addEventListener('click', () => {
+        reminder.remove();
+        handleShare();
+    });
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (document.body.contains(reminder)) {
+            reminder.remove();
+        }
+    }, 10000);
 }
 
 // Update availability data for calendar heatmap
@@ -508,12 +829,13 @@ function selectThisDate(date, timeSlot) {
     finalDateDisplay.textContent = selectedFinalDate;
     selectDateButton.textContent = 'Change Date';
     
-    localStorage.setItem('selectedFinalDate', selectedFinalDate);
+    // Save to both localStorage and Firebase
+    saveData();
     
-    showNotification('Final date selected!');
+    showNotification('Final date selected! All participants will see this update.');
     
     // Rerender availability to highlight selected date
-    renderAvailabilityResults();
+    renderAvailabilityCalendar();
 }
 
 // Handle selecting final date
@@ -542,7 +864,7 @@ function handleAddDish(event) {
     };
     
     dishes.unshift(newDish);
-    saveDishes();
+    saveData(); // Use the comprehensive saveData function
     
     // Reset form
     dishForm.reset();
@@ -552,6 +874,9 @@ function handleAddDish(event) {
     updateSummary();
     
     showNotification('Dish added successfully!');
+    
+    // Update collaboration status
+    updateOnlineStatus();
 }
 
 // Render dishes based on filter
@@ -610,7 +935,7 @@ function handleDeleteDish(event) {
     
     if (confirm('Are you sure you want to remove this dish?')) {
         dishes = dishes.filter(dish => dish.id !== dishId);
-        saveDishes();
+        saveData();
         renderDishes();
         updateSummary();
         showNotification('Dish removed successfully!');
@@ -631,7 +956,7 @@ function handleEditDish(event) {
         
         // Remove the dish and update
         dishes = dishes.filter(d => d.id !== dishId);
-        saveDishes();
+        saveData();
         renderDishes();
         updateSummary();
         
@@ -647,46 +972,152 @@ function updateSummary() {
     totalDishesElement.textContent = dishes.length;
 }
 
-// Handle clear all
+// Handle clearing all data
 function handleClearAll() {
     if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+        // Clear all data
         dishes = [];
         participants = [];
         availabilityData = {};
+        selectedDates = [];
+        selectedTimeSlots = [];
         selectedFinalDate = null;
         
-        saveDishes();
-        saveParticipants();
-        localStorage.removeItem('availabilityData');
+        // Clear from Firebase if online
+        if (isOnline) {
+            // Import needed Firebase functions
+            import('https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js').then(module => {
+                const { ref, remove } = module;
+                
+                remove(ref(database, `sessions/${sessionId}`))
+                    .then(() => {
+                        showNotification('All data cleared successfully!');
+                    })
+                    .catch(error => {
+                        console.error("Error clearing data from Firebase:", error);
+                        showNotification('Error clearing data from Firebase. Some data may remain on the server.');
+                    });
+            }).catch(error => {
+                console.error("Error importing Firebase modules:", error);
+                showNotification('Error accessing Firebase. Data cleared locally only.');
+            });
+        }
+        
+        // Clear from localStorage
+        saveData();
         localStorage.removeItem('selectedFinalDate');
         
-        // Reset displays
+        // Generate a new session ID
+        sessionId = generateSessionId();
+        localStorage.setItem('sessionId', sessionId);
+        
+        // Reset UI
+        renderCalendar();
+        renderDishes();
+        renderParticipants();
+        renderAvailabilityCalendar();
+        renderBestTimes();
+        updateSummary();
+        
+        // Reset form fields
+        participantNameInput.value = '';
+        scheduleNotesInput.value = '';
+        dishForm.reset();
+        
+        // Uncheck all time slots
+        timeSlotCheckboxes.forEach(checkbox => checkbox.checked = false);
+        
+        // Update final date display
         finalDateDisplay.textContent = 'Not yet selected';
         selectDateButton.textContent = 'Select This Date';
         
-        renderDishes();
-        renderCalendar();
-        renderAvailabilityResults();
-        updateSummary();
-        
-        showNotification('All data cleared!');
+        showNotification('All data has been cleared');
     }
 }
 
 // Handle share functionality
 function handleShare() {
-    // Generate a shareable link (in a real app, this would create a unique URL)
-    const shareData = btoa(JSON.stringify({
-        dishes,
-        participants,
-        availabilityData,
-        selectedFinalDate
-    }));
+    // Make sure data is synced with Firebase before sharing
+    if (isOnline) {
+        syncWithFirebase().then(() => {
+            // Create shareable URL with session ID
+            const shareUrl = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
+            
+            // Update share link input
+            shareLinkInput.value = shareUrl;
+            
+            // Show modal
+            shareModal.style.display = 'flex';
+            
+            // Select the link text
+            shareLinkInput.select();
+            
+            // Update share options with dynamic links
+            updateShareOptions(shareUrl);
+            
+            // Show notification
+            showNotification('Your plan is now collaborative! Share the link with others.');
+        }).catch(error => {
+            console.error("Error syncing before share:", error);
+            showNotification('Error preparing share link. Please try again.');
+        });
+    } else {
+        // Offline fallback - use the old method with encoded data
+        const dataToShare = {
+            dishes: dishes,
+            participants: participants,
+            availabilityData: availabilityData,
+            selectedFinalDate: selectedFinalDate,
+            sessionId: sessionId
+        };
+        
+        // Convert to base64 string
+        const encodedData = btoa(JSON.stringify(dataToShare));
+        
+        // Create shareable URL
+        const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encodedData}`;
+        
+        // Update share link input
+        shareLinkInput.value = shareUrl;
+        
+        // Show modal
+        shareModal.style.display = 'flex';
+        
+        // Select the link text
+        shareLinkInput.select();
+        
+        // Update share options with dynamic links
+        updateShareOptions(shareUrl);
+        
+        // Show notification about offline mode
+        showNotification('You are sharing in offline mode. Some features may be limited.');
+    }
+}
+
+// Update share options with dynamic links
+function updateShareOptions(shareUrl) {
+    const whatsappBtn = document.querySelector('.share-option.whatsapp');
+    const emailBtn = document.querySelector('.share-option.email');
+    const messageBtn = document.querySelector('.share-option.message');
     
-    const shareLink = `${window.location.origin}${window.location.pathname}?share=${shareData}`;
+    // WhatsApp
+    whatsappBtn.addEventListener('click', () => {
+        const text = encodeURIComponent(`Join our Iftar planning! Click the link to see available dates and add yours: ${shareUrl}`);
+        window.open(`https://wa.me/?text=${text}`, '_blank');
+    });
     
-    shareLinkInput.value = shareLink;
-    shareModal.style.display = 'flex';
+    // Email
+    emailBtn.addEventListener('click', () => {
+        const subject = encodeURIComponent('Iftar Planning');
+        const body = encodeURIComponent(`Join our Iftar planning!\n\nClick the link below to see available dates and add yours:\n${shareUrl}`);
+        window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+    });
+    
+    // SMS/Messages
+    messageBtn.addEventListener('click', () => {
+        const body = encodeURIComponent(`Join our Iftar planning! Click to see available dates and add yours: ${shareUrl}`);
+        window.open(`sms:?&body=${body}`, '_blank');
+    });
 }
 
 // Handle copy link
@@ -870,14 +1301,16 @@ function showNotification(message) {
     }, 3000);
 }
 
-// Save dishes to localStorage
+// Save dishes to localStorage and Firebase
 function saveDishes() {
-    localStorage.setItem('dishes', JSON.stringify(dishes));
+    // This function is now replaced by the more comprehensive saveData function
+    saveData();
 }
 
-// Save participants to localStorage
-function saveParticipants() {
-    localStorage.setItem('participants', JSON.stringify(participants));
+// Update share link with current session ID
+function updateShareLink() {
+    const shareUrl = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
+    shareLinkInput.value = shareUrl;
 }
 
 // Check for shared data in URL
@@ -899,22 +1332,32 @@ function checkForSharedData() {
                         finalDateDisplay.textContent = selectedFinalDate;
                         selectDateButton.textContent = 'Change Date';
                     }
+                    if (data.sessionId) {
+                        sessionId = data.sessionId;
+                        isSharedSession = true;
+                    }
                     
                     saveDishes();
-                    saveParticipants();
                     localStorage.setItem('availabilityData', JSON.stringify(availabilityData));
                     localStorage.setItem('selectedFinalDate', selectedFinalDate);
+                    localStorage.setItem('sessionId', sessionId);
                     
                     renderDishes();
                     renderCalendar();
                     renderAvailabilityResults();
                     updateSummary();
                     
-                    showNotification('Shared data loaded successfully!');
+                    showNotification('Shared data loaded successfully! You can now add your availability.');
+                    
+                    // Scroll to the date picker
+                    setTimeout(() => {
+                        document.querySelector('.date-picker-container').scrollIntoView({ behavior: 'smooth' });
+                    }, 1000);
                 }
             }
         } catch (error) {
             console.error('Error parsing shared data:', error);
+            showNotification('Error loading shared data. Please try again.');
         }
     }
 }
