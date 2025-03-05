@@ -21,10 +21,24 @@ document.addEventListener('firebase-ready', (event) => {
   database = event.detail.database;
   firebaseInitialized = true;
   
-  // Initialize the app if it hasn't been initialized yet
-  if (!window.appInitialized) {
-    initializeApp();
-  }
+  // Initialize database structure
+  initializeDatabaseStructure()
+    .then(() => {
+      console.log("Database structure initialization completed");
+      
+      // Initialize the app if it hasn't been initialized yet
+      if (!window.appInitialized) {
+        initializeApp();
+      }
+    })
+    .catch(error => {
+      console.error("Database structure initialization failed:", error);
+      
+      // Initialize the app anyway, it will fall back to localStorage
+      if (!window.appInitialized) {
+        initializeApp();
+      }
+    });
 });
 
 document.addEventListener('firebase-error', (event) => {
@@ -428,96 +442,31 @@ function initializeApp() {
 
 // Update online status indicator
 function updateOnlineStatus() {
-  console.log("Updating online status. Navigator.onLine:", navigator.onLine);
-  isOnline = navigator.onLine;
+  const isOnline = navigator.onLine;
+  console.log(`Online status: ${isOnline ? 'Online' : 'Offline'}`);
   
-  if (!collaborationStatusElement) {
-    collaborationStatusElement = document.getElementById('collaboration-status');
-    if (!collaborationStatusElement) {
-      console.error("Collaboration status element not found in the DOM");
-      return;
-    }
+  if (!isOnline) {
+    updateSyncStatus('offline');
+    return;
   }
   
-  if (!statusIndicator) {
-    statusIndicator = collaborationStatusElement.querySelector('.status-indicator');
-    if (!statusIndicator) {
-      console.error("Status indicator element not found in the DOM");
-      return;
-    }
+  // If we're online but don't have Firebase initialized
+  if (!database || !firebaseInitialized) {
+    updateSyncStatus('error');
+    return;
   }
   
-  if (!statusText) {
-    statusText = collaborationStatusElement.querySelector('.status-text');
-    if (!statusText) {
-      console.error("Status text element not found in the DOM");
-      return;
-    }
-  }
-  
-  if (isOnline) {
-    if (isSyncing) {
-      console.log("Status: Syncing");
-      statusIndicator.className = 'status-indicator syncing';
-      statusText.textContent = 'Syncing...';
-      
-      // Set a timeout to reset syncing state if it takes too long
-      if (!window.syncTimeoutId) {
-        window.syncTimeoutId = setTimeout(() => {
-          console.log("Sync timeout reached, resetting sync state");
-          isSyncing = false;
-          window.syncTimeoutId = null;
-          updateOnlineStatus();
-          
-          // Try to initialize Firebase again
-          tryFallbackFirebaseInit();
-          
-          // Try to load data again
-          if (sessionId) {
-            loadDataFromLocalStorage();
-            syncWithFirebase().catch(error => {
-              console.error("Error syncing after timeout:", error);
-            });
-          }
-        }, 10000); // 10 seconds timeout
-      }
-    } else {
-      console.log("Status: Online - Collaborative");
-      statusIndicator.className = 'status-indicator online';
-      statusText.textContent = 'Online - Collaborative';
-      
-      // Clear any existing timeout
-      if (window.syncTimeoutId) {
-        clearTimeout(window.syncTimeoutId);
-        window.syncTimeoutId = null;
-      }
-    }
-    
-    // Try to sync with Firebase when coming online
-    if (!isSyncing) {
-      console.log("Attempting to sync with Firebase");
-      syncWithFirebase().then(() => {
-        console.log("Sync with Firebase completed successfully");
-      }).catch(error => {
-        console.error("Error syncing with Firebase:", error);
-      });
-    }
-  } else {
-    console.log("Status: Offline - Local Only");
-    statusIndicator.className = 'status-indicator offline';
-    statusText.textContent = 'Offline - Local Only';
-    
-    // Clear any existing timeout
-    if (window.syncTimeoutId) {
-      clearTimeout(window.syncTimeoutId);
-      window.syncTimeoutId = null;
-    }
+  // If we're online and not currently syncing
+  if (!window.syncStatusTimeout) {
+    updateSyncStatus('synced');
   }
 }
 
 // Generate a unique session ID
 function generateSessionId() {
-  return 'iftar-' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const timestamp = new Date().getTime().toString(36);
+  const randomPart = Math.random().toString(36).substring(2, 8);
+  return `${timestamp}-${randomPart}`;
 }
 
 // Load data from Firebase
@@ -667,10 +616,27 @@ function loadDataFromFirebase(sid) {
 
 // Load data from localStorage (for backward compatibility)
 function loadDataFromLocalStorage() {
-  dishes = JSON.parse(localStorage.getItem('dishes')) || [];
-  participants = JSON.parse(localStorage.getItem('participants')) || [];
-  availabilityData = JSON.parse(localStorage.getItem('availabilityData')) || {};
-  selectedFinalDate = localStorage.getItem('selectedFinalDate') || null;
+  console.log("Loading data from localStorage for session:", sessionId);
+  
+  // Load availability data
+  const savedData = localStorage.getItem(`iftar-scheduler-data-${sessionId}`);
+  if (savedData) {
+    try {
+      const parsedData = JSON.parse(savedData);
+      console.log("Loaded data from localStorage:", parsedData);
+      
+      // Update the application data
+      availabilityData = parsedData.availability || {};
+      selectedDate = parsedData.selectedDate || null;
+      selectedTimeSlot = parsedData.selectedTimeSlot || null;
+      
+      console.log("Updated application data from localStorage");
+    } catch (error) {
+      console.error("Error parsing data from localStorage:", error);
+    }
+  } else {
+    console.log("No saved data found in localStorage for session:", sessionId);
+  }
 }
 
 // Set up real-time listeners for Firebase updates
@@ -866,116 +832,110 @@ function setupRealtimeListeners(sid) {
 
 // Sync local data with Firebase
 function syncWithFirebase() {
-  if (!isOnline) {
-    console.log("Not syncing with Firebase because we're offline");
-    return Promise.reject(new Error("Cannot sync while offline"));
-  }
-  
-  console.log("Starting Firebase sync process");
-  
-  return new Promise((resolve, reject) => {
-    isSyncing = true;
+  if (!navigator.onLine || !sessionId || !database) {
     updateOnlineStatus();
-    
-    // Check if database is available
-    if (!database) {
-      console.error("Database not available for sync");
-      isSyncing = false;
-      updateOnlineStatus();
-      return reject(new Error("Database not available"));
+    return Promise.reject(new Error("Cannot sync: offline, no sessionId, or database not initialized"));
+  }
+
+  console.log("Starting sync with Firebase for session:", sessionId);
+  updateSyncStatus("syncing");
+  
+  // Set a timeout for the sync operation
+  const syncTimeout = setTimeout(() => {
+    console.warn("Firebase sync operation timed out after 15 seconds");
+    updateSyncStatus("error");
+    return Promise.reject(new Error("Sync operation timed out"));
+  }, 15000);
+
+  // Reference to the specific session in Firebase
+  let sessionRef;
+  try {
+    if (typeof database.ref === 'function') {
+      // Compatibility mode
+      sessionRef = database.ref(`sessions/${sessionId}`);
+    } else {
+      // Modular API
+      const { ref } = require('firebase/database');
+      sessionRef = ref(database, `sessions/${sessionId}`);
     }
-    
-    // Set a timeout for the sync operation
-    const syncTimeout = setTimeout(() => {
-      console.error("Firebase sync operation timed out");
-      isSyncing = false;
-      updateOnlineStatus();
-      reject(new Error("Sync operation timed out"));
-    }, 15000); // 15 seconds timeout
-    
+  } catch (error) {
+    console.error("Error creating session reference:", error);
+    clearTimeout(syncTimeout);
+    updateSyncStatus("error");
+    return Promise.reject(error);
+  }
+
+  return new Promise((resolve, reject) => {
     try {
-      // Import needed Firebase functions
-      import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js').then(module => {
-        console.log("Firebase database module imported successfully");
-        const { ref, set } = module;
-        
-        const dataToSync = {
-          dishes: dishes,
-          participants: participants,
-          availabilityData: availabilityData,
-          selectedFinalDate: selectedFinalDate,
-          lastUpdated: new Date().toISOString()
-        };
-        
-        console.log("Preparing to sync data:", {
-          dishesCount: dishes.length,
-          participantsCount: participants.length,
-          availabilityDatesCount: Object.keys(availabilityData).length,
-          hasFinalDate: !!selectedFinalDate
-        });
-        
-        // Use set instead of update to ensure complete data replacement
-        set(ref(database, `sessions/${sessionId}`), dataToSync)
-          .then(() => {
-            console.log("Data successfully synced to Firebase");
-            // Clear the timeout
-            clearTimeout(syncTimeout);
-            // Set up real-time listeners after successful sync
-            setupRealtimeListeners(sessionId);
-            isSyncing = false;
-            updateOnlineStatus();
-            resolve();
-          })
-          .catch((error) => {
-            console.error("Error syncing with Firebase:", error);
-            clearTimeout(syncTimeout);
-            isSyncing = false;
-            updateOnlineStatus();
-            reject(error);
-          });
-      }).catch(error => {
-        console.error("Error importing Firebase modules:", error);
-        clearTimeout(syncTimeout);
-        
-        // Try fallback method with global firebase
-        if (typeof firebase !== 'undefined' && firebase.database) {
-          console.log("Attempting fallback sync with global Firebase");
-          try {
-            firebase.database().ref(`sessions/${sessionId}`).set({
-              dishes: dishes,
-              participants: participants,
-              availabilityData: availabilityData,
-              selectedFinalDate: selectedFinalDate,
-              lastUpdated: new Date().toISOString()
-            }).then(() => {
-              console.log("Data successfully synced using fallback method");
-              isSyncing = false;
-              updateOnlineStatus();
-              resolve();
-            }).catch(fbError => {
-              console.error("Fallback sync failed:", fbError);
-              isSyncing = false;
-              updateOnlineStatus();
-              reject(fbError);
-            });
-          } catch (fbError) {
-            console.error("Exception during fallback sync:", fbError);
-            isSyncing = false;
-            updateOnlineStatus();
-            reject(fbError);
+      // First, check if the session exists
+      const checkSession = () => {
+        try {
+          if (typeof sessionRef.once === 'function') {
+            // Compatibility mode
+            return sessionRef.once('value');
+          } else {
+            // Modular API
+            const { get } = require('firebase/database');
+            return get(sessionRef);
           }
-        } else {
-          console.error("No fallback method available");
-          isSyncing = false;
-          updateOnlineStatus();
-          reject(error);
+        } catch (error) {
+          console.error("Error checking session existence:", error);
+          throw error;
         }
-      });
+      };
+
+      checkSession()
+        .then((snapshot) => {
+          const sessionData = snapshot.val();
+          
+          if (!sessionData) {
+            console.log("Session does not exist, creating new session:", sessionId);
+            // Create the session with initial data
+            return saveToFirebase(true);
+          } else {
+            console.log("Session exists, loading data:", sessionId);
+            // Session exists, load the data
+            const data = sessionData.data || {};
+            
+            // Update local storage with the data from Firebase
+            localStorage.setItem(`iftar-scheduler-data-${sessionId}`, JSON.stringify(data));
+            
+            // Update the application data
+            availabilityData = data.availability || {};
+            selectedDate = data.selectedDate || null;
+            selectedTimeSlot = data.selectedTimeSlot || null;
+            
+            // Render the updated data
+            renderHeatmapCalendar();
+            renderBestTimes();
+            
+            if (selectedDate && selectedTimeSlot) {
+              document.getElementById('selected-date-display').textContent = 
+                `Selected: ${formatDate(selectedDate)} at ${selectedTimeSlot}`;
+            }
+            
+            // Set up real-time listener for changes
+            setupRealtimeListener();
+            
+            return Promise.resolve();
+          }
+        })
+        .then(() => {
+          clearTimeout(syncTimeout);
+          updateSyncStatus("synced");
+          console.log("Sync with Firebase completed successfully");
+          resolve();
+        })
+        .catch((error) => {
+          console.error("Error during sync with Firebase:", error);
+          clearTimeout(syncTimeout);
+          updateSyncStatus("error");
+          reject(error);
+        });
     } catch (error) {
-      console.error("Exception during Firebase sync:", error);
+      console.error("Unexpected error in syncWithFirebase:", error);
       clearTimeout(syncTimeout);
-      isSyncing = false;
-      updateOnlineStatus();
+      updateSyncStatus("error");
       reject(error);
     }
   });
@@ -1116,23 +1076,17 @@ function renderCalendar() {
 
 // Handle submit availability form
 function handleSubmitAvailability() {
-  const name = participantNameInput.value.trim();
-  const notes = scheduleNotesInput.value.trim();
-  
-  if (!name) {
-    showNotification('Please enter your name');
-    participantNameInput.focus();
+  const participantName = participantNameInput.value.trim();
+  if (!participantName) {
+    showNotification("Please enter your name");
     return;
   }
   
-  // Get selected dates
-  const selectedDates = document.querySelectorAll('.calendar-day.selected');
   if (selectedDates.length === 0) {
-    showNotification('Please select at least one date');
+    showNotification("Please select at least one date");
     return;
   }
   
-  // Get selected time slots
   const selectedTimeSlots = [];
   timeSlotCheckboxes.forEach(checkbox => {
     if (checkbox.checked) {
@@ -1141,76 +1095,73 @@ function handleSubmitAvailability() {
   });
   
   if (selectedTimeSlots.length === 0) {
-    showNotification('Please select at least one time slot');
+    showNotification("Please select at least one time slot");
     return;
   }
   
-  // Create participant object
-  const participant = {
-    id: Date.now().toString(),
-    name: name,
-    notes: notes,
-    dates: {},
-    timeSlots: selectedTimeSlots
-  };
-  
-  // Add selected dates to participant
-  selectedDates.forEach(dateElement => {
-    const dateString = dateElement.dataset.date;
-    participant.dates[dateString] = true;
-  });
-  
-  // Check if participant already exists (by name)
-  const existingParticipantIndex = participants.findIndex(p => p.name.toLowerCase() === name.toLowerCase());
-  
-  if (existingParticipantIndex !== -1) {
-    // Update existing participant
-    participants[existingParticipantIndex] = participant;
-    showNotification('Your availability has been updated!');
-  } else {
-    // Add new participant
-    participants.push(participant);
-    showNotification('Your availability has been added!');
-  }
+  const notes = scheduleNotesInput.value.trim();
   
   // Update availability data
-  updateAvailabilityData();
+  selectedDates.forEach(date => {
+    if (!availabilityData[date]) {
+      availabilityData[date] = {};
+    }
+    
+    selectedTimeSlots.forEach(timeSlot => {
+      if (!availabilityData[date][timeSlot]) {
+        availabilityData[date][timeSlot] = [];
+      }
+      
+      // Check if participant already exists
+      const existingIndex = availabilityData[date][timeSlot].findIndex(
+        p => p.name === participantName
+      );
+      
+      if (existingIndex >= 0) {
+        // Update existing participant
+        availabilityData[date][timeSlot][existingIndex] = {
+          name: participantName,
+          notes: notes,
+          timestamp: new Date().toISOString()
+        };
+      } else {
+        // Add new participant
+        availabilityData[date][timeSlot].push({
+          name: participantName,
+          notes: notes,
+          timestamp: new Date().toISOString()
+        });
+      }
+    });
+  });
   
-  // Save data to localStorage
+  // Save to localStorage
   saveData();
   
   // Sync with Firebase if online
-  if (isOnline) {
-    console.log("Syncing with Firebase after submitting availability");
-    syncWithFirebase()
+  if (navigator.onLine && database) {
+    saveToFirebase()
       .then(() => {
-        console.log("Successfully synced availability data with Firebase");
+        console.log("Availability data saved to Firebase");
       })
       .catch(error => {
-        console.error("Error syncing availability data with Firebase:", error);
-        showNotification("Your availability was saved locally, but couldn't be synced online");
+        console.error("Error saving availability data to Firebase:", error);
       });
-  } else {
-    showNotification("You're offline. Your availability was saved locally and will sync when you're back online.");
   }
-  
-  // Reset form
-  participantNameInput.value = '';
-  scheduleNotesInput.value = '';
-  timeSlotCheckboxes.forEach(checkbox => checkbox.checked = false);
-  document.querySelectorAll('.calendar-day.selected').forEach(day => {
-    day.classList.remove('selected');
-  });
   
   // Update UI
-  renderParticipantsList();
-  renderAvailabilityResults();
-  updateSummary();
+  renderHeatmapCalendar();
+  renderBestTimes();
   
-  // Show share reminder if multiple participants and not already shared
-  if (participants.length > 1 && !isSharedSession) {
-    showShareReminder();
-  }
+  // Reset form
+  selectedDates = [];
+  timeSlotCheckboxes.forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  scheduleNotesInput.value = '';
+  
+  // Show confirmation
+  showNotification("Your availability has been submitted!");
 }
 
 // Show share reminder
@@ -1304,345 +1255,278 @@ function renderAvailabilityResults() {
 // Render heatmap calendar
 function renderHeatmapCalendar() {
   console.log("Rendering heatmap calendar");
+  const calendarContainer = document.getElementById('availability-calendar');
+  if (!calendarContainer) return;
   
-  // Get all dates from availability data
-  const availableDates = Object.keys(availabilityData);
+  // Clear previous content
+  calendarContainer.innerHTML = '';
   
-  if (availableDates.length === 0) {
+  // Check if there's any availability data
+  if (Object.keys(availabilityData).length === 0) {
+    calendarContainer.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <p>No availability submitted yet. Be the first to add yours!</p>
+      </div>
+    `;
     return;
   }
   
-  // Find min and max dates to determine calendar range
-  const dates = availableDates.map(dateStr => new Date(dateStr));
-  const minDate = new Date(Math.min(...dates));
-  const maxDate = new Date(Math.max(...dates));
+  // Get all dates from availability data
+  const dates = Object.keys(availabilityData).sort();
+  if (dates.length === 0) return;
   
-  // Ensure min and max dates are in the same month, or use current month
-  let calendarMonth, calendarYear;
+  // Calculate date range
+  const firstDate = new Date(dates[0]);
+  const lastDate = new Date(dates[dates.length - 1]);
   
-  if (minDate.getMonth() === maxDate.getMonth() && minDate.getFullYear() === maxDate.getFullYear()) {
-    calendarMonth = minDate.getMonth();
-    calendarYear = minDate.getFullYear();
-  } else {
-    // Use the month with the most available dates
-    const monthCounts = {};
-    dates.forEach(date => {
-      const key = `${date.getFullYear()}-${date.getMonth()}`;
-      monthCounts[key] = (monthCounts[key] || 0) + 1;
-    });
-    
-    let maxCount = 0;
-    let maxKey = '';
-    
-    for (const [key, count] of Object.entries(monthCounts)) {
-      if (count > maxCount) {
-        maxCount = count;
-        maxKey = key;
-      }
-    }
-    
-    const [year, month] = maxKey.split('-').map(Number);
-    calendarMonth = month;
-    calendarYear = year;
-  }
+  // Calculate the start of the week for the first date
+  const startDate = new Date(firstDate);
+  startDate.setDate(startDate.getDate() - startDate.getDay()); // Start from Sunday
   
-  // Create calendar for the determined month
-  const firstDay = new Date(calendarYear, calendarMonth, 1);
-  const lastDay = new Date(calendarYear, calendarMonth + 1, 0);
+  // Calculate the end of the week for the last date
+  const endDate = new Date(lastDate);
+  endDate.setDate(endDate.getDate() + (6 - endDate.getDay())); // End on Saturday
   
-  // Update calendar header
-  currentMonthDisplay.textContent = firstDay.toLocaleDateString('en-US', { 
-    month: 'long', 
-    year: 'numeric' 
-  });
-  
-  // Generate calendar grid
-  let calendarHTML = '';
-  
-  // Add empty cells for days before the first day of the month
-  const firstDayOfWeek = firstDay.getDay();
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    calendarHTML += '<div class="calendar-day empty"></div>';
-  }
-  
-  // Add days of the month
-  for (let day = 1; day <= lastDay.getDate(); day++) {
-    const date = new Date(calendarYear, calendarMonth, day);
-    const dateString = date.toISOString().split('T')[0];
-    const data = availabilityData[dateString];
-    
-    if (data) {
-      // Calculate total participants across all time slots
-      const allParticipantIds = new Set();
-      Object.values(data).forEach(participantIds => {
-        participantIds.forEach(id => allParticipantIds.add(id));
-      });
-      const totalParticipants = allParticipantIds.size;
-      
-      // Create day cell with availability data
-      calendarHTML += `
-        <div class="calendar-day available" data-date="${dateString}" onclick="showDateDetails('${dateString}', ${JSON.stringify(data).replace(/"/g, '&quot;')})">
-          <span class="day-number">${day}</span>
-          <div class="availability-count">${totalParticipants}</div>
-        </div>
-      `;
-    } else {
-      // Create regular day cell
-      calendarHTML += `
-        <div class="calendar-day" data-date="${dateString}">
-          <span class="day-number">${day}</span>
-        </div>
-      `;
-    }
-  }
-  
-  // Render calendar
-  availabilityCalendar.innerHTML = `
-    <div class="calendar-header">
-      <button id="heatmap-prev-month" class="calendar-nav-btn">
-        <i class="fas fa-chevron-left"></i>
-      </button>
-      <h3 id="heatmap-current-month">${currentMonthDisplay.textContent}</h3>
-      <button id="heatmap-next-month" class="calendar-nav-btn">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-    </div>
-    <div class="weekdays">
-      <div>Sun</div>
-      <div>Mon</div>
-      <div>Tue</div>
-      <div>Wed</div>
-      <div>Thu</div>
-      <div>Fri</div>
-      <div>Sat</div>
-    </div>
-    <div class="calendar-days">
-      ${calendarHTML}
-    </div>
+  // Create calendar header
+  const calendarHeader = document.createElement('div');
+  calendarHeader.className = 'heatmap-header';
+  calendarHeader.innerHTML = `
+    <div class="heatmap-cell header">Sun</div>
+    <div class="heatmap-cell header">Mon</div>
+    <div class="heatmap-cell header">Tue</div>
+    <div class="heatmap-cell header">Wed</div>
+    <div class="heatmap-cell header">Thu</div>
+    <div class="heatmap-cell header">Fri</div>
+    <div class="heatmap-cell header">Sat</div>
   `;
+  calendarContainer.appendChild(calendarHeader);
   
-  // Add event listeners for navigation
-  document.getElementById('heatmap-prev-month').addEventListener('click', () => navigateHeatmapMonth(-1));
-  document.getElementById('heatmap-next-month').addEventListener('click', () => navigateHeatmapMonth(1));
+  // Create calendar grid
+  const calendarGrid = document.createElement('div');
+  calendarGrid.className = 'heatmap-grid';
   
-  // Color the days based on availability
-  colorHeatmapDays();
-}
-
-// Color heatmap days based on availability
-function colorHeatmapDays() {
-  const availableDays = document.querySelectorAll('.calendar-day.available');
-  
-  // Find the maximum number of participants
-  let maxParticipants = 0;
-  availableDays.forEach(day => {
-    const count = parseInt(day.querySelector('.availability-count').textContent);
-    maxParticipants = Math.max(maxParticipants, count);
-  });
-  
-  // Apply color levels
-  availableDays.forEach(day => {
-    const count = parseInt(day.querySelector('.availability-count').textContent);
-    const level = Math.ceil((count / maxParticipants) * 4);
-    day.classList.add(`level-${level}`);
-  });
-}
-
-// Navigate heatmap calendar month
-function navigateHeatmapMonth(direction) {
-  // Implementation will be added if needed
-  console.log("Heatmap month navigation not implemented yet");
-}
-
-// Show date details
-function showDateDetails(dateString, data) {
-  console.log("Showing date details for:", dateString, data);
-  
-  // Format date for display
-  const date = new Date(dateString);
-  const formattedDate = date.toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    month: 'long', 
-    day: 'numeric',
-    year: 'numeric'
-  });
-  
-  // Get participant names for each time slot
-  const participantNames = {};
-  
-  // For each time slot
-  for (const [slot, participantIds] of Object.entries(data)) {
-    participantNames[slot] = [];
+  // Generate calendar cells
+  let currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    const dateString = formatDateForStorage(currentDate);
+    const dayOfWeek = currentDate.getDay();
     
-    // For each participant ID in this time slot
-    participantIds.forEach(id => {
-      // Find the participant with this ID
-      const participant = participants.find(p => p.id === id);
-      if (participant) {
-        participantNames[slot].push(participant.name);
-      }
-    });
-  }
-  
-  // Calculate total unique participants
-  const allParticipantIds = new Set();
-  Object.values(data).forEach(participantIds => {
-    participantIds.forEach(id => allParticipantIds.add(id));
-  });
-  const totalParticipants = allParticipantIds.size;
-  
-  // Build message
-  let message = `Date: ${formattedDate}\n`;
-  message += `Total participants: ${totalParticipants}\n\n`;
-  
-  message += `Time slots availability:\n`;
-  for (const [slot, names] of Object.entries(participantNames)) {
-    const slotName = slot === 'sunset' ? 'Sunset (Maghrib - around 6:00 PM)' : 
-                    slot === 'dinner' ? 'Dinner (8:00 PM)' : 
-                    'Late Night (11:00 PM onwards)';
-    message += `- ${slotName}: ${names.length} people\n`;
-    if (names.length > 0) {
-      message += `  (${names.join(', ')})\n`;
+    // Create cell
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell';
+    cell.dataset.date = dateString;
+    
+    // Add date number
+    const dateNumber = document.createElement('div');
+    dateNumber.className = 'date-number';
+    dateNumber.textContent = currentDate.getDate();
+    cell.appendChild(dateNumber);
+    
+    // Check if this date has availability data
+    if (availabilityData[dateString]) {
+      // Calculate total participants for this date
+      let totalParticipants = 0;
+      let uniqueParticipants = new Set();
+      
+      Object.keys(availabilityData[dateString]).forEach(timeSlot => {
+        availabilityData[dateString][timeSlot].forEach(participant => {
+          uniqueParticipants.add(participant.name);
+          totalParticipants++;
+        });
+      });
+      
+      // Add heat level based on number of participants
+      const heatLevel = Math.min(5, uniqueParticipants.size);
+      cell.classList.add(`heat-level-${heatLevel}`);
+      
+      // Add participant count
+      const participantCount = document.createElement('div');
+      participantCount.className = 'participant-count';
+      participantCount.textContent = uniqueParticipants.size;
+      cell.appendChild(participantCount);
+      
+      // Add click event to show details
+      cell.addEventListener('click', () => showDateDetails(dateString));
     }
+    
+    // Add to grid
+    calendarGrid.appendChild(cell);
+    
+    // Move to next day
+    currentDate.setDate(currentDate.getDate() + 1);
   }
   
-  // Show the message
-  alert(message);
-}
-
-// Render participants list
-function renderParticipantsList() {
-    participantsList.innerHTML = participants.map(participant => `
-        <li>
-            ${participant.name}
-            <small>(${Object.keys(participant.dates).length} dates available)</small>
-        </li>
-    `).join('');
+  calendarContainer.appendChild(calendarGrid);
 }
 
 // Render best times
 function renderBestTimes() {
   console.log("Rendering best times");
+  const bestTimesList = document.getElementById('best-times-list');
+  if (!bestTimesList) return;
   
+  // Clear previous content
+  bestTimesList.innerHTML = '';
+  
+  // Check if there's any availability data
   if (Object.keys(availabilityData).length === 0) {
-    bestTimesList.innerHTML = `
-      <li class="empty-state">
-        <i class="fas fa-calendar-check"></i>
-        <p>No availability data yet</p>
-      </li>
-    `;
+    bestTimesList.innerHTML = '<li class="empty-message">No availability data yet</li>';
     return;
   }
   
   // Calculate scores for each date and time slot
-  const dateScores = [];
+  const scores = [];
   
-  for (const [dateString, slots] of Object.entries(availabilityData)) {
-    // Calculate total unique participants for this date
-    const allParticipantIds = new Set();
-    Object.values(slots).forEach(participantIds => {
-      participantIds.forEach(id => allParticipantIds.add(id));
+  Object.keys(availabilityData).forEach(date => {
+    Object.keys(availabilityData[date]).forEach(timeSlot => {
+      // Count unique participants
+      const uniqueParticipants = new Set();
+      availabilityData[date][timeSlot].forEach(participant => {
+        uniqueParticipants.add(participant.name);
+      });
+      
+      scores.push({
+        date,
+        timeSlot,
+        score: uniqueParticipants.size,
+        participants: Array.from(uniqueParticipants)
+      });
     });
-    const totalParticipants = allParticipantIds.size;
-    
-    // Find the best time slot for this date
-    let bestSlot = '';
-    let bestSlotCount = 0;
-    
-    for (const [slot, participantIds] of Object.entries(slots)) {
-      if (participantIds.length > bestSlotCount) {
-        bestSlotCount = participantIds.length;
-        bestSlot = slot;
-      }
-    }
-    
-    // Add to scores array
-    dateScores.push({
-      dateString,
-      totalParticipants,
-      bestSlot,
-      bestSlotCount
-    });
-  }
+  });
   
-  // Sort by total participants (descending)
-  dateScores.sort((a, b) => b.totalParticipants - a.totalParticipants);
+  // Sort by score (highest first)
+  scores.sort((a, b) => b.score - a.score);
   
   // Take top 5
-  const topDates = dateScores.slice(0, 5);
+  const topScores = scores.slice(0, 5);
   
   // Render the list
-  if (topDates.length === 0) {
-    bestTimesList.innerHTML = `
-      <li class="empty-state">
-        <i class="fas fa-calendar-check"></i>
-        <p>No availability data yet</p>
-      </li>
-    `;
+  if (topScores.length === 0) {
+    bestTimesList.innerHTML = '<li class="empty-message">No availability data yet</li>';
     return;
   }
   
-  bestTimesList.innerHTML = topDates.map(dateScore => {
-    const date = new Date(dateScore.dateString);
-    const formattedDate = date.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      month: 'short', 
-      day: 'numeric'
-    });
+  topScores.forEach(item => {
+    const listItem = document.createElement('li');
+    listItem.className = 'best-time-item';
     
-    const slotName = dateScore.bestSlot === 'sunset' ? 'Sunset (6:00 PM)' : 
-                     dateScore.bestSlot === 'dinner' ? 'Dinner (8:00 PM)' : 
-                     'Late Night (11:00 PM)';
-    
-    return `
-      <li data-date="${dateScore.dateString}" data-slot="${dateScore.bestSlot}">
-        <div class="best-time-info">
-          <span class="best-date">${formattedDate}</span>
-          <span class="best-slot">${slotName}</span>
-          <span class="participant-count">${dateScore.totalParticipants} people</span>
-        </div>
-        <button class="select-this-date btn-secondary" onclick="selectThisDate('${dateScore.dateString}', '${dateScore.bestSlot}')">
-          Select
-        </button>
-      </li>
+    // Create content
+    listItem.innerHTML = `
+      <div class="best-time-date">${formatDate(item.date)}</div>
+      <div class="best-time-slot">${item.timeSlot}</div>
+      <div class="best-time-score">${item.score} people</div>
     `;
-  }).join('');
+    
+    // Add click event to select this date/time
+    listItem.addEventListener('click', () => selectThisDate(item.date, item.timeSlot));
+    
+    bestTimesList.appendChild(listItem);
+  });
 }
 
-// Select a date as the final date
-function selectThisDate(date, timeSlot) {
-  console.log("Selecting date:", date, "with time slot:", timeSlot);
+function showDateDetails(date) {
+  console.log("Showing details for date:", date);
   
-  // Format the date for display
-  const dateObj = new Date(date);
-  const formattedDate = dateObj.toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    month: 'long', 
-    day: 'numeric',
-    year: 'numeric'
+  // Check if this date has availability data
+  if (!availabilityData[date]) {
+    showNotification("No availability data for this date");
+    return;
+  }
+  
+  // Format date for display
+  const formattedDate = formatDate(date);
+  
+  // Build message
+  let message = `<h3>${formattedDate}</h3>`;
+  
+  // Get all time slots for this date
+  const timeSlots = Object.keys(availabilityData[date]);
+  
+  // Track all unique participants
+  const allParticipants = new Set();
+  
+  // Add details for each time slot
+  timeSlots.forEach(timeSlot => {
+    const participants = availabilityData[date][timeSlot];
+    const participantNames = participants.map(p => p.name);
+    
+    // Add participants to the set
+    participantNames.forEach(name => allParticipants.add(name));
+    
+    message += `<p><strong>${timeSlot}</strong>: ${participantNames.join(', ')}</p>`;
   });
   
-  // Format the time slot for display
-  const slotName = timeSlot === 'sunset' ? 'Sunset (Maghrib - around 6:00 PM)' : 
-                  timeSlot === 'dinner' ? 'Dinner (8:00 PM)' : 
-                  'Late Night (11:00 PM onwards)';
+  // Add total participants
+  message += `<p class="total-participants">Total: ${allParticipants.size} participants</p>`;
   
-  // Confirm selection
-  if (confirm(`Are you sure you want to select ${formattedDate} at ${slotName} as the final date for your Iftar gathering?`)) {
-    // Set the final date
-    selectedFinalDate = `${formattedDate} at ${slotName}`;
-    
-    // Update UI
-    finalDateDisplay.textContent = selectedFinalDate;
-    selectDateButton.disabled = true;
-    selectDateButton.innerHTML = '<i class="fas fa-check"></i> Date Selected';
-    
-    // Save data
-    saveData();
-    
-    // Show notification
-    showNotification('Final date selected successfully!');
+  // Add button to select this date
+  message += `<button class="btn-primary select-date-btn" onclick="selectThisDate('${date}', '${timeSlots[0]}')">Select This Date</button>`;
+  
+  // Show notification with details
+  const notification = document.createElement('div');
+  notification.className = 'date-details-popup';
+  notification.innerHTML = message;
+  
+  // Add close button
+  const closeButton = document.createElement('button');
+  closeButton.className = 'close-popup-btn';
+  closeButton.innerHTML = '&times;';
+  closeButton.addEventListener('click', () => {
+    document.body.removeChild(notification);
+  });
+  notification.appendChild(closeButton);
+  
+  // Add to body
+  document.body.appendChild(notification);
+}
+
+function selectThisDate(date, timeSlot) {
+  console.log("Selecting date:", date, "time slot:", timeSlot);
+  
+  // Update selected date and time slot
+  selectedDate = date;
+  selectedTimeSlot = timeSlot;
+  
+  // Update UI
+  document.getElementById('selected-date-display').textContent = 
+    `Selected: ${formatDate(date)} at ${timeSlot}`;
+  
+  // Save to localStorage
+  saveToLocalStorage();
+  
+  // Sync with Firebase if online
+  if (navigator.onLine && database) {
+    saveToFirebase()
+      .then(() => {
+        console.log("Selected date saved to Firebase");
+      })
+      .catch(error => {
+        console.error("Error saving selected date to Firebase:", error);
+      });
   }
+  
+  // Show confirmation
+  showNotification(`Selected ${formatDate(date)} at ${timeSlot}`);
+  
+  // Close popup if it exists
+  const popup = document.querySelector('.date-details-popup');
+  if (popup) {
+    document.body.removeChild(popup);
+  }
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { 
+    weekday: 'short', 
+    month: 'short', 
+    day: 'numeric' 
+  });
+}
+
+function formatDateForStorage(date) {
+  return date.toISOString().split('T')[0];
 }
 
 // Handle selecting final date
@@ -2070,42 +1954,23 @@ function handlePrint() {
 
 // Show notification
 function showNotification(message) {
-    // Simple notification implementation
-    const notification = document.createElement('div');
+  // Create notification element if it doesn't exist
+  let notification = document.getElementById('notification');
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.id = 'notification';
     notification.className = 'notification';
-    notification.textContent = message;
-    notification.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background-color: var(--accent-color);
-        color: white;
-        padding: 12px 20px;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        z-index: 1000;
-        opacity: 0;
-        transform: translateY(10px);
-        transition: opacity 0.3s, transform 0.3s;
-    `;
-    
     document.body.appendChild(notification);
-    
-    // Trigger animation
-    setTimeout(() => {
-        notification.style.opacity = '1';
-        notification.style.transform = 'translateY(0)';
-    }, 10);
-    
-    // Remove after 3 seconds
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.style.transform = 'translateY(10px)';
-        
-        setTimeout(() => {
-            document.body.removeChild(notification);
-        }, 300);
-    }, 3000);
+  }
+  
+  // Set the message and show the notification
+  notification.textContent = message;
+  notification.classList.add('show');
+  
+  // Hide the notification after 3 seconds
+  setTimeout(() => {
+    notification.classList.remove('show');
+  }, 3000);
 }
 
 // Save dishes to localStorage and Firebase
@@ -2180,78 +2045,113 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Force reset the syncing state
 function forceResetSync() {
-  console.log("Manually resetting sync state");
-  
-  // Reset syncing state
-  isSyncing = false;
+  console.log("Forcing reset of sync state");
   
   // Clear any existing timeout
-  if (window.syncTimeoutId) {
-    clearTimeout(window.syncTimeoutId);
-    window.syncTimeoutId = null;
+  if (window.syncStatusTimeout) {
+    clearTimeout(window.syncStatusTimeout);
+    window.syncStatusTimeout = null;
   }
   
-  // Update UI
-  updateOnlineStatus();
+  // Update the status indicator
+  updateSyncStatus('synced');
   
-  // Try to initialize Firebase again
-  const initResult = tryFallbackFirebaseInit();
+  // Show notification
+  showNotification("Connection reset. Attempting to reconnect...");
   
-  // Load data from localStorage
+  // Try to reinitialize Firebase
+  if (!database || !firebaseInitialized) {
+    console.log("Attempting to reinitialize Firebase");
+    tryFallbackFirebaseInit();
+  }
+  
+  // Load data from localStorage as fallback
   loadDataFromLocalStorage();
   
-  // Render UI
-  renderParticipantsList();
-  renderAvailabilityResults();
-  renderDishes();
-  updateSummary();
+  // Render the UI
+  renderHeatmapCalendar();
+  renderBestTimes();
   
-  // Try to sync with Firebase
-  if (isOnline && sessionId) {
-    if (initResult) {
-      showNotification("Attempting to reconnect to Firebase...");
-      
-      syncWithFirebase()
-        .then(() => {
-          console.log("Sync with Firebase completed successfully after reset");
-          showNotification("Successfully reconnected to online database!");
-          
-          // Set up real-time listeners
-          setupRealtimeListeners(sessionId);
-        })
-        .catch(error => {
-          console.error("Error syncing with Firebase after manual reset:", error);
-          showNotification("Could not connect to online database. Working in local mode.");
-        });
-    } else {
-      showNotification("Could not initialize Firebase. Working in local mode.");
-    }
-  } else {
-    showNotification("You are offline. Working in local mode.");
+  if (selectedDate && selectedTimeSlot) {
+    document.getElementById('selected-date-display').textContent = 
+      `Selected: ${formatDate(selectedDate)} at ${selectedTimeSlot}`;
   }
   
-  // Clear browser cache for Firebase resources
-  try {
-    if ('caches' in window) {
-      caches.keys().then(cacheNames => {
-        cacheNames.forEach(cacheName => {
-          if (cacheName.includes('firebase')) {
-            caches.delete(cacheName);
-            console.log(`Deleted cache: ${cacheName}`);
-          }
-        });
+  // Try to sync with Firebase if online and session ID is available
+  if (navigator.onLine && sessionId && database) {
+    console.log("Attempting to sync with Firebase after reset");
+    syncWithFirebase()
+      .then(() => {
+        console.log("Sync with Firebase completed successfully after reset");
+        showNotification("Reconnected to online database!");
+      })
+      .catch(error => {
+        console.error("Error syncing with Firebase after reset:", error);
+        showNotification("Could not reconnect to online database. Working in local mode.");
       });
-    }
-  } catch (error) {
-    console.error("Error clearing cache:", error);
+  }
+}
+
+function updateSyncStatus(status) {
+  const statusIndicator = document.getElementById('sync-status');
+  if (!statusIndicator) return;
+  
+  // Clear any existing timeout
+  if (window.syncStatusTimeout) {
+    clearTimeout(window.syncStatusTimeout);
+    window.syncStatusTimeout = null;
   }
   
-  console.log("Reset completed");
+  // Update the status indicator
+  switch (status) {
+    case 'syncing':
+      statusIndicator.textContent = 'Syncing...';
+      statusIndicator.className = 'sync-status syncing';
+      
+      // Set a timeout to reset the status if it takes too long
+      window.syncStatusTimeout = setTimeout(() => {
+        console.warn("Sync operation taking too long, resetting status");
+        updateSyncStatus('error');
+        forceResetSync();
+      }, 10000); // 10 seconds timeout
+      break;
+      
+    case 'synced':
+      statusIndicator.textContent = 'Online';
+      statusIndicator.className = 'sync-status synced';
+      break;
+      
+    case 'error':
+      statusIndicator.textContent = 'Sync Error';
+      statusIndicator.className = 'sync-status error';
+      
+      // Show a notification
+      showNotification("Error syncing with Firebase. Using local data.");
+      break;
+      
+    case 'offline':
+      statusIndicator.textContent = 'Offline';
+      statusIndicator.className = 'sync-status offline';
+      break;
+      
+    default:
+      statusIndicator.textContent = 'Unknown';
+      statusIndicator.className = 'sync-status';
+  }
+}
+
+function saveToLocalStorage() {
+  console.log("Saving data to localStorage for session:", sessionId);
   
-  // If still having issues, suggest page refresh
-  setTimeout(() => {
-    if (isSyncing) {
-      showNotification("Still having issues? Try refreshing the page.");
-    }
-  }, 5000);
+  // Prepare the data to save
+  const dataToSave = {
+    availability: availabilityData,
+    selectedDate: selectedDate,
+    selectedTimeSlot: selectedTimeSlot,
+    lastUpdated: new Date().toISOString()
+  };
+  
+  // Save to local storage
+  localStorage.setItem(`iftar-scheduler-data-${sessionId}`, JSON.stringify(dataToSave));
+  console.log("Data saved to localStorage");
 }

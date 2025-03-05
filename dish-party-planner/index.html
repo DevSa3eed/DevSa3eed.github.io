@@ -22,7 +22,7 @@
         messagingSenderId: "414053080251",
         appId: "1:414053080251:web:f12e93dfcdd93f0739dd9e",
         measurementId: "G-JZBFLDS406",
-        databaseURL: "https://scheduler-79bb6-default-rtdb.firebaseio.com" // Add this line for Realtime Database
+        databaseURL: "https://scheduler-79bb6-default-rtdb.asia-southeast1.firebasedatabase.app"
       };
       
       try {
@@ -64,7 +64,7 @@
               messagingSenderId: "414053080251",
               appId: "1:414053080251:web:f12e93dfcdd93f0739dd9e",
               measurementId: "G-JZBFLDS406",
-              databaseURL: "https://scheduler-79bb6-default-rtdb.firebaseio.com"
+              databaseURL: "https://scheduler-79bb6-default-rtdb.asia-southeast1.firebasedatabase.app"
             };
             
             try {
@@ -329,7 +329,13 @@
         </button>
     </div>
     
+    <!-- Sync Status Indicator -->
+    <div id="sync-status-container" class="sync-status-container">
+        <div id="sync-status" class="sync-status">Checking...</div>
+    </div>
+    
     <!-- Scripts -->
     <script src="script.js?v=1.0.2"></script>
+    <script src="calendar-functions.js?v=1.0.0"></script>
 </body>
 </html> 
