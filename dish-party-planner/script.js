@@ -1,21 +1,66 @@
 // Iftar Scheduler - Main JavaScript
 
+// Debug information
+console.log("Script loaded: " + new Date().toISOString());
+console.log("Script version: 1.0.1"); // Increment this when making changes
+
+// Add cache-busting query parameter to force reload
+if (window.location.search.indexOf('nocache') === -1 && window.location.search.indexOf('session') === -1) {
+  const cacheBuster = new Date().getTime();
+  const separator = window.location.search ? '&' : '?';
+  window.location.href = window.location.href + separator + 'nocache=' + cacheBuster;
+}
+
 // Firebase access
 let database;
 
 // Wait for Firebase to initialize
 document.addEventListener('DOMContentLoaded', () => {
+  console.log("DOM Content Loaded: " + new Date().toISOString());
+  
   // Check if Firebase is available
   if (window.firebaseDatabase) {
     database = window.firebaseDatabase;
     console.log("Firebase Realtime Database initialized successfully");
   } else {
     console.error("Firebase Database not available. Some features may not work.");
+    // Try to initialize Firebase directly if the module approach failed
+    tryFallbackFirebaseInit();
   }
   
   // Initialize the app
   initializeApp();
 });
+
+// Fallback Firebase initialization for compatibility
+function tryFallbackFirebaseInit() {
+  console.log("Attempting fallback Firebase initialization");
+  try {
+    // Check if Firebase is available globally
+    if (typeof firebase !== 'undefined') {
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCeEW1P6kUbFPLYcIeKQeh7UAVtp8KjQAM",
+        authDomain: "scheduler-79bb6.firebaseapp.com",
+        projectId: "scheduler-79bb6",
+        storageBucket: "scheduler-79bb6.firebasestorage.app",
+        messagingSenderId: "414053080251",
+        appId: "1:414053080251:web:f12e93dfcdd93f0739dd9e",
+        measurementId: "G-JZBFLDS406",
+        databaseURL: "https://scheduler-79bb6-default-rtdb.firebaseio.com"
+      };
+      
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+      database = firebase.database();
+      console.log("Fallback Firebase initialization successful");
+    } else {
+      console.error("Firebase is not available globally");
+    }
+  } catch (error) {
+    console.error("Fallback Firebase initialization failed:", error);
+  }
+}
 
 // DOM Elements - General
 const tabButtons = document.querySelectorAll('.tab-btn');
@@ -187,20 +232,55 @@ function initializeApp() {
 
 // Update online status indicator
 function updateOnlineStatus() {
+  console.log("Updating online status. Navigator.onLine:", navigator.onLine);
   isOnline = navigator.onLine;
+  
+  if (!collaborationStatusElement) {
+    collaborationStatusElement = document.getElementById('collaboration-status');
+    if (!collaborationStatusElement) {
+      console.error("Collaboration status element not found in the DOM");
+      return;
+    }
+  }
+  
+  if (!statusIndicator) {
+    statusIndicator = collaborationStatusElement.querySelector('.status-indicator');
+    if (!statusIndicator) {
+      console.error("Status indicator element not found in the DOM");
+      return;
+    }
+  }
+  
+  if (!statusText) {
+    statusText = collaborationStatusElement.querySelector('.status-text');
+    if (!statusText) {
+      console.error("Status text element not found in the DOM");
+      return;
+    }
+  }
   
   if (isOnline) {
     if (isSyncing) {
+      console.log("Status: Syncing");
       statusIndicator.className = 'status-indicator syncing';
       statusText.textContent = 'Syncing...';
     } else {
+      console.log("Status: Online - Collaborative");
       statusIndicator.className = 'status-indicator online';
       statusText.textContent = 'Online - Collaborative';
     }
     
     // Try to sync with Firebase when coming online
-    syncWithFirebase();
+    if (!isSyncing) {
+      console.log("Attempting to sync with Firebase");
+      syncWithFirebase().then(() => {
+        console.log("Sync with Firebase completed successfully");
+      }).catch(error => {
+        console.error("Error syncing with Firebase:", error);
+      });
+    }
   } else {
+    console.log("Status: Offline - Local Only");
     statusIndicator.className = 'status-indicator offline';
     statusText.textContent = 'Offline - Local Only';
   }
@@ -316,14 +396,28 @@ function setupRealtimeListeners(sid) {
 
 // Sync local data with Firebase
 function syncWithFirebase() {
-  if (!isOnline) return;
+  if (!isOnline) {
+    console.log("Not syncing with Firebase because we're offline");
+    return Promise.reject(new Error("Cannot sync while offline"));
+  }
+  
+  console.log("Starting Firebase sync process");
   
   return new Promise((resolve, reject) => {
     isSyncing = true;
     updateOnlineStatus();
     
+    // Check if database is available
+    if (!database) {
+      console.error("Database not available for sync");
+      isSyncing = false;
+      updateOnlineStatus();
+      return reject(new Error("Database not available"));
+    }
+    
     // Import needed Firebase functions
     import('https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js').then(module => {
+      console.log("Firebase database module imported successfully");
       const { ref, update } = module;
       
       const dataToSync = {
@@ -333,25 +427,70 @@ function syncWithFirebase() {
         selectedFinalDate: selectedFinalDate
       };
       
-      update(ref(database, `sessions/${sessionId}`), dataToSync)
-        .then(() => {
-          // Set up real-time listeners after successful sync
-          setupRealtimeListeners(sessionId);
-          isSyncing = false;
-          updateOnlineStatus();
-          resolve();
-        })
-        .catch((error) => {
-          console.error("Error syncing with Firebase:", error);
-          isSyncing = false;
-          updateOnlineStatus();
-          reject(error);
-        });
+      console.log("Preparing to sync data:", {
+        dishesCount: dishes.length,
+        participantsCount: participants.length,
+        availabilityDatesCount: Object.keys(availabilityData).length,
+        hasFinalDate: !!selectedFinalDate
+      });
+      
+      try {
+        update(ref(database, `sessions/${sessionId}`), dataToSync)
+          .then(() => {
+            console.log("Data successfully synced to Firebase");
+            // Set up real-time listeners after successful sync
+            setupRealtimeListeners(sessionId);
+            isSyncing = false;
+            updateOnlineStatus();
+            resolve();
+          })
+          .catch((error) => {
+            console.error("Error syncing with Firebase:", error);
+            isSyncing = false;
+            updateOnlineStatus();
+            reject(error);
+          });
+      } catch (error) {
+        console.error("Exception during Firebase update:", error);
+        isSyncing = false;
+        updateOnlineStatus();
+        reject(error);
+      }
     }).catch(error => {
       console.error("Error importing Firebase modules:", error);
-      isSyncing = false;
-      updateOnlineStatus();
-      reject(error);
+      
+      // Try fallback method with global firebase
+      if (typeof firebase !== 'undefined' && firebase.database) {
+        console.log("Attempting fallback sync with global Firebase");
+        try {
+          firebase.database().ref(`sessions/${sessionId}`).update({
+            dishes: dishes,
+            participants: participants,
+            availabilityData: availabilityData,
+            selectedFinalDate: selectedFinalDate
+          }).then(() => {
+            console.log("Data successfully synced using fallback method");
+            isSyncing = false;
+            updateOnlineStatus();
+            resolve();
+          }).catch(fbError => {
+            console.error("Fallback sync failed:", fbError);
+            isSyncing = false;
+            updateOnlineStatus();
+            reject(fbError);
+          });
+        } catch (fbError) {
+          console.error("Exception during fallback sync:", fbError);
+          isSyncing = false;
+          updateOnlineStatus();
+          reject(fbError);
+        }
+      } else {
+        console.error("No fallback method available");
+        isSyncing = false;
+        updateOnlineStatus();
+        reject(error);
+      }
     });
   });
 }
