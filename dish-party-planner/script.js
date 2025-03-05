@@ -21,6 +21,18 @@ document.addEventListener('firebase-ready', (event) => {
   database = event.detail.database;
   firebaseInitialized = true;
   
+  // Add connection monitoring
+  const connectedRef = database.ref('.info/connected');
+  connectedRef.on('value', (snap) => {
+    const connected = snap.val();
+    console.log('Firebase connection state:', connected ? 'connected' : 'disconnected');
+    if (connected) {
+      showNotification('Connected to Firebase database');
+    } else {
+      showNotification('Disconnected from Firebase database');
+    }
+  });
+  
   // Initialize database structure
   initializeDatabaseStructure()
     .then(() => {
@@ -107,7 +119,7 @@ function tryFallbackFirebaseInit() {
         messagingSenderId: "414053080251",
         appId: "1:414053080251:web:f12e93dfcdd93f0739dd9e",
         measurementId: "G-JZBFLDS406",
-        databaseURL: "https://scheduler-79bb6-default-rtdb.firebaseio.com"
+        databaseURL: "https://scheduler-79bb6-default-rtdb.asia-southeast1.firebasedatabase.app"
       };
       
       // Initialize Firebase
@@ -410,6 +422,17 @@ function initializeApp() {
       renderAvailabilityResults();
       renderDishes();
       updateSummary();
+      
+      // Save initial data to Firebase
+      if (database && firebaseInitialized) {
+        saveToFirebase(true)
+          .then(() => {
+            console.log("Initial data saved to Firebase successfully");
+          })
+          .catch(error => {
+            console.error("Error saving initial data to Firebase:", error);
+          });
+      }
       
       // Clear the timeout since we're not using Firebase for initial load
       clearTimeout(firebaseInitTimeout);
@@ -847,91 +870,88 @@ function syncWithFirebase() {
     return Promise.reject(new Error("Sync operation timed out"));
   }, 15000);
 
-  // Reference to the specific session in Firebase
-  let sessionRef;
-  try {
-    if (typeof database.ref === 'function') {
-      // Compatibility mode
-      sessionRef = database.ref(`sessions/${sessionId}`);
-    } else {
-      // Modular API
-      const { ref } = require('firebase/database');
-      sessionRef = ref(database, `sessions/${sessionId}`);
-    }
-  } catch (error) {
-    console.error("Error creating session reference:", error);
-    clearTimeout(syncTimeout);
-    updateSyncStatus("error");
-    return Promise.reject(error);
-  }
-
   return new Promise((resolve, reject) => {
     try {
-      // First, check if the session exists
-      const checkSession = () => {
+      // Import needed Firebase functions
+      import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js').then(module => {
+        console.log("Firebase database module imported for sync");
+        const { ref, get, set } = module;
+        
+        let sessionRef;
         try {
-          if (typeof sessionRef.once === 'function') {
+          if (typeof database.ref === 'function') {
             // Compatibility mode
-            return sessionRef.once('value');
+            sessionRef = database.ref(`sessions/${sessionId}`);
           } else {
             // Modular API
-            const { get } = require('firebase/database');
-            return get(sessionRef);
+            sessionRef = ref(database, `sessions/${sessionId}`);
           }
-        } catch (error) {
-          console.error("Error checking session existence:", error);
-          throw error;
-        }
-      };
-
-      checkSession()
-        .then((snapshot) => {
-          const sessionData = snapshot.val();
           
-          if (!sessionData) {
-            console.log("Session does not exist, creating new session:", sessionId);
-            // Create the session with initial data
-            return saveToFirebase(true);
-          } else {
-            console.log("Session exists, loading data:", sessionId);
-            // Session exists, load the data
-            const data = sessionData.data || {};
-            
-            // Update local storage with the data from Firebase
-            localStorage.setItem(`iftar-scheduler-data-${sessionId}`, JSON.stringify(data));
-            
-            // Update the application data
-            availabilityData = data.availability || {};
-            selectedDate = data.selectedDate || null;
-            selectedTimeSlot = data.selectedTimeSlot || null;
-            
-            // Render the updated data
-            renderHeatmapCalendar();
-            renderBestTimes();
-            
-            if (selectedDate && selectedTimeSlot) {
-              document.getElementById('selected-date-display').textContent = 
-                `Selected: ${formatDate(selectedDate)} at ${selectedTimeSlot}`;
+          // First, check if the session exists
+          const checkSession = () => {
+            try {
+              if (typeof sessionRef.once === 'function') {
+                // Compatibility mode
+                return sessionRef.once('value');
+              } else {
+                // Modular API
+                return get(sessionRef);
+              }
+            } catch (error) {
+              console.error("Error checking session existence:", error);
+              throw error;
             }
-            
-            // Set up real-time listener for changes
-            setupRealtimeListener();
-            
-            return Promise.resolve();
-          }
-        })
-        .then(() => {
-          clearTimeout(syncTimeout);
-          updateSyncStatus("synced");
-          console.log("Sync with Firebase completed successfully");
-          resolve();
-        })
-        .catch((error) => {
-          console.error("Error during sync with Firebase:", error);
+          };
+
+          checkSession()
+            .then((snapshot) => {
+              const sessionData = snapshot.val();
+              
+              if (!sessionData) {
+                console.log("Session does not exist, creating new session:", sessionId);
+                // Create the session with initial data
+                return saveToFirebase(true);
+              } else {
+                console.log("Session exists, loading data:", sessionId);
+                // Session exists, load the data
+                const data = sessionData || {};
+                
+                // Update local storage with the data from Firebase
+                localStorage.setItem(`iftar-scheduler-data-${sessionId}`, JSON.stringify(data));
+                
+                // Update the application data
+                if (data.dishes) dishes = data.dishes;
+                if (data.participants) participants = data.participants;
+                if (data.availabilityData) availabilityData = data.availabilityData;
+                if (data.selectedFinalDate) selectedFinalDate = data.selectedFinalDate;
+                
+                return Promise.resolve();
+              }
+            })
+            .then(() => {
+              clearTimeout(syncTimeout);
+              updateSyncStatus("synced");
+              console.log("Sync with Firebase completed successfully");
+              resolve();
+            })
+            .catch((error) => {
+              console.error("Error during sync with Firebase:", error);
+              clearTimeout(syncTimeout);
+              updateSyncStatus("error");
+              reject(error);
+            });
+        } catch (error) {
+          console.error("Error creating session reference:", error);
           clearTimeout(syncTimeout);
           updateSyncStatus("error");
           reject(error);
-        });
+        }
+      }).catch(error => {
+        console.error("Error importing Firebase modules:", error);
+        clearTimeout(syncTimeout);
+        updateSyncStatus("error");
+        reject(error);
+      });
     } catch (error) {
       console.error("Unexpected error in syncWithFirebase:", error);
       clearTimeout(syncTimeout);
@@ -2154,4 +2174,143 @@ function saveToLocalStorage() {
   // Save to local storage
   localStorage.setItem(`iftar-scheduler-data-${sessionId}`, JSON.stringify(dataToSave));
   console.log("Data saved to localStorage");
+}
+
+function saveToFirebase(isInitialSave = false) {
+  console.log("Saving data to Firebase for session:", sessionId);
+  
+  if (!database || !sessionId) {
+    return Promise.reject(new Error("Cannot save: database or sessionId not available"));
+  }
+
+  // Prepare the data to save
+  const dataToSave = {
+    dishes: dishes,
+    participants: participants,
+    availabilityData: availabilityData,
+    selectedFinalDate: selectedFinalDate,
+    lastUpdated: new Date().toISOString()
+  };
+
+  // Debug log the data being saved
+  console.log("Data being saved to Firebase:", {
+    sessionId,
+    path: `sessions/${sessionId}`,
+    dataSize: JSON.stringify(dataToSave).length,
+    hasData: {
+      dishes: Array.isArray(dishes) && dishes.length > 0,
+      participants: Array.isArray(participants) && participants.length > 0,
+      availabilityData: Object.keys(availabilityData || {}).length > 0,
+      selectedFinalDate: !!selectedFinalDate
+    },
+    data: dataToSave
+  });
+
+  return new Promise((resolve, reject) => {
+    try {
+      // Import needed Firebase functions
+      import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js').then(module => {
+        console.log("Firebase database module imported for saving");
+        const { ref, set } = module;
+        
+        // Save to Firebase
+        const sessionRef = ref(database, `sessions/${sessionId}`);
+        set(sessionRef, dataToSave)
+          .then(() => {
+            console.log("Data saved to Firebase successfully");
+            // Verify the save by reading it back
+            return module.get(sessionRef);
+          })
+          .then((snapshot) => {
+            const savedData = snapshot.val();
+            console.log("Verification - Data in Firebase after save:", savedData);
+            updateSyncStatus('synced');
+            if (!isInitialSave) {
+              showNotification("Changes saved online");
+            }
+            resolve(true);
+          })
+          .catch(error => {
+            console.error("Error saving to Firebase:", error);
+            updateSyncStatus('error');
+            reject(error);
+          });
+      }).catch(error => {
+        console.error("Error importing Firebase modules for saving:", error);
+        
+        // Try fallback method with global firebase
+        if (typeof firebase !== 'undefined' && firebase.database) {
+          console.log("Attempting fallback save with global Firebase");
+          
+          firebase.database().ref(`sessions/${sessionId}`).set(dataToSave)
+            .then(() => {
+              console.log("Data saved to Firebase successfully (fallback)");
+              updateSyncStatus('synced');
+              if (!isInitialSave) {
+                showNotification("Changes saved online");
+              }
+              resolve(true);
+            })
+            .catch(error => {
+              console.error("Error saving to Firebase (fallback):", error);
+              updateSyncStatus('error');
+              reject(error);
+            });
+        } else {
+          reject(error);
+        }
+      });
+    } catch (error) {
+      console.error("Exception during saving to Firebase:", error);
+      updateSyncStatus('error');
+      reject(error);
+    }
+  });
+}
+
+function renderParticipantsList() {
+  console.log("Rendering participants list");
+  const participantsList = document.getElementById('participants');
+  if (!participantsList) return;
+  
+  // Clear previous content
+  participantsList.innerHTML = '';
+  
+  // Check if there are any participants
+  if (participants.length === 0) {
+    participantsList.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <p>No participants yet. Be the first to join!</p>
+      </div>
+    `;
+    return;
+  }
+  
+  // Sort participants by name
+  const sortedParticipants = [...participants].sort((a, b) => a.name.localeCompare(b.name));
+  
+  // Create list items
+  sortedParticipants.forEach(participant => {
+    const listItem = document.createElement('div');
+    listItem.className = 'participant-item';
+    
+    // Create content
+    listItem.innerHTML = `
+      <div class="participant-info">
+        <h3>${participant.name}</h3>
+        <div class="participant-meta">
+          <span>Available on ${Object.keys(participant.dates || {}).length} dates</span>
+          ${participant.notes ? `<p class="notes">${participant.notes}</p>` : ''}
+        </div>
+      </div>
+    `;
+    
+    participantsList.appendChild(listItem);
+  });
+  
+  // Update total count
+  if (totalParticipantsElement) {
+    totalParticipantsElement.textContent = participants.length;
+  }
 }
