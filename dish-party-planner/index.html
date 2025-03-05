@@ -10,9 +10,8 @@
     <!-- Firebase SDK - Modular Approach -->
     <script type="module">
       // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-      import { getDatabase } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+      import { getDatabase, connectDatabaseEmulator } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
       
       // Your web app's Firebase configuration
       const firebaseConfig = {
@@ -29,15 +28,21 @@
       try {
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const database = getDatabase(app);
+        
+        // Test database connection
+        console.log("Testing Firebase database connection...");
         
         // Make Firebase available globally
         window.firebaseApp = app;
         window.firebaseDatabase = database;
         console.log("Firebase initialized with modular approach");
+        
+        // Dispatch an event to notify script.js that Firebase is ready
+        document.dispatchEvent(new CustomEvent('firebase-ready', { detail: { database } }));
       } catch (error) {
         console.error("Error initializing Firebase with modular approach:", error);
+        document.dispatchEvent(new CustomEvent('firebase-error', { detail: { error } }));
       }
     </script>
     
@@ -47,29 +52,44 @@
     <script>
       // This will only run if the modular approach fails
       document.addEventListener('DOMContentLoaded', function() {
-        if (!window.firebaseDatabase) {
-          console.log("Using fallback Firebase initialization");
-          // Your web app's Firebase configuration
-          const firebaseConfig = {
-            apiKey: "AIzaSyCeEW1P6kUbFPLYcIeKQeh7UAVtp8KjQAM",
-            authDomain: "scheduler-79bb6.firebaseapp.com",
-            projectId: "scheduler-79bb6",
-            storageBucket: "scheduler-79bb6.firebasestorage.app",
-            messagingSenderId: "414053080251",
-            appId: "1:414053080251:web:f12e93dfcdd93f0739dd9e",
-            measurementId: "G-JZBFLDS406",
-            databaseURL: "https://scheduler-79bb6-default-rtdb.firebaseio.com"
-          };
-          
-          try {
-            // Initialize Firebase with compat version
-            firebase.initializeApp(firebaseConfig);
-            window.firebaseDatabase = firebase.database();
-            console.log("Firebase initialized with compat approach");
-          } catch (error) {
-            console.error("Error initializing Firebase with compat approach:", error);
+        setTimeout(function() {
+          if (!window.firebaseDatabase) {
+            console.log("Using fallback Firebase initialization");
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+              apiKey: "AIzaSyCeEW1P6kUbFPLYcIeKQeh7UAVtp8KjQAM",
+              authDomain: "scheduler-79bb6.firebaseapp.com",
+              projectId: "scheduler-79bb6",
+              storageBucket: "scheduler-79bb6.firebasestorage.app",
+              messagingSenderId: "414053080251",
+              appId: "1:414053080251:web:f12e93dfcdd93f0739dd9e",
+              measurementId: "G-JZBFLDS406",
+              databaseURL: "https://scheduler-79bb6-default-rtdb.firebaseio.com"
+            };
+            
+            try {
+              // Initialize Firebase with compat version
+              firebase.initializeApp(firebaseConfig);
+              window.firebaseDatabase = firebase.database();
+              console.log("Firebase initialized with compat approach");
+              
+              // Test database connection
+              firebase.database().ref('.info/connected').on('value', function(snap) {
+                if (snap.val() === true) {
+                  console.log("Connected to Firebase database (compat)");
+                } else {
+                  console.log("Disconnected from Firebase database (compat)");
+                }
+              });
+              
+              // Dispatch an event to notify script.js that Firebase is ready
+              document.dispatchEvent(new CustomEvent('firebase-ready', { detail: { database: window.firebaseDatabase } }));
+            } catch (error) {
+              console.error("Error initializing Firebase with compat approach:", error);
+              document.dispatchEvent(new CustomEvent('firebase-error', { detail: { error } }));
+            }
           }
-        }
+        }, 2000); // Wait 2 seconds to see if the modular approach succeeds
       });
     </script>
 </head>
@@ -304,9 +324,12 @@
             <i class="fas fa-circle"></i>
         </div>
         <span class="status-text">Checking connection...</span>
+        <button id="reset-sync" class="reset-button" onclick="forceResetSync()" title="Reset connection if stuck on syncing">
+            <i class="fas fa-sync-alt"></i>
+        </button>
     </div>
     
     <!-- Scripts -->
-    <script src="script.js"></script>
+    <script src="script.js?v=1.0.2"></script>
 </body>
 </html> 
