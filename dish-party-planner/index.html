@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iftar Scheduler</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Iftar Scheduler</h1>
+            <p>Schedule the perfect Iftar gathering with friends and family</p>
+        </header>
+        
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="schedule-tab">
+                <i class="fas fa-calendar-alt"></i> Schedule
+            </button>
+            <button class="tab-btn" data-tab="dishes-tab">
+                <i class="fas fa-utensils"></i> Dishes
+            </button>
+        </div>
+        
+        <!-- Schedule Tab -->
+        <div class="tab-content" id="schedule-tab">
+            <div class="schedule-container">
+                <div class="date-picker-container">
+                    <h2>When are you available?</h2>
+                    <p class="section-description">Select all dates and times that work for you</p>
+                    
+                    <div class="form-group">
+                        <label for="participant-name">Your Name</label>
+                        <input type="text" id="participant-name" placeholder="Enter your name" required>
+                    </div>
+                    
+                    <div class="calendar-wrapper">
+                        <div class="calendar-header">
+                            <button id="prev-month" class="calendar-nav-btn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <h3 id="current-month">June 2023</h3>
+                            <button id="next-month" class="calendar-nav-btn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="weekdays">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        <div id="calendar-days" class="calendar-days">
+                            <!-- Calendar days will be generated here -->
+                        </div>
+                    </div>
+                    
+                    <div class="time-slots">
+                        <h3>Preferred Time</h3>
+                        <div class="time-slot-options">
+                            <label><input type="checkbox" name="time-slot" value="sunset"> Sunset (Maghrib - around 6:00 PM)</label>
+                            <label><input type="checkbox" name="time-slot" value="dinner"> Dinner (8:00 PM)</label>
+                            <label><input type="checkbox" name="time-slot" value="late"> Late Night (11:00 PM onwards)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="additional-info">
+                        <label for="schedule-notes">Additional Notes</label>
+                        <textarea id="schedule-notes" placeholder="Any additional information about your availability..."></textarea>
+                    </div>
+                    
+                    <button id="submit-availability" class="btn-primary">
+                        <i class="fas fa-check"></i> Submit Availability
+                    </button>
+                </div>
+                
+                <div class="availability-results">
+                    <h2>Group Availability</h2>
+                    <div class="result-description">
+                        <p>The calendar shows when people are available. Darker colors indicate more people can attend.</p>
+                    </div>
+                    
+                    <div id="availability-calendar" class="availability-calendar">
+                        <!-- Availability calendar will be displayed here -->
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No availability submitted yet. Be the first to add yours!</p>
+                        </div>
+                    </div>
+                    
+                    <div class="participants-list">
+                        <h3>Participants</h3>
+                        <ul id="participants">
+                            <!-- Participants will be listed here -->
+                        </ul>
+                    </div>
+                    
+                    <div class="best-times">
+                        <h3>Best Options</h3>
+                        <ul id="best-times-list">
+                            <!-- Best times will be listed here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Dishes Tab -->
+        <div class="tab-content hidden" id="dishes-tab">
+            <div class="app-container">
+                <div class="form-container">
+                    <h2>Add a Dish</h2>
+                    <form id="dish-form">
+                        <div class="form-group">
+                            <label for="dish-name">Dish Name</label>
+                            <input type="text" id="dish-name" placeholder="Enter dish name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contributor">Contributor</label>
+                            <input type="text" id="contributor" placeholder="Who's bringing this dish?" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" required>
+                                <option value="">Select a category</option>
+                                <option value="Appetizer">Appetizer</option>
+                                <option value="Main Course">Main Course</option>
+                                <option value="Side Dish">Side Dish</option>
+                                <option value="Dessert">Dessert</option>
+                                <option value="Beverage">Beverage</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn-primary">Add Dish</button>
+                    </form>
+                </div>
+                
+                <div class="dishes-container">
+                    <div class="dishes-header">
+                        <h2>Party Menu</h2>
+                        <div class="filter-container">
+                            <label for="filter">Filter by:</label>
+                            <select id="filter">
+                                <option value="All">All Dishes</option>
+                                <option value="Appetizer">Appetizers</option>
+                                <option value="Main Course">Main Courses</option>
+                                <option value="Side Dish">Side Dishes</option>
+                                <option value="Dessert">Desserts</option>
+                                <option value="Beverage">Beverages</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="dishes-list" class="dishes-list">
+                        <!-- Dishes will be added here dynamically -->
+                        <div class="empty-state">
+                            <i class="fas fa-utensils"></i>
+                            <p>No dishes added yet. Start planning your party!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="summary-container">
+            <h2>Party Summary</h2>
+            
+            <div id="selected-date-display" class="selected-date">
+                <h3>Selected Date & Time</h3>
+                <p id="final-date">Not yet selected</p>
+                <button id="select-date" class="btn-secondary">
+                    <i class="fas fa-calendar-check"></i> Select This Date
+                </button>
+            </div>
+            
+            <div class="summary-stats">
+                <div class="stat">
+                    <span id="total-participants">0</span>
+                    <p>Participants</p>
+                </div>
+                <div class="stat">
+                    <span id="total-dishes">0</span>
+                    <p>Total Dishes</p>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button id="share-button" class="btn-secondary">
+                    <i class="fas fa-share-alt"></i> Share Event
+                </button>
+                <button id="print-button" class="btn-secondary">
+                    <i class="fas fa-print"></i> Print Details
+                </button>
+                <button id="clear-all" class="btn-danger">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Created by Mohamed Saeed | <a href="../index.html">Back to Portfolio</a></p>
+        </footer>
+    </div>
+    
+    <!-- Modal for share options -->
+    <div id="share-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Share Your Iftar Plan</h2>
+            <p>Copy the link below to share your Iftar plan:</p>
+            <div class="share-link">
+                <input type="text" id="share-link" readonly>
+                <button id="copy-link" class="btn-primary">Copy</button>
+            </div>
+            <div class="share-options">
+                <button class="share-option whatsapp">
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </button>
+                <button class="share-option email">
+                    <i class="fas fa-envelope"></i> Email
+                </button>
+                <button class="share-option message">
+                    <i class="fas fa-comment"></i> Message
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 

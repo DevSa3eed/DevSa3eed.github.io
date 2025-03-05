@@ -159,4 +159,58 @@
 		grid-template-columns: 1fr;
 		gap: 1.5rem;
 	}
+}
+
+/* Demo Projects */
+.demo-projects {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+	gap: 1.5rem;
+	margin-top: 1rem;
+}
+
+.demo-project {
+	background-color: rgba(255, 255, 255, 0.05);
+	border-radius: 8px;
+	padding: 1.5rem;
+	text-align: center;
+	transition: all 0.3s ease;
+	
+	&:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+		background-color: rgba(255, 255, 255, 0.08);
+	}
+	
+	.icon {
+		font-size: 2rem;
+		margin-bottom: 1rem;
+		color: _palette(accent);
+	}
+	
+	h4 {
+		margin-bottom: 0.75rem;
+		
+		a {
+			color: _palette(fg-bold);
+			text-decoration: none;
+			transition: color 0.2s ease;
+			
+			&:hover {
+				color: _palette(accent);
+			}
+		}
+	}
+	
+	p {
+		font-size: 0.9rem;
+		color: _palette(fg);
+		margin-bottom: 0;
+	}
+}
+
+@include breakpoint('<=small') {
+	.demo-projects {
+		grid-template-columns: 1fr;
+	}
 } 
