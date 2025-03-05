@@ -266,21 +266,20 @@ window.addEventListener('offline', updateOnlineStatus);
 
 // Generate a unique session ID
 function generateSessionId() {
-  // Use only lowercase letters and numbers, start with 'p' for maximum compatibility
+  // Use a short alphanumeric ID that's guaranteed to work with Firebase
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  const timestamp = Date.now().toString(36).slice(-4); // Last 4 chars of base36 timestamp
-  let randomPart = '';
-  for (let i = 0; i < 3; i++) {
-    randomPart += chars[Math.floor(Math.random() * chars.length)];
+  let id = '';
+  // Generate a 6-character random ID
+  for (let i = 0; i < 6; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  // Format: p{timestamp4}{random3} - guaranteed to be valid Firebase path
-  return `p${timestamp}${randomPart}`;
+  return id;
 }
 
 // Migrate old session ID to new format
 function migrateSessionId(oldSessionId) {
-  // Check if the session ID matches our new format (starts with 'p' followed by only lowercase letters and numbers)
-  if (!oldSessionId || !/^p[a-z0-9]+$/.test(oldSessionId)) {
+  // Check if the session ID matches our new format (6 alphanumeric chars)
+  if (!oldSessionId || oldSessionId.length !== 6 || !/^[a-z0-9]{6}$/.test(oldSessionId)) {
     console.log("Migrating old session ID to new format");
     const newSessionId = generateSessionId();
     console.log("Generated new session ID:", newSessionId);
@@ -540,9 +539,9 @@ async function initializeDatabaseStructure() {
   try {
     const { ref, get } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
     
-    // Check if the planner_data node exists (new structure)
-    const plannerDataRef = ref(database, 'planner_data');
-    const snapshot = await get(plannerDataRef);
+    // Check if the s node exists (very simple structure)
+    const sessionsRef = ref(database, 's');
+    const snapshot = await get(sessionsRef);
     
     if (!snapshot.exists()) {
       console.log("Creating initial database structure");
@@ -563,7 +562,7 @@ async function loadDataFromFirebase(sessionId) {
   console.log('Loading data from Firebase for session:', sessionId);
   
   // Validate session ID format
-  if (!sessionId || !/^p[a-z0-9]+$/.test(sessionId)) {
+  if (!sessionId || sessionId.length !== 6 || !/^[a-z0-9]{6}$/.test(sessionId)) {
     console.error('Invalid session ID format:', sessionId);
     // Generate a new session ID and migrate
     const newSessionId = generateSessionId();
@@ -576,13 +575,14 @@ async function loadDataFromFirebase(sessionId) {
     const { ref, get, onValue } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
     console.log('Firebase database module imported for data loading');
     
-    // Test database connection
-    const testRef = ref(database, '.info/connected');
-    const testSnapshot = await get(testRef);
-    console.log('Database connection test successful');
+    // Test database connection using a simple path
+    const connectedRef = ref(database, '.info/connected');
+    const connectedSnap = await get(connectedRef);
+    const connected = connectedSnap.val();
+    console.log('Firebase connection state:', connected ? 'connected' : 'disconnected');
     
-    // Use the same path structure as in saveToFirebase
-    const path = 'planner_data/' + sessionId;
+    // Use a very simple path structure with just the ID
+    const path = `s/${sessionId}`;
     console.log('Attempting to load data from path:', path);
     const sessionRef = ref(database, path);
     const snapshot = await get(sessionRef);
@@ -654,8 +654,8 @@ function setupRealtimeListeners(sessionId) {
   import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js').then(module => {
     const { ref, onValue } = module;
     
-    // Use the same path structure as in loadDataFromFirebase and saveToFirebase
-    const path = 'planner_data/' + sessionId;
+    // Use the same very simple path structure as in loadDataFromFirebase and saveToFirebase
+    const path = `s/${sessionId}`;
     console.log('Setting up real-time listeners for path:', path);
     const sessionRef = ref(database, path);
     
@@ -2026,8 +2026,8 @@ async function saveToFirebase(isInitialSave = false) {
     const { ref, set } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
     console.log('Firebase database module imported for saving');
     
-    // Use the same path structure as in loadDataFromFirebase
-    const path = 'planner_data/' + sessionId;
+    // Use the same very simple path structure as in loadDataFromFirebase
+    const path = `s/${sessionId}`;
     console.log('Attempting to save data to path:', path);
     const sessionRef = ref(database, path);
     
