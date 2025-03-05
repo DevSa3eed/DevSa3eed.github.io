@@ -105,10 +105,10 @@ function initializeApp() {
   setupTabs();
   
   // Initialize the rest of the app
-  initCalendar();
+  initializeCalendar();
   renderDishes();
-  renderParticipants();
-  renderAvailabilityCalendar();
+  renderParticipantsList();
+  renderAvailabilityResults();
   renderBestTimes();
   updateSummary();
   updateOnlineStatus();
@@ -166,8 +166,8 @@ function initializeApp() {
               
               // Update UI
               renderDishes();
-              renderParticipants();
-              renderAvailabilityCalendar();
+              renderParticipantsList();
+              renderAvailabilityResults();
               renderBestTimes();
               updateSummary();
               
@@ -231,8 +231,8 @@ function loadDataFromFirebase(sid) {
           
           // Update UI
           renderDishes();
-          renderParticipants();
-          renderAvailabilityCalendar();
+          renderParticipantsList();
+          renderAvailabilityResults();
           renderBestTimes();
           updateSummary();
           
@@ -286,7 +286,7 @@ function setupRealtimeListeners(sid) {
       const data = snapshot.val();
       if (data) {
         participants = data;
-        renderParticipants();
+        renderParticipantsList();
         updateSummary();
       }
     });
@@ -296,7 +296,7 @@ function setupRealtimeListeners(sid) {
       const data = snapshot.val();
       if (data) {
         availabilityData = data;
-        renderAvailabilityCalendar();
+        renderAvailabilityResults();
         renderBestTimes();
       }
     });
@@ -537,8 +537,8 @@ function handleSubmitAvailability() {
     
     // Rerender calendar and availability results
     renderCalendar();
-    renderAvailabilityCalendar();
-    renderParticipants();
+    renderAvailabilityResults();
+    renderParticipantsList();
     renderBestTimes();
     updateSummary();
     
@@ -835,7 +835,7 @@ function selectThisDate(date, timeSlot) {
     showNotification('Final date selected! All participants will see this update.');
     
     // Rerender availability to highlight selected date
-    renderAvailabilityCalendar();
+    renderAvailabilityResults();
 }
 
 // Handle selecting final date
@@ -1014,8 +1014,8 @@ function handleClearAll() {
         // Reset UI
         renderCalendar();
         renderDishes();
-        renderParticipants();
-        renderAvailabilityCalendar();
+        renderParticipantsList();
+        renderAvailabilityResults();
         renderBestTimes();
         updateSummary();
         
