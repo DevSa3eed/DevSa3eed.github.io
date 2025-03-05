@@ -265,6 +265,10 @@ header p {
     font-weight: 500;
     transition: all var(--transition-fast);
     position: relative;
+    flex-direction: column;
+    padding: 4px;
+    min-height: 40px;
+    border: 1px solid var(--border-color);
 }
 
 .calendar-day:hover {
@@ -296,6 +300,48 @@ header p {
     height: 4px;
     border-radius: var(--radius-full);
     background-color: var(--primary-color);
+}
+
+.calendar-day.empty {
+    border: none;
+}
+
+.calendar-day input[type="checkbox"].date-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.calendar-day label {
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    margin: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.calendar-day input[type="checkbox"].date-checkbox:checked + label {
+    color: white;
+}
+
+.calendar-day input[type="checkbox"].date-checkbox:checked ~ .calendar-day {
+    background-color: var(--calendar-selected);
+}
+
+/* Override the selected style */
+.calendar-day input[type="checkbox"].date-checkbox:checked {
+    background-color: transparent;
+}
+
+.calendar-day input[type="checkbox"].date-checkbox:checked + label {
+    color: white;
+}
+
+.calendar-day:has(input[type="checkbox"].date-checkbox:checked) {
+    background-color: var(--calendar-selected);
 }
 
 /* Time slots */

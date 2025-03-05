@@ -1,8 +1,28 @@
-// Iftar Scheduler - Main JavaScript
+/*
+ * Iftar Scheduler - Main JavaScript
+ */
 
 // Debug information
-console.log("Script loaded: " + new Date().toISOString());
-console.log("Script version: 1.0.2"); // Increment this when making changes
+console.log(`Script loaded at: ${new Date().toLocaleString()}`);
+console.log('Script version: 2.3.7');
+
+// Global variables
+window.dishes = [];
+window.participants = [];
+window.availabilityData = {};
+window.selectedFinalDate = null;
+window.selectedDate = null;
+
+// Variables for date selection
+let currentDate = new Date();
+let selectedDates = [];
+let selectedTimeSlots = [];
+
+// Initialize selectedDates in the window object for global access
+window.selectedDates = selectedDates;
+
+// Initialize global variables
+initializeGlobalVariables();
 
 // Add cache-busting query parameter to force reload
 if (window.location.search.indexOf('nocache') === -1 && window.location.search.indexOf('session') === -1) {
@@ -14,6 +34,9 @@ if (window.location.search.indexOf('nocache') === -1 && window.location.search.i
 // Firebase access
 let database;
 let firebaseInitialized = false;
+let isOnline = navigator.onLine;
+let isSyncing = false;
+let sessionId = '';
 
 // Listen for Firebase initialization events
 document.addEventListener('firebase-ready', (event) => {
@@ -40,6 +63,9 @@ document.addEventListener('firebase-ready', (event) => {
       console.log('Firebase connection state:', connected ? 'connected' : 'disconnected');
       if (connected) {
         showNotification('Connected to Firebase database');
+        
+        // Try to auto-migrate data when connected
+        setTimeout(autoMigrateData, 2000);
       } else {
         showNotification('Disconnected from Firebase database');
       }
@@ -103,6 +129,18 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeApp();
       }
     }, 5000); // 5 seconds timeout
+  }
+  
+  // Initialize the calendar
+  updateCalendar();
+  
+  // Add event listeners for month navigation
+  if (prevMonthButton) {
+    prevMonthButton.addEventListener('click', () => navigateMonth(-1));
+  }
+  
+  if (nextMonthButton) {
+    nextMonthButton.addEventListener('click', () => navigateMonth(1));
   }
 });
 
@@ -245,17 +283,7 @@ const dishesList = document.getElementById('dishes-list');
 const totalDishesElement = document.getElementById('total-dishes');
 
 // State
-let dishes = [];
-let participants = [];
-let availabilityData = {};
-let currentDate = new Date();
-let selectedDates = [];
-let selectedTimeSlots = [];
-let selectedFinalDate = null;
 let isSharedSession = false;
-let sessionId = '';
-let isOnline = navigator.onLine;
-let isSyncing = false;
 let collaborationStatusElement = document.getElementById('collaboration-status');
 let statusIndicator = document.querySelector('.status-indicator');
 let statusText = document.querySelector('.status-text');
@@ -266,213 +294,347 @@ window.addEventListener('offline', updateOnlineStatus);
 
 // Generate a unique session ID
 function generateSessionId() {
-  // Use a short alphanumeric ID that's guaranteed to work with Firebase
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let id = '';
-  // Generate a 6-character random ID
-  for (let i = 0; i < 6; i++) {
-    id += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return id;
+  // Create a timestamp in base36 (alphanumeric) format
+  const timestamp = Date.now().toString(36);
+  
+  // Create a random part (4 characters)
+  const randomPart = Math.random().toString(36).substring(2, 6);
+  
+  // Combine with a prefix that's guaranteed to be Firebase-safe
+  // Firebase doesn't allow ., $, #, [, ], / in keys
+  // Using 'fb' as a prefix ensures it's a valid Firebase path
+  const sessionId = `fb${timestamp}${randomPart}`;
+  
+  console.log(`Generated new Firebase-safe session ID: ${sessionId}`);
+  return sessionId;
 }
 
-// Migrate old session ID to new format
-function migrateSessionId(oldSessionId) {
-  // Check if the session ID matches our new format (6 alphanumeric chars)
-  if (!oldSessionId || oldSessionId.length !== 6 || !/^[a-z0-9]{6}$/.test(oldSessionId)) {
-    console.log("Migrating old session ID to new format");
-    const newSessionId = generateSessionId();
-    console.log("Generated new session ID:", newSessionId);
-    localStorage.setItem('sessionId', newSessionId);
-    return newSessionId;
+// Migrate old session ID formats to new format
+async function migrateSessionId(oldSessionId) {
+  if (!oldSessionId) {
+    console.error('Cannot migrate null or undefined session ID');
+    return generateSessionId();
   }
-  return oldSessionId;
+  
+  // Ensure oldSessionId is a string
+  oldSessionId = String(oldSessionId);
+  
+  // Check if the session ID is already in the new format (starts with 'fb')
+  if (oldSessionId.startsWith('fb') && /^fb[a-z0-9]+$/.test(oldSessionId)) {
+    console.log('Session ID already in new format:', oldSessionId);
+    return oldSessionId;
+  }
+  
+  // For any other format, generate a new Firebase-safe session ID
+  console.log('Migrating old session ID format to new format:', oldSessionId);
+  const newSessionId = generateSessionId();
+  console.log('New Firebase-safe session ID:', newSessionId);
+  
+  // Store the mapping in localStorage for reference
+  const migrationMap = JSON.parse(localStorage.getItem('sessionIdMigrationMap') || '{}');
+  migrationMap[oldSessionId] = newSessionId;
+  localStorage.setItem('sessionIdMigrationMap', JSON.stringify(migrationMap));
+  
+  // Try to migrate data from the old session ID to the new one
+  if (database) {
+    try {
+      const migrationSuccess = await migrateDataFromOldSession(oldSessionId, newSessionId);
+      if (migrationSuccess) {
+        console.log(`Successfully migrated data from ${oldSessionId} to ${newSessionId}`);
+      } else {
+        console.log(`No data found to migrate from ${oldSessionId}`);
+      }
+    } catch (error) {
+      console.error(`Error during data migration: ${error.message}`);
+    }
+  }
+  
+  return newSessionId;
+}
+
+// Create a Firebase-safe key from any session ID
+function createFirebaseSafeKey(sessionId) {
+  if (!sessionId) return 'default';
+  
+  // Create a simple hash of the session ID
+  // This ensures the key is always valid for Firebase
+  let hash = 0;
+  for (let i = 0; i < sessionId.length; i++) {
+    const char = sessionId.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  // Convert to a positive number and then to base36 (alphanumeric)
+  const safeKey = Math.abs(hash).toString(36);
+  
+  console.log('Original session ID:', sessionId);
+  console.log('Firebase-safe key:', safeKey);
+  
+  return safeKey;
 }
 
 // Initialize the application
 function initializeApp() {
   console.log("Initializing app");
   
-  // Mark app as initialized to prevent duplicate initialization
+  // Mark the app as initialized
   window.appInitialized = true;
   
-  // Set up event listeners
-  setupTabs();
-  
-  // Set up online/offline detection
-  window.addEventListener('online', updateOnlineStatus);
-  window.addEventListener('offline', updateOnlineStatus);
-  
-  // Initialize collaboration status elements
-  collaborationStatusElement = document.getElementById('collaboration-status');
-  statusIndicator = collaborationStatusElement.querySelector('.status-indicator');
-  statusText = collaborationStatusElement.querySelector('.status-text');
-  
-  // Check initial online status
-  updateOnlineStatus();
-  
-  // Initialize calendar
-  initializeCalendar();
-  
-  // Check for shared data in URL
+  // Check for URL parameters
   const urlParams = new URLSearchParams(window.location.search);
   const sharedSessionId = urlParams.get('session');
   
-  // Set a timeout to detect if Firebase initialization is taking too long
-  const firebaseInitTimeout = setTimeout(() => {
-    if (!database || !firebaseInitialized) {
-      console.log("Firebase initialization timeout reached in initializeApp");
-      // Try fallback initialization
-      const initResult = tryFallbackFirebaseInit();
+  if (sharedSessionId) {
+    // User is accessing a shared session
+    console.log("Found shared session ID in URL:", sharedSessionId);
+    
+    // Migrate the session ID if needed
+    (async () => {
+      sessionId = await migrateSessionId(sharedSessionId);
+      console.log("Using migrated session ID:", sessionId);
       
-      if (!initResult) {
-        console.error("Firebase initialization failed completely");
-        // Force reset syncing state
-        isSyncing = false;
+      // Store the session ID in localStorage and window object
+      localStorage.setItem('sessionId', sessionId);
+      window.sessionId = sessionId;
+      
+      // Try to load data from Firebase
+      if (database) {
+        console.log("Firebase available, loading shared session");
+        isSyncing = true;
         updateOnlineStatus();
         
-        // Load from localStorage as fallback
-        loadDataFromLocalStorage();
-        renderParticipantsList();
-        renderAvailabilityResults();
-        renderDishes();
-        updateSummary();
-        showNotification("Could not connect to online database. Working in local mode.");
-      }
-    }
-  }, 8000); // 8 seconds timeout
-  
-  if (sharedSessionId) {
-    console.log("Found shared session ID in URL:", sharedSessionId);
-    sessionId = migrateSessionId(sharedSessionId);
-    localStorage.setItem('sessionId', sessionId);
-    
-    // Show loading indicator
-    isSyncing = true;
-    updateOnlineStatus();
-    
-    // Load data from Firebase if available, otherwise from localStorage
-    if (database && firebaseInitialized) {
-      loadDataFromFirebase(sessionId)
-        .then(dataLoaded => {
-          console.log("Firebase data load result:", dataLoaded);
-          isSyncing = false;
-          updateOnlineStatus();
-          
-          // Clear the timeout since we've successfully loaded data
-          clearTimeout(firebaseInitTimeout);
-          
-          if (dataLoaded) {
-            showNotification("Loaded shared Iftar plan successfully!");
-          } else {
-            // If no data found in Firebase, create a new session
-            console.log("No data found for shared session, creating new session");
-            sessionId = generateSessionId();
-            localStorage.setItem('sessionId', sessionId);
-            loadDataFromLocalStorage();
-            renderParticipantsList();
-            renderAvailabilityResults();
-            renderDishes();
-            updateSummary();
-          }
-        })
-        .catch(error => {
-          console.error("Error loading shared session:", error);
-          isSyncing = false;
-          updateOnlineStatus();
-          
-          // Fallback to localStorage if Firebase fails
-          loadDataFromLocalStorage();
-          renderParticipantsList();
-          renderAvailabilityResults();
-          renderDishes();
-          updateSummary();
-          showNotification("Could not load shared plan. Starting with local data.");
-        });
-    } else {
-      console.log("Firebase not available, loading from localStorage");
-      loadDataFromLocalStorage();
-      renderParticipantsList();
-      renderAvailabilityResults();
-      renderDishes();
-      updateSummary();
-      isSyncing = false;
-      updateOnlineStatus();
-      
-      // Clear the timeout since we're not using Firebase
-      clearTimeout(firebaseInitTimeout);
-    }
-  } else {
-    // No shared session, check for existing session in localStorage
-    const savedSessionId = localStorage.getItem('sessionId');
-    
-    if (savedSessionId) {
-      console.log("Found existing session ID in localStorage:", savedSessionId);
-      sessionId = migrateSessionId(savedSessionId);
-      
-      // Show loading indicator
-      isSyncing = true;
-      updateOnlineStatus();
-      
-      // Try to load from Firebase first if available
-      if (database && firebaseInitialized) {
         loadDataFromFirebase(sessionId)
-          .then(dataLoaded => {
-            console.log("Firebase data load result for existing session:", dataLoaded);
-            isSyncing = false;
-            updateOnlineStatus();
+          .then(success => {
+            console.log("Firebase data load result for shared session:", success);
             
-            // Clear the timeout since we've successfully loaded data
-            clearTimeout(firebaseInitTimeout);
-            
-            if (!dataLoaded) {
-              // If no data in Firebase, load from localStorage
-              loadDataFromLocalStorage();
-              renderParticipantsList();
-              renderAvailabilityResults();
-              renderDishes();
-              updateSummary();
+            if (success) {
+              // Data loaded successfully
+              setupRealtimeListeners(sessionId);
+              updateParticipantList();
+              updateAvailabilityTable();
+              updateDishList();
+              
+              // Show notification
+              showNotification("Loaded shared plan successfully!");
+            } else {
+              // No data found for this session ID
+              console.log("No data found for shared session, creating new session");
+              isSyncing = false;
+              updateOnlineStatus();
+              
+              // Try to load from localStorage as fallback
+              loadFromLocalStorage(sessionId);
+              updateParticipantList();
+              updateAvailabilityTable();
+              updateDishList();
             }
           })
           .catch(error => {
-            console.error("Error loading existing session:", error);
+            console.error("Error loading shared session:", error);
             isSyncing = false;
             updateOnlineStatus();
             
-            // Fallback to localStorage
-            loadDataFromLocalStorage();
-            renderParticipantsList();
-            renderAvailabilityResults();
-            renderDishes();
-            updateSummary();
+            // Fallback to localStorage if Firebase fails
+            loadFromLocalStorage(sessionId);
+            updateParticipantList();
+            updateAvailabilityTable();
+            updateDishList();
+            showNotification("Could not load shared plan. Starting with local data.");
           });
       } else {
         console.log("Firebase not available, loading from localStorage");
-        loadDataFromLocalStorage();
-        renderParticipantsList();
-        renderAvailabilityResults();
-        renderDishes();
-        updateSummary();
+        loadFromLocalStorage(sessionId);
+        updateParticipantList();
+        updateAvailabilityTable();
+        updateDishList();
         isSyncing = false;
         updateOnlineStatus();
         
         // Clear the timeout since we're not using Firebase
         clearTimeout(firebaseInitTimeout);
       }
+    })();
+  } else {
+    // No shared session, check for existing session in localStorage
+    const savedSessionId = localStorage.getItem('sessionId');
+    
+    if (savedSessionId) {
+      console.log("Found existing session ID in localStorage:", savedSessionId);
+      
+      (async () => {
+        sessionId = await migrateSessionId(savedSessionId);
+        console.log("Using migrated session ID:", sessionId);
+        
+        // Store the session ID in localStorage and window object
+        localStorage.setItem('sessionId', sessionId);
+        window.sessionId = sessionId;
+        
+        // Try to load data from Firebase
+        if (database) {
+          console.log("Firebase available, loading existing session");
+          isSyncing = true;
+          updateOnlineStatus();
+          
+          loadDataFromFirebase(sessionId)
+            .then(success => {
+              console.log("Firebase data load result for existing session:", success);
+              
+              if (!success) {
+                // If we couldn't load data with the current session ID, generate a new one
+                // that's guaranteed to be Firebase-safe
+                console.log("Generating new Firebase-safe session ID");
+                const newSessionId = 'fb' + Math.random().toString(36).substring(2, 8);
+                console.log("New Firebase-safe session ID:", newSessionId);
+                
+                // Store the new session ID in localStorage and window object
+                sessionId = newSessionId;
+                localStorage.setItem('sessionId', sessionId);
+                window.sessionId = sessionId;
+                
+                // Try to load from localStorage with the old session ID
+                loadFromLocalStorage(savedSessionId);
+                
+                // Set up Firebase with the new session ID
+                setupRealtimeListeners(sessionId);
+                
+                // Save the data to Firebase with the new session ID
+                saveToFirebase(sessionId);
+              } else {
+                // Data loaded successfully, set up listeners
+                setupRealtimeListeners(sessionId);
+              }
+              
+              // Render the UI
+              updateParticipantList();
+              updateAvailabilityTable();
+              updateDishList();
+            })
+            .catch(error => {
+              console.error("Error loading existing session:", error);
+              isSyncing = false;
+              updateOnlineStatus();
+              
+              // Generate a new Firebase-safe session ID
+              console.log("Generating new Firebase-safe session ID after error");
+              const newSessionId = 'fb' + Math.random().toString(36).substring(2, 8);
+              console.log("New Firebase-safe session ID:", newSessionId);
+              
+              // Store the new session ID in localStorage and window object
+              sessionId = newSessionId;
+              localStorage.setItem('sessionId', sessionId);
+              window.sessionId = sessionId;
+              
+              // Try to load from localStorage with the old session ID
+              loadFromLocalStorage(savedSessionId);
+              
+              // Set up Firebase with the new session ID
+              setupRealtimeListeners(sessionId);
+              
+              // Save the data to Firebase with the new session ID
+              saveToFirebase(sessionId);
+              
+              // Render the UI
+              updateParticipantList();
+              updateAvailabilityTable();
+              updateDishList();
+            });
+        } else {
+          // No shared session, check for existing session in localStorage
+          const savedSessionId = localStorage.getItem('sessionId');
+          
+          if (savedSessionId) {
+            console.log("Found existing session ID in localStorage:", savedSessionId);
+            sessionId = migrateSessionId(savedSessionId);
+            console.log("Using migrated session ID:", sessionId);
+            
+            // Try to load from Firebase first if available
+            if (database && firebaseInitialized) {
+              loadDataFromFirebase(sessionId)
+                .then(dataLoaded => {
+                  console.log("Firebase data load result for existing session:", dataLoaded);
+                  isSyncing = false;
+                  updateOnlineStatus();
+                  
+                  // Clear the timeout since we've successfully loaded data
+                  clearTimeout(firebaseInitTimeout);
+                  
+                  if (!dataLoaded) {
+                    // If no data in Firebase, load from localStorage
+                    loadFromLocalStorage(sessionId);
+                    updateParticipantList();
+                    updateAvailabilityTable();
+                    updateDishList();
+                  }
+                })
+                .catch(error => {
+                  console.error("Error loading existing session:", error);
+                  isSyncing = false;
+                  updateOnlineStatus();
+                  
+                  // Fallback to localStorage
+                  loadFromLocalStorage(sessionId);
+                  updateParticipantList();
+                  updateAvailabilityTable();
+                  updateDishList();
+                });
+            } else {
+              console.log("Firebase not available, loading from localStorage");
+              loadFromLocalStorage(sessionId);
+              updateParticipantList();
+              updateAvailabilityTable();
+              updateDishList();
+              isSyncing = false;
+              updateOnlineStatus();
+              
+              // Clear the timeout since we're not using Firebase
+              clearTimeout(firebaseInitTimeout);
+            }
+          } else {
+            // New user, generate session ID and load from localStorage
+            console.log("No existing session, creating new session");
+            sessionId = generateSessionId();
+            localStorage.setItem('sessionId', sessionId);
+            window.sessionId = sessionId;
+            loadFromLocalStorage(sessionId);
+            updateParticipantList();
+            updateAvailabilityTable();
+            updateDishList();
+            
+            // Save initial data to Firebase
+            if (database && firebaseInitialized) {
+              saveToFirebase(sessionId)
+                .then(() => {
+                  console.log("Initial data saved to Firebase successfully");
+                })
+                .catch(error => {
+                  console.error("Error saving initial data to Firebase:", error);
+                });
+            }
+            
+            // Clear the timeout since we're not using Firebase for initial load
+            clearTimeout(firebaseInitTimeout);
+            
+            // Reset syncing state
+            isSyncing = false;
+            updateOnlineStatus();
+          }
+        }
+      })();
     } else {
       // New user, generate session ID and load from localStorage
       console.log("No existing session, creating new session");
       sessionId = generateSessionId();
       localStorage.setItem('sessionId', sessionId);
-      loadDataFromLocalStorage();
-      renderParticipantsList();
-      renderAvailabilityResults();
-      renderDishes();
-      updateSummary();
+      window.sessionId = sessionId;
+      loadFromLocalStorage(sessionId);
+      updateParticipantList();
+      updateAvailabilityTable();
+      updateDishList();
       
       // Save initial data to Firebase
       if (database && firebaseInitialized) {
-        saveToFirebase(true)
+        saveToFirebase(sessionId)
           .then(() => {
             console.log("Initial data saved to Firebase successfully");
           })
@@ -508,6 +670,191 @@ function initializeApp() {
       shareModal.style.display = 'none';
     }
   });
+  
+  // Mark the app as ready
+  if (typeof window.appReady === 'function') {
+    console.log('Calling appReady function to hide loading message');
+    window.appReady();
+  } else {
+    console.log('appReady function not found');
+  }
+}
+
+// Handle submit availability
+function handleSubmitAvailability() {
+  const participantName = participantNameInput.value.trim();
+  
+  if (!participantName) {
+    showNotification('Please enter your name', 'error');
+    return;
+  }
+  
+  if (selectedDates.length === 0) {
+    showNotification('Please select at least one date', 'error');
+    return;
+  }
+  
+  if (selectedTimeSlots.length === 0) {
+    showNotification('Please select at least one time slot', 'error');
+    return;
+  }
+  
+  // Create availability entry
+  const availabilityEntry = {
+    name: participantName,
+    dates: selectedDates,
+    timeSlots: selectedTimeSlots,
+    notes: scheduleNotesInput.value.trim(),
+    timestamp: new Date().toISOString()
+  };
+  
+  // Add to participants list if not already present
+  const existingParticipantIndex = window.participants.findIndex(p => p.name.toLowerCase() === participantName.toLowerCase());
+  
+  if (existingParticipantIndex >= 0) {
+    // Update existing participant
+    window.participants[existingParticipantIndex] = availabilityEntry;
+  } else {
+    // Add new participant
+    window.participants.push(availabilityEntry);
+  }
+  
+  // Update availability data
+  selectedDates.forEach(date => {
+    if (!window.availabilityData[date]) {
+      window.availabilityData[date] = {};
+    }
+    
+    selectedTimeSlots.forEach(timeSlot => {
+      if (!window.availabilityData[date][timeSlot]) {
+        window.availabilityData[date][timeSlot] = [];
+      }
+      
+      // Remove existing entries for this participant
+      window.availabilityData[date][timeSlot] = window.availabilityData[date][timeSlot].filter(
+        p => p.toLowerCase() !== participantName.toLowerCase()
+      );
+      
+      // Add participant to this date and time slot
+      window.availabilityData[date][timeSlot].push(participantName);
+    });
+  });
+  
+  // Save to Firebase and localStorage
+  saveToFirebase();
+  
+  // Update UI
+  updateParticipantList();
+  updateAvailabilityTable();
+  
+  // Reset form
+  participantNameInput.value = '';
+  scheduleNotesInput.value = '';
+  selectedDates = [];
+  selectedTimeSlots = [];
+  
+  // Uncheck all date checkboxes
+  document.querySelectorAll('.date-checkbox').forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  
+  // Uncheck all time slot checkboxes
+  timeSlotCheckboxes.forEach(checkbox => {
+    checkbox.checked = false;
+  });
+  
+  showNotification('Availability submitted successfully', 'success');
+}
+
+// Handle add dish
+function handleAddDish(event) {
+  event.preventDefault();
+  
+  const dishName = dishNameInput.value.trim();
+  const contributor = contributorInput.value.trim();
+  const category = categorySelect.value;
+  
+  if (!dishName) {
+    showNotification('Please enter a dish name', 'error');
+    return;
+  }
+  
+  if (!contributor) {
+    showNotification('Please enter your name', 'error');
+    return;
+  }
+  
+  // Create dish entry
+  const dishEntry = {
+    name: dishName,
+    contributor: contributor,
+    category: category,
+    timestamp: new Date().toISOString()
+  };
+  
+  // Add to dishes list
+  window.dishes.push(dishEntry);
+  
+  // Save to Firebase and localStorage
+  saveToFirebase();
+  
+  // Update UI
+  updateDishList();
+  
+  // Reset form
+  dishNameInput.value = '';
+  contributorInput.value = '';
+  categorySelect.value = 'main';
+  
+  showNotification('Dish added successfully', 'success');
+}
+
+// Update sync status indicator
+function updateSyncStatus(status) {
+  if (!statusIndicator || !statusText) {
+    statusIndicator = document.querySelector('.status-indicator');
+    statusText = document.querySelector('.status-text');
+    
+    if (!statusIndicator || !statusText) {
+      console.warn('Status indicators not found in the DOM');
+      return;
+    }
+  }
+  
+  // Clear any existing timeout
+  if (window.syncStatusTimeout) {
+    clearTimeout(window.syncStatusTimeout);
+    window.syncStatusTimeout = null;
+  }
+  
+  switch (status) {
+    case 'syncing':
+      statusIndicator.style.backgroundColor = '#FFA000'; // Amber
+      statusText.textContent = 'Syncing...';
+      break;
+    case 'synced':
+      statusIndicator.style.backgroundColor = '#4CAF50'; // Green
+      statusText.textContent = 'Synced';
+      
+      // Hide the status after 3 seconds
+      window.syncStatusTimeout = setTimeout(() => {
+        statusIndicator.style.backgroundColor = '#4CAF50';
+        statusText.textContent = 'Synced';
+        window.syncStatusTimeout = null;
+      }, 3000);
+      break;
+    case 'offline':
+      statusIndicator.style.backgroundColor = '#9E9E9E'; // Grey
+      statusText.textContent = 'Offline';
+      break;
+    case 'error':
+      statusIndicator.style.backgroundColor = '#F44336'; // Red
+      statusText.textContent = 'Sync Error';
+      break;
+    default:
+      statusIndicator.style.backgroundColor = '#2196F3'; // Blue
+      statusText.textContent = 'Unknown';
+  }
 }
 
 // Update online status indicator
@@ -539,8 +886,8 @@ async function initializeDatabaseStructure() {
   try {
     const { ref, get } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
     
-    // Check if the s node exists (very simple structure)
-    const sessionsRef = ref(database, 's');
+    // Check if the sessions node exists (original structure)
+    const sessionsRef = ref(database, 'sessions');
     const snapshot = await get(sessionsRef);
     
     if (!snapshot.exists()) {
@@ -559,1540 +906,1004 @@ async function initializeDatabaseStructure() {
 
 // Load data from Firebase
 async function loadDataFromFirebase(sessionId) {
-  console.log('Loading data from Firebase for session:', sessionId);
+  console.log(`Loading data from Firebase for session: ${sessionId}`);
   
-  // Validate session ID format
-  if (!sessionId || sessionId.length !== 6 || !/^[a-z0-9]{6}$/.test(sessionId)) {
-    console.error('Invalid session ID format:', sessionId);
-    // Generate a new session ID and migrate
-    const newSessionId = generateSessionId();
-    console.log('Generated new session ID:', newSessionId);
-    localStorage.setItem('sessionId', newSessionId);
-    sessionId = newSessionId; // Use the new session ID for this load attempt
+  if (!sessionId || sessionId === '') {
+    console.log('No session ID provided, generating a new one');
+    sessionId = generateSessionId();
+    window.location.hash = sessionId;
+  }
+  
+  // Migrate session ID if it contains underscores
+  try {
+    sessionId = await migrateSessionId(sessionId);
+    console.log(`Using migrated session ID for Firebase load: ${sessionId}`);
+  } catch (error) {
+    console.error(`Error migrating session ID: ${error.message}`);
+    // Continue with the original session ID
   }
   
   try {
-    const { ref, get, onValue } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
-    console.log('Firebase database module imported for data loading');
+    const { ref, get } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
     
-    // Test database connection using a simple path
-    const connectedRef = ref(database, '.info/connected');
-    const connectedSnap = await get(connectedRef);
-    const connected = connectedSnap.val();
-    console.log('Firebase connection state:', connected ? 'connected' : 'disconnected');
+    // First try the new path structure
+    let sessionRef = ref(database, `data/${sessionId}`);
+    console.log(`Attempting to load from path: data/${sessionId}`);
     
-    // Use a very simple path structure with just the ID
-    const path = `s/${sessionId}`;
-    console.log('Attempting to load data from path:', path);
-    const sessionRef = ref(database, path);
-    const snapshot = await get(sessionRef);
+    try {
+      let snapshot = await get(sessionRef);
+      
+      // If no data found in the first path, try the old path
+      if (!snapshot.exists()) {
+        console.log(`No data found at data/${sessionId}, trying sessions/${sessionId}`);
+        sessionRef = ref(database, `sessions/${sessionId}`);
+        snapshot = await get(sessionRef);
+      }
+      
+      if (snapshot.exists()) {
+        console.log('Data found in Firebase');
+        const data = snapshot.val();
+        
+        // Update the UI with the loaded data
+        if (data.dishes) {
+          window.dishes = data.dishes;
+          updateDishList();
+        }
+        
+        if (data.participants) {
+          window.participants = data.participants;
+          updateParticipantList();
+        }
+        
+        if (data.availabilityData) {
+          window.availabilityData = data.availabilityData;
+          updateAvailabilityTable();
+        }
+        
+        if (data.selectedFinalDate) {
+          window.selectedFinalDate = data.selectedFinalDate;
+          safeUpdateUI('finalDateDisplay', (element) => {
+            element.textContent = window.selectedFinalDate;
+          });
+          safeUpdateUI('finalDateSection', (element) => {
+            element.style.display = 'block';
+          });
+        }
+        
+        return true;
+      } else {
+        console.log('No saved data found in Firebase');
+        return false;
+      }
+    } catch (error) {
+      console.error(`Error loading data from Firebase: ${error}`);
+      
+      // Try loading from localStorage as a fallback
+      console.log('Attempting to load from localStorage as fallback');
+      return loadFromLocalStorage(sessionId);
+    }
+  } catch (error) {
+    console.error(`Error importing Firebase modules: ${error.message}`);
     
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      console.log('Data loaded from Firebase:', data);
+    // Try loading from localStorage as a fallback
+    console.log('Attempting to load from localStorage as fallback');
+    return loadFromLocalStorage(sessionId);
+  }
+}
+
+// Load data from localStorage
+function loadFromLocalStorage(sessionId) {
+  console.log(`Loading data from localStorage for session: ${sessionId}`);
+  
+  if (!sessionId || sessionId === '') {
+    console.log('No session ID provided, checking for default session');
+    sessionId = localStorage.getItem('sessionId');
+    
+    if (!sessionId) {
+      console.log('No default session found, returning false');
+      return false;
+    }
+  }
+  
+  try {
+    const savedData = localStorage.getItem(`iftar-scheduler-data-${sessionId}`);
+    
+    if (savedData) {
+      const parsedData = JSON.parse(savedData);
+      console.log('Data loaded from localStorage:', parsedData);
       
-      // Update local data
-      if (data.dishes) dishes = data.dishes;
-      if (data.participants) participants = data.participants;
-      if (data.availabilityData) availabilityData = data.availabilityData;
-      if (data.selectedFinalDate) selectedFinalDate = data.selectedFinalDate;
-      
-      // Set up real-time listeners
-      setupRealtimeListeners(sessionId);
-      
-      // Save to localStorage as backup
-      saveToLocalStorage(sessionId);
+      // Update application data
+      if (parsedData.dishes) window.dishes = parsedData.dishes;
+      if (parsedData.participants) window.participants = parsedData.participants;
+      if (parsedData.availabilityData) window.availabilityData = parsedData.availabilityData;
+      if (parsedData.selectedFinalDate) window.selectedFinalDate = parsedData.selectedFinalDate;
       
       // Update UI
-      renderParticipantsList();
-      renderAvailabilityResults();
+      updateDishList();
+      updateParticipantList();
+      updateAvailabilityTable();
       
+      if (window.selectedFinalDate) {
+        safeUpdateUI('finalDateDisplay', (element) => {
+          element.textContent = window.selectedFinalDate;
+        });
+        
+        safeUpdateUI('finalDateSection', (element) => {
+          element.style.display = 'block';
+        });
+      }
+      
+      console.log('Data successfully loaded from localStorage');
       return true;
     } else {
-      console.log('No data found in Firebase for this session');
+      console.log(`No saved data found in localStorage for session: ${sessionId}`);
       return false;
     }
   } catch (error) {
-    console.error('Error loading data from Firebase:', error);
-    console.error('Session ID that caused error:', sessionId);
-    console.error('Full error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
+    console.error(`Error loading from localStorage: ${error.message}`);
     return false;
   }
 }
 
-// Load data from localStorage (for backward compatibility)
-function loadDataFromLocalStorage() {
-  console.log("Loading data from localStorage for session:", sessionId);
-  
-  // Load availability data
-  const savedData = localStorage.getItem(`iftar-scheduler-data-${sessionId}`);
-  if (savedData) {
-    try {
-      const parsedData = JSON.parse(savedData);
-      console.log("Loaded data from localStorage:", parsedData);
-      
-      // Update the application data
-      availabilityData = parsedData.availability || {};
-      selectedDate = parsedData.selectedDate || null;
-      selectedTimeSlot = parsedData.selectedTimeSlot || null;
-      
-      console.log("Updated application data from localStorage");
-    } catch (error) {
-      console.error("Error parsing data from localStorage:", error);
-    }
-  } else {
-    console.log("No saved data found in localStorage for session:", sessionId);
-  }
-}
-
 // Set up real-time listeners for Firebase updates
-function setupRealtimeListeners(sessionId) {
-  import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js').then(module => {
-    const { ref, onValue } = module;
-    
-    // Use the same very simple path structure as in loadDataFromFirebase and saveToFirebase
-    const path = `s/${sessionId}`;
-    console.log('Setting up real-time listeners for path:', path);
-    const sessionRef = ref(database, path);
-    
-    onValue(sessionRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        console.log('Real-time update received:', data);
-        
-        let hasChanges = false;
-        
-        if (data.dishes && JSON.stringify(dishes) !== JSON.stringify(data.dishes)) {
-          dishes = data.dishes;
-          hasChanges = true;
-        }
-        if (data.participants && JSON.stringify(participants) !== JSON.stringify(data.participants)) {
-          participants = data.participants;
-          hasChanges = true;
-        }
-        if (data.availabilityData && JSON.stringify(availabilityData) !== JSON.stringify(data.availabilityData)) {
-          availabilityData = data.availabilityData;
-          hasChanges = true;
-        }
-        if (data.selectedFinalDate !== selectedFinalDate) {
-          selectedFinalDate = data.selectedFinalDate;
-          hasChanges = true;
-        }
-        
-        if (hasChanges) {
-          console.log('Changes detected, updating UI');
-          saveToLocalStorage(sessionId);
-          renderParticipantsList();
-          renderAvailabilityResults();
-        }
-      }
-    });
-  }).catch(error => {
-    console.error('Error setting up real-time listeners:', error);
-  });
-}
-
-// Sync local data with Firebase
-function syncWithFirebase() {
-  if (!navigator.onLine || !sessionId || !database) {
-    updateOnlineStatus();
-    return Promise.reject(new Error("Cannot sync: offline, no sessionId, or database not initialized"));
-  }
-
-  console.log("Starting sync with Firebase for session:", sessionId);
-  updateSyncStatus("syncing");
+async function setupRealtimeListeners(sessionId) {
+  // Migrate the session ID if it contains underscores or hyphens
+  sessionId = await migrateSessionId(sessionId);
+  console.log('Setting up listeners with migrated session ID:', sessionId);
   
-  // Set a timeout for the sync operation
-  const syncTimeout = setTimeout(() => {
-    console.warn("Firebase sync operation timed out after 15 seconds");
-    updateSyncStatus("error");
-    return Promise.reject(new Error("Sync operation timed out"));
-  }, 15000);
-
-  return new Promise((resolve, reject) => {
+  try {
+    const { ref, onValue } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
+    
     try {
-      // Import needed Firebase functions
-      import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js').then(module => {
-        console.log("Firebase database module imported for sync");
-        const { ref, get, set } = module;
-        
-        let sessionRef;
-        try {
-          if (typeof database.ref === 'function') {
-            // Compatibility mode
-            sessionRef = database.ref(`sessions/${sessionId}`);
-          } else {
-            // Modular API
-            sessionRef = ref(database, `sessions/${sessionId}`);
+      // Use a simpler path structure
+      console.log(`Setting up listeners with path: data/${sessionId}`);
+      const sessionRef = ref(database, `data/${sessionId}`);
+      
+      onValue(sessionRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          console.log('Real-time update received:', data);
+          
+          let hasChanges = false;
+          
+          // Update dishes if they've changed
+          if (data.dishes && JSON.stringify(data.dishes) !== JSON.stringify(window.dishes)) {
+            window.dishes = data.dishes;
+            hasChanges = true;
+            console.log('Updated dishes from real-time data');
           }
           
-          // First, check if the session exists
-          const checkSession = () => {
-            try {
-              if (typeof sessionRef.once === 'function') {
-                // Compatibility mode
-                return sessionRef.once('value');
-              } else {
-                // Modular API
-                return get(sessionRef);
-              }
-            } catch (error) {
-              console.error("Error checking session existence:", error);
-              throw error;
+          // Update participants if they've changed
+          if (data.participants && JSON.stringify(data.participants) !== JSON.stringify(window.participants)) {
+            window.participants = data.participants;
+            hasChanges = true;
+            console.log('Updated participants from real-time data');
+          }
+          
+          // Update availability data if it's changed
+          if (data.availabilityData && JSON.stringify(data.availabilityData) !== JSON.stringify(window.availabilityData)) {
+            window.availabilityData = data.availabilityData;
+            hasChanges = true;
+            console.log('Updated availability data from real-time data');
+          }
+          
+          // Update selected final date if it's changed
+          if (data.selectedFinalDate !== window.selectedFinalDate) {
+            window.selectedFinalDate = data.selectedFinalDate;
+            hasChanges = true;
+            console.log('Updated selected final date from real-time data');
+          }
+          
+          // If any data has changed, update the UI
+          if (hasChanges) {
+            console.log('Changes detected, updating UI');
+            saveToLocalStorage(sessionId);
+            updateDishList();
+            updateParticipantList();
+            updateAvailabilityTable();
+            
+            // Update final date display if needed
+            if (window.selectedFinalDate) {
+              safeUpdateUI('finalDateDisplay', (element) => {
+                element.textContent = window.selectedFinalDate;
+              });
+              safeUpdateUI('finalDateSection', (element) => {
+                element.style.display = 'block';
+              });
             }
-          };
-
-          checkSession()
-            .then((snapshot) => {
-              const sessionData = snapshot.val();
-              
-              if (!sessionData) {
-                console.log("Session does not exist, creating new session:", sessionId);
-                // Create the session with initial data
-                return saveToFirebase(true);
-              } else {
-                console.log("Session exists, loading data:", sessionId);
-                // Session exists, load the data
-                const data = sessionData || {};
-                
-                // Update local storage with the data from Firebase
-                localStorage.setItem(`iftar-scheduler-data-${sessionId}`, JSON.stringify(data));
-                
-                // Update the application data
-                if (data.dishes) dishes = data.dishes;
-                if (data.participants) participants = data.participants;
-                if (data.availabilityData) availabilityData = data.availabilityData;
-                if (data.selectedFinalDate) selectedFinalDate = data.selectedFinalDate;
-                
-                return Promise.resolve();
-              }
-            })
-            .then(() => {
-              clearTimeout(syncTimeout);
-              updateSyncStatus("synced");
-              console.log("Sync with Firebase completed successfully");
-              resolve();
-            })
-            .catch((error) => {
-              console.error("Error during sync with Firebase:", error);
-              clearTimeout(syncTimeout);
-              updateSyncStatus("error");
-              reject(error);
-            });
-        } catch (error) {
-          console.error("Error creating session reference:", error);
-          clearTimeout(syncTimeout);
-          updateSyncStatus("error");
-          reject(error);
+          }
         }
-      }).catch(error => {
-        console.error("Error importing Firebase modules:", error);
-        clearTimeout(syncTimeout);
-        updateSyncStatus("error");
-        reject(error);
       });
     } catch (error) {
-      console.error("Unexpected error in syncWithFirebase:", error);
-      clearTimeout(syncTimeout);
-      updateSyncStatus("error");
-      reject(error);
+      console.error('Error setting up real-time listeners:', error);
     }
-  });
+  } catch (error) {
+    console.error('Error setting up real-time listeners:', error);
+  }
 }
 
-// Save data to localStorage and Firebase
-function saveData() {
-  console.log("Saving data to localStorage and Firebase");
+// Function to directly migrate data from a specific old session ID to a new one
+async function migrateSpecificSession(oldSessionId) {
+  console.log(`Attempting to migrate specific session: ${oldSessionId}`);
   
-  // Save to localStorage
-  localStorage.setItem('dishes', JSON.stringify(dishes));
-  localStorage.setItem('participants', JSON.stringify(participants));
-  localStorage.setItem('availabilityData', JSON.stringify(availabilityData));
-  localStorage.setItem('selectedFinalDate', selectedFinalDate);
+  // Generate a new Firebase-safe session ID
+  const newSessionId = generateSessionId();
+  console.log(`Generated new Firebase-safe session ID: ${newSessionId}`);
   
-  // Sync with Firebase if online
-  if (isOnline && sessionId) {
-    console.log("Syncing with Firebase after saving data");
-    syncWithFirebase()
-      .then(() => {
-        console.log("Successfully synced data with Firebase");
-      })
-      .catch(error => {
-        console.error("Error syncing data with Firebase:", error);
-      });
+  // Try to migrate the data
+  const success = await migrateDataFromOldSession(oldSessionId, newSessionId);
+  
+  if (success) {
+    console.log(`Successfully migrated data from ${oldSessionId} to ${newSessionId}`);
+    
+    // Update the current session ID in both local variable and window object
+    sessionId = newSessionId;
+    window.sessionId = newSessionId;
+    localStorage.setItem('sessionId', newSessionId);
+    
+    // Store the mapping
+    const migrationMap = JSON.parse(localStorage.getItem('sessionIdMigrationMap') || '{}');
+    migrationMap[oldSessionId] = newSessionId;
+    localStorage.setItem('sessionIdMigrationMap', JSON.stringify(migrationMap));
+    
+    // Set up listeners for the new session
+    await setupRealtimeListeners(newSessionId);
+    
+    // Reload the UI
+    updateDishList();
+    updateParticipantList();
+    updateAvailabilityTable();
+    
+    showNotification(`Successfully migrated data to new session ID: ${newSessionId}`);
+    return true;
   } else {
-    console.log("Not syncing with Firebase: online =", isOnline, "sessionId =", sessionId);
+    console.log(`Failed to migrate data from ${oldSessionId}`);
+    showNotification(`Could not find data for session: ${oldSessionId}`);
+    return false;
   }
 }
 
-// Tab Navigation
-function setupTabs() {
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const tabId = button.dataset.tab;
-            
-            // Toggle active class on tab buttons
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            // Show selected tab content
-            tabContents.forEach(content => {
-                if (content.id === tabId) {
-                    content.classList.remove('hidden');
-                } else {
-                    content.classList.add('hidden');
-                }
-            });
-        });
-    });
-}
-
-// Calendar Functions
-function initializeCalendar() {
-    updateCalendarHeader();
-    renderCalendar();
-}
-
-function updateCalendarHeader() {
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
-                        'July', 'August', 'September', 'October', 'November', 'December'];
-    currentMonthDisplay.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-}
-
-function navigateMonth(direction) {
-    currentDate.setMonth(currentDate.getMonth() + direction);
-    updateCalendarHeader();
-    renderCalendar();
-}
-
-function renderCalendar() {
-    calendarDaysContainer.innerHTML = '';
-    
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    
-    // First day of the month
-    const firstDay = new Date(year, month, 1);
-    const startingDayOfWeek = firstDay.getDay(); // 0 (Sunday) to 6 (Saturday)
-    
-    // Last day of the month
-    const lastDay = new Date(year, month + 1, 0);
-    const totalDays = lastDay.getDate();
-    
-    // Create empty cells for days before the first day of the month
-    for (let i = 0; i < startingDayOfWeek; i++) {
-        const emptyCell = document.createElement('div');
-        emptyCell.className = 'calendar-day disabled';
-        calendarDaysContainer.appendChild(emptyCell);
-    }
-    
-    // Get today's date for highlighting
-    const today = new Date();
-    const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
-    
-    // Create cells for each day of the month
-    for (let day = 1; day <= totalDays; day++) {
-        const dayCell = document.createElement('div');
-        dayCell.className = 'calendar-day';
-        dayCell.textContent = day;
-        
-        // Add date data attribute
-        const dateString = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-        dayCell.dataset.date = dateString;
-        
-        // Highlight today
-        if (isCurrentMonth && day === today.getDate()) {
-            dayCell.classList.add('today');
-        }
-        
-        // Highlight selected dates
-        if (selectedDates.includes(dateString)) {
-            dayCell.classList.add('selected');
-        }
-        
-        // Add availability indicator if data exists
-        if (availabilityData[dateString]) {
-            const indicator = document.createElement('div');
-            indicator.className = 'availability-indicator';
-            dayCell.appendChild(indicator);
-        }
-        
-        // Add click event to select/deselect date
-        dayCell.addEventListener('click', () => {
-            const dateIndex = selectedDates.indexOf(dateString);
-            if (dateIndex > -1) {
-                selectedDates.splice(dateIndex, 1);
-                dayCell.classList.remove('selected');
-            } else {
-                selectedDates.push(dateString);
-                dayCell.classList.add('selected');
-            }
-        });
-        
-        calendarDaysContainer.appendChild(dayCell);
-    }
-}
-
-// Handle submit availability form
-function handleSubmitAvailability() {
-  const participantName = participantNameInput.value.trim();
-  if (!participantName) {
-    showNotification("Please enter your name");
+// Add a migration button to the UI
+function addMigrationButton() {
+  // Check if the button already exists
+  if (document.getElementById('migrate-button')) {
     return;
   }
   
-  if (selectedDates.length === 0) {
-    showNotification("Please select at least one date");
-    return;
-  }
+  // Create the button
+  const button = document.createElement('button');
+  button.id = 'migrate-button';
+  button.className = 'action-button';
+  button.innerHTML = '<i class="fas fa-sync"></i> Migrate Data';
+  button.style.backgroundColor = '#4a6da7';
+  button.style.color = 'white';
+  button.style.padding = '8px 16px';
+  button.style.border = 'none';
+  button.style.borderRadius = '4px';
+  button.style.cursor = 'pointer';
+  button.style.margin = '10px 0';
+  button.style.display = 'block';
   
-  const selectedTimeSlots = [];
-  timeSlotCheckboxes.forEach(checkbox => {
-    if (checkbox.checked) {
-      selectedTimeSlots.push(checkbox.value);
+  // Add click event
+  button.addEventListener('click', async () => {
+    // Show a loading indicator
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Migrating...';
+    button.disabled = true;
+    
+    try {
+      // Try to migrate from the known session ID
+      const success = await migrateSpecificSession('iftarx31pu1w8g9ol8');
+      
+      if (!success) {
+        // If that fails, try other known session IDs
+        const otherIds = ['m7w45qzy-bynp0r', 'iftar-uulxr0cqo525q0srnl62n'];
+        
+        for (const id of otherIds) {
+          const result = await migrateSpecificSession(id);
+          if (result) {
+            break;
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error during migration:', error);
+      showNotification('Error during migration. Please try again.');
+    } finally {
+      // Reset the button
+      button.innerHTML = '<i class="fas fa-sync"></i> Migrate Data';
+      button.disabled = false;
     }
   });
   
-  if (selectedTimeSlots.length === 0) {
-    showNotification("Please select at least one time slot");
-    return;
-  }
+  // Add the button to the UI
+  const container = document.querySelector('.party-summary') || document.body;
+  container.prepend(button);
+}
+
+// Call this function after the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(addMigrationButton, 1000); // Add a delay to ensure the UI is fully loaded
+});
+
+// Automatically try to migrate data when the app loads
+async function autoMigrateData() {
+  console.log('Auto-migrating data from old paths to new paths');
   
-  const notes = scheduleNotesInput.value.trim();
-  
-  // Update availability data
-  selectedDates.forEach(date => {
-    if (!availabilityData[date]) {
-      availabilityData[date] = {};
+  try {
+    const { ref, get, set } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
+    
+    // Get the current session ID
+    const currentSessionId = localStorage.getItem('sessionId') || window.location.hash.substring(1);
+    
+    if (!currentSessionId) {
+      console.log('No session ID found, cannot migrate data');
+      return false;
     }
     
-    selectedTimeSlots.forEach(timeSlot => {
-      if (!availabilityData[date][timeSlot]) {
-        availabilityData[date][timeSlot] = [];
+    console.log(`Checking for data to migrate for session: ${currentSessionId}`);
+    
+    // Check if data exists in the old path
+    const oldPathRef = ref(database, `sessions/${currentSessionId}`);
+    const oldSnapshot = await get(oldPathRef);
+    
+    if (oldSnapshot.exists()) {
+      console.log(`Found data in old path: sessions/${currentSessionId}`);
+      const data = oldSnapshot.val();
+      
+      // Save to the new path
+      const newPathRef = ref(database, `data/${currentSessionId}`);
+      await set(newPathRef, data);
+      console.log(`Successfully migrated data to new path: data/${currentSessionId}`);
+      
+      // Show notification
+      showNotification('Data migrated to new path structure');
+      
+      return true;
+    } else {
+      console.log(`No data found in old path: sessions/${currentSessionId}`);
+      return false;
+    }
+  } catch (error) {
+    console.error(`Error auto-migrating data: ${error.message}`);
+    return false;
+  }
+}
+
+// Migrate data from an old session ID to a new one in Firebase
+async function migrateDataFromOldSession(oldSessionId, newSessionId) {
+  console.log(`Migrating data from ${oldSessionId} to ${newSessionId}`);
+  
+  try {
+    const { ref, get, set } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
+    
+    // First try to get data from the old session ID
+    try {
+      // Try both path structures
+      let oldSessionRef = ref(database, `sessions/${oldSessionId}`);
+      let snapshot = await get(oldSessionRef);
+      
+      // If no data found in the first path, try the second path
+      if (!snapshot.exists()) {
+        console.log(`No data found at sessions/${oldSessionId}, trying data/${oldSessionId}`);
+        oldSessionRef = ref(database, `data/${oldSessionId}`);
+        snapshot = await get(oldSessionRef);
       }
       
-      // Check if participant already exists
-      const existingIndex = availabilityData[date][timeSlot].findIndex(
-        p => p.name === participantName
-      );
-      
-      if (existingIndex >= 0) {
-        // Update existing participant
-        availabilityData[date][timeSlot][existingIndex] = {
-          name: participantName,
-          notes: notes,
-          timestamp: new Date().toISOString()
-        };
+      if (snapshot.exists()) {
+        console.log(`Found data for old session ID: ${oldSessionId}`);
+        const data = snapshot.val();
+        
+        // Now save this data to the new session ID
+        const newSessionRef = ref(database, `data/${newSessionId}`);
+        await set(newSessionRef, data);
+        console.log(`Successfully migrated data to new session ID: ${newSessionId}`);
+        
+        return true;
       } else {
-        // Add new participant
-        availabilityData[date][timeSlot].push({
-          name: participantName,
-          notes: notes,
-          timestamp: new Date().toISOString()
-        });
+        console.log(`No data found for old session ID: ${oldSessionId}`);
+        return false;
       }
-    });
-  });
-  
-  // Save to localStorage
-  saveData();
-  
-  // Sync with Firebase if online
-  if (navigator.onLine && database) {
-    saveToFirebase()
-      .then(() => {
-        console.log("Availability data saved to Firebase");
-      })
-      .catch(error => {
-        console.error("Error saving availability data to Firebase:", error);
-      });
-  }
-  
-  // Update UI
-  renderHeatmapCalendar();
-  renderBestTimes();
-  
-  // Reset form
-  selectedDates = [];
-  timeSlotCheckboxes.forEach(checkbox => {
-    checkbox.checked = false;
-  });
-  scheduleNotesInput.value = '';
-  
-  // Show confirmation
-  showNotification("Your availability has been submitted!");
-}
-
-// Show share reminder
-function showShareReminder() {
-    const reminder = document.createElement('div');
-    reminder.className = 'share-reminder';
-    reminder.innerHTML = `
-        <div class="share-reminder-content">
-            <p>Don't forget to share this plan with others!</p>
-            <button class="btn-primary share-now-btn">
-                <i class="fas fa-share-alt"></i> Share Now
-            </button>
-        </div>
-    `;
-    
-    document.body.appendChild(reminder);
-    
-    // Add event listener
-    reminder.querySelector('.share-now-btn').addEventListener('click', () => {
-        reminder.remove();
-        handleShare();
-    });
-    
-    // Auto-remove after 10 seconds
-    setTimeout(() => {
-        if (document.body.contains(reminder)) {
-            reminder.remove();
-        }
-    }, 10000);
-}
-
-// Update availability data based on participants
-function updateAvailabilityData() {
-  console.log("Updating availability data from participants");
-  
-  // Reset availability data
-  availabilityData = {};
-  
-  // Process each participant's availability
-  participants.forEach(participant => {
-    // Process each date the participant is available
-    Object.keys(participant.dates).forEach(dateString => {
-      if (!availabilityData[dateString]) {
-        availabilityData[dateString] = {
-          sunset: [],
-          dinner: [],
-          late: []
-        };
-      }
-      
-      // Add participant to each time slot they selected
-      participant.timeSlots.forEach(timeSlot => {
-        if (!availabilityData[dateString][timeSlot].includes(participant.id)) {
-          availabilityData[dateString][timeSlot].push(participant.id);
-        }
-      });
-    });
-  });
-  
-  console.log("Updated availability data:", {
-    datesCount: Object.keys(availabilityData).length,
-    sampleDate: Object.keys(availabilityData).length > 0 ? 
-      Object.keys(availabilityData)[0] + ": " + 
-      JSON.stringify(availabilityData[Object.keys(availabilityData)[0]]) : 
-      "No dates available"
-  });
-}
-
-// Render availability results
-function renderAvailabilityResults() {
-  console.log("Rendering availability results");
-  
-  // Check if there's any availability data
-  if (Object.keys(availabilityData).length === 0) {
-    availabilityCalendar.innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-users"></i>
-        <p>No availability submitted yet. Be the first to add yours!</p>
-      </div>
-    `;
-    return;
-  }
-  
-  // Render heatmap calendar
-  renderHeatmapCalendar();
-  
-  // Render best times
-  renderBestTimes();
-}
-
-// Render heatmap calendar
-function renderHeatmapCalendar() {
-  console.log("Rendering heatmap calendar");
-  const calendarContainer = document.getElementById('availability-calendar');
-  if (!calendarContainer) return;
-  
-  // Clear previous content
-  calendarContainer.innerHTML = '';
-  
-  // Check if there's any availability data
-  if (Object.keys(availabilityData).length === 0) {
-    calendarContainer.innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-users"></i>
-        <p>No availability submitted yet. Be the first to add yours!</p>
-      </div>
-    `;
-    return;
-  }
-  
-  // Get all dates from availability data
-  const dates = Object.keys(availabilityData).sort();
-  if (dates.length === 0) return;
-  
-  // Calculate date range
-  const firstDate = new Date(dates[0]);
-  const lastDate = new Date(dates[dates.length - 1]);
-  
-  // Calculate the start of the week for the first date
-  const startDate = new Date(firstDate);
-  startDate.setDate(startDate.getDate() - startDate.getDay()); // Start from Sunday
-  
-  // Calculate the end of the week for the last date
-  const endDate = new Date(lastDate);
-  endDate.setDate(endDate.getDate() + (6 - endDate.getDay())); // End on Saturday
-  
-  // Create calendar header
-  const calendarHeader = document.createElement('div');
-  calendarHeader.className = 'heatmap-header';
-  calendarHeader.innerHTML = `
-    <div class="heatmap-cell header">Sun</div>
-    <div class="heatmap-cell header">Mon</div>
-    <div class="heatmap-cell header">Tue</div>
-    <div class="heatmap-cell header">Wed</div>
-    <div class="heatmap-cell header">Thu</div>
-    <div class="heatmap-cell header">Fri</div>
-    <div class="heatmap-cell header">Sat</div>
-  `;
-  calendarContainer.appendChild(calendarHeader);
-  
-  // Create calendar grid
-  const calendarGrid = document.createElement('div');
-  calendarGrid.className = 'heatmap-grid';
-  
-  // Generate calendar cells
-  let currentDate = new Date(startDate);
-  while (currentDate <= endDate) {
-    const dateString = formatDateForStorage(currentDate);
-    const dayOfWeek = currentDate.getDay();
-    
-    // Create cell
-    const cell = document.createElement('div');
-    cell.className = 'heatmap-cell';
-    cell.dataset.date = dateString;
-    
-    // Add date number
-    const dateNumber = document.createElement('div');
-    dateNumber.className = 'date-number';
-    dateNumber.textContent = currentDate.getDate();
-    cell.appendChild(dateNumber);
-    
-    // Check if this date has availability data
-    if (availabilityData[dateString]) {
-      // Calculate total participants for this date
-      let totalParticipants = 0;
-      let uniqueParticipants = new Set();
-      
-      Object.keys(availabilityData[dateString]).forEach(timeSlot => {
-        availabilityData[dateString][timeSlot].forEach(participant => {
-          uniqueParticipants.add(participant.name);
-          totalParticipants++;
-        });
-      });
-      
-      // Add heat level based on number of participants
-      const heatLevel = Math.min(5, uniqueParticipants.size);
-      cell.classList.add(`heat-level-${heatLevel}`);
-      
-      // Add participant count
-      const participantCount = document.createElement('div');
-      participantCount.className = 'participant-count';
-      participantCount.textContent = uniqueParticipants.size;
-      cell.appendChild(participantCount);
-      
-      // Add click event to show details
-      cell.addEventListener('click', () => showDateDetails(dateString));
+    } catch (error) {
+      console.error(`Error accessing old session data: ${error.message}`);
+      return false;
     }
-    
-    // Add to grid
-    calendarGrid.appendChild(cell);
-    
-    // Move to next day
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-  
-  calendarContainer.appendChild(calendarGrid);
-}
-
-// Render best times
-function renderBestTimes() {
-  console.log("Rendering best times");
-  const bestTimesList = document.getElementById('best-times-list');
-  if (!bestTimesList) return;
-  
-  // Clear previous content
-  bestTimesList.innerHTML = '';
-  
-  // Check if there's any availability data
-  if (Object.keys(availabilityData).length === 0) {
-    bestTimesList.innerHTML = '<li class="empty-message">No availability data yet</li>';
-    return;
-  }
-  
-  // Calculate scores for each date and time slot
-  const scores = [];
-  
-  Object.keys(availabilityData).forEach(date => {
-    Object.keys(availabilityData[date]).forEach(timeSlot => {
-      // Count unique participants
-      const uniqueParticipants = new Set();
-      availabilityData[date][timeSlot].forEach(participant => {
-        uniqueParticipants.add(participant.name);
-      });
-      
-      scores.push({
-        date,
-        timeSlot,
-        score: uniqueParticipants.size,
-        participants: Array.from(uniqueParticipants)
-      });
-    });
-  });
-  
-  // Sort by score (highest first)
-  scores.sort((a, b) => b.score - a.score);
-  
-  // Take top 5
-  const topScores = scores.slice(0, 5);
-  
-  // Render the list
-  if (topScores.length === 0) {
-    bestTimesList.innerHTML = '<li class="empty-message">No availability data yet</li>';
-    return;
-  }
-  
-  topScores.forEach(item => {
-    const listItem = document.createElement('li');
-    listItem.className = 'best-time-item';
-    
-    // Create content
-    listItem.innerHTML = `
-      <div class="best-time-date">${formatDate(item.date)}</div>
-      <div class="best-time-slot">${item.timeSlot}</div>
-      <div class="best-time-score">${item.score} people</div>
-    `;
-    
-    // Add click event to select this date/time
-    listItem.addEventListener('click', () => selectThisDate(item.date, item.timeSlot));
-    
-    bestTimesList.appendChild(listItem);
-  });
-}
-
-function showDateDetails(date) {
-  console.log("Showing details for date:", date);
-  
-  // Check if this date has availability data
-  if (!availabilityData[date]) {
-    showNotification("No availability data for this date");
-    return;
-  }
-  
-  // Format date for display
-  const formattedDate = formatDate(date);
-  
-  // Build message
-  let message = `<h3>${formattedDate}</h3>`;
-  
-  // Get all time slots for this date
-  const timeSlots = Object.keys(availabilityData[date]);
-  
-  // Track all unique participants
-  const allParticipants = new Set();
-  
-  // Add details for each time slot
-  timeSlots.forEach(timeSlot => {
-    const participants = availabilityData[date][timeSlot];
-    const participantNames = participants.map(p => p.name);
-    
-    // Add participants to the set
-    participantNames.forEach(name => allParticipants.add(name));
-    
-    message += `<p><strong>${timeSlot}</strong>: ${participantNames.join(', ')}</p>`;
-  });
-  
-  // Add total participants
-  message += `<p class="total-participants">Total: ${allParticipants.size} participants</p>`;
-  
-  // Add button to select this date
-  message += `<button class="btn-primary select-date-btn" onclick="selectThisDate('${date}', '${timeSlots[0]}')">Select This Date</button>`;
-  
-  // Show notification with details
-  const notification = document.createElement('div');
-  notification.className = 'date-details-popup';
-  notification.innerHTML = message;
-  
-  // Add close button
-  const closeButton = document.createElement('button');
-  closeButton.className = 'close-popup-btn';
-  closeButton.innerHTML = '&times;';
-  closeButton.addEventListener('click', () => {
-    document.body.removeChild(notification);
-  });
-  notification.appendChild(closeButton);
-  
-  // Add to body
-  document.body.appendChild(notification);
-}
-
-function selectThisDate(date, timeSlot) {
-  console.log("Selecting date:", date, "time slot:", timeSlot);
-  
-  // Update selected date and time slot
-  selectedDate = date;
-  selectedTimeSlot = timeSlot;
-  
-  // Update UI
-  document.getElementById('selected-date-display').textContent = 
-    `Selected: ${formatDate(date)} at ${timeSlot}`;
-  
-  // Save to localStorage
-  saveToLocalStorage();
-  
-  // Sync with Firebase if online
-  if (navigator.onLine && database) {
-    saveToFirebase()
-      .then(() => {
-        console.log("Selected date saved to Firebase");
-      })
-      .catch(error => {
-        console.error("Error saving selected date to Firebase:", error);
-      });
-  }
-  
-  // Show confirmation
-  showNotification(`Selected ${formatDate(date)} at ${timeSlot}`);
-  
-  // Close popup if it exists
-  const popup = document.querySelector('.date-details-popup');
-  if (popup) {
-    document.body.removeChild(popup);
+  } catch (error) {
+    console.error(`Error importing Firebase modules: ${error.message}`);
+    return false;
   }
 }
 
-function formatDate(dateString) {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', { 
-    weekday: 'short', 
-    month: 'short', 
-    day: 'numeric' 
-  });
-}
-
-function formatDateForStorage(date) {
-  return date.toISOString().split('T')[0];
-}
-
-// Handle selecting final date
-function handleSelectFinalDate() {
-    // Switch to schedule tab
-    tabButtons.forEach(btn => {
-        if (btn.dataset.tab === 'schedule-tab') {
-            btn.click();
-        }
-    });
+// Save data to Firebase
+async function saveToFirebase(sessionIdOrForce) {
+  // If a boolean is passed (for backward compatibility), use the current session ID
+  let sessionId = typeof sessionIdOrForce === 'boolean' ? window.sessionId : sessionIdOrForce;
+  
+  console.log(`Saving data to Firebase for session: ${sessionId}`);
+  
+  if (!sessionId || sessionId === '') {
+    console.log('No session ID provided, generating a new one');
+    sessionId = generateSessionId();
+    window.location.hash = sessionId;
+  }
+  
+  // Migrate session ID if it contains underscores
+  try {
+    sessionId = await migrateSessionId(sessionId);
+    console.log(`Using migrated session ID for Firebase save: ${sessionId}`);
+  } catch (error) {
+    console.error(`Error migrating session ID: ${error.message}`);
+    // Continue with the original session ID
+  }
+  
+  try {
+    const { ref, set } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
     
-    // Scroll to best times section
-    document.querySelector('.best-times').scrollIntoView({ behavior: 'smooth' });
-}
-
-// Handle adding a new dish
-function handleAddDish(event) {
-    event.preventDefault();
-    
-    const newDish = {
-        id: Date.now().toString(),
-        name: dishNameInput.value.trim(),
-        contributor: contributorInput.value.trim(),
-        category: categorySelect.value,
-        timestamp: new Date().toISOString()
+    // Create a data object with all the current state
+    const data = {
+      dishes: window.dishes,
+      participants: window.participants,
+      availabilityData: window.availabilityData,
+      selectedFinalDate: window.selectedFinalDate,
+      lastUpdated: new Date().toISOString()
     };
     
-    dishes.unshift(newDish);
-    saveData(); // Use the comprehensive saveData function
+    // Save to the new path structure
+    const sessionRef = ref(database, `data/${sessionId}`);
+    console.log(`Saving to path: data/${sessionId}`);
     
-    // Reset form
-    dishForm.reset();
-    dishNameInput.focus();
+    await set(sessionRef, data);
+    console.log('Data successfully saved to Firebase');
     
-    renderDishes();
-    updateSummary();
+    // Also save to localStorage as a backup
+    saveToLocalStorage(sessionId);
     
-    showNotification('Dish added successfully!');
+    return true;
+  } catch (error) {
+    console.error(`Error saving to Firebase: ${error.message}`);
     
-    // Update collaboration status
-    updateOnlineStatus();
+    // Save to localStorage as a fallback
+    console.log('Saving to localStorage as fallback');
+    saveToLocalStorage(sessionId);
+    
+    return false;
+  }
 }
 
-// Render dishes based on filter
-function renderDishes() {
-    const filter = filterSelect.value;
-    let filteredDishes = [...dishes];
+// Debug Firebase paths
+async function debugFirebasePaths(sessionId) {
+  console.log(`Debugging Firebase paths for session: ${sessionId}`);
+  
+  try {
+    const { ref, get } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
     
-    if (filter !== 'All') {
-        filteredDishes = dishes.filter(dish => dish.category === filter);
-    }
+    // Check both path structures
+    const paths = [
+      `sessions/${sessionId}`,
+      `data/${sessionId}`
+    ];
     
-    if (filteredDishes.length === 0) {
-        dishesList.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-utensils"></i>
-                <p>${dishes.length === 0 ? 'No dishes added yet. Start planning your party!' : 'No dishes match your filter.'}</p>
-            </div>
-        `;
-        return;
-    }
-    
-    dishesList.innerHTML = filteredDishes.map(dish => `
-        <div class="dish-card" data-id="${dish.id}">
-            <div class="dish-info">
-                <h3>${dish.name}</h3>
-                <div class="dish-meta">
-                    <span>By: ${dish.contributor}</span>
-                    <span class="dish-category">${dish.category}</span>
-                </div>
-            </div>
-            <div class="dish-actions">
-                <button class="edit" title="Edit dish">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="delete" title="Remove dish">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        </div>
-    `).join('');
-    
-    // Add event listeners to action buttons
-    document.querySelectorAll('.dish-card .delete').forEach(button => {
-        button.addEventListener('click', handleDeleteDish);
-    });
-    
-    document.querySelectorAll('.dish-card .edit').forEach(button => {
-        button.addEventListener('click', handleEditDish);
-    });
-}
-
-// Handle dish deletion
-function handleDeleteDish(event) {
-    const dishCard = event.target.closest('.dish-card');
-    const dishId = dishCard.dataset.id;
-    
-    if (confirm('Are you sure you want to remove this dish?')) {
-        dishes = dishes.filter(dish => dish.id !== dishId);
-        saveData();
-        renderDishes();
-        updateSummary();
-        showNotification('Dish removed successfully!');
-    }
-}
-
-// Handle dish editing
-function handleEditDish(event) {
-    const dishCard = event.target.closest('.dish-card');
-    const dishId = dishCard.dataset.id;
-    const dish = dishes.find(d => d.id === dishId);
-    
-    if (dish) {
-        // For simplicity, we'll just populate the form and remove the old dish
-        dishNameInput.value = dish.name;
-        contributorInput.value = dish.contributor;
-        categorySelect.value = dish.category;
+    for (const path of paths) {
+      try {
+        console.log(`Checking path: ${path}`);
+        const pathRef = ref(database, path);
+        const snapshot = await get(pathRef);
         
-        // Remove the dish and update
-        dishes = dishes.filter(d => d.id !== dishId);
-        saveData();
-        renderDishes();
-        updateSummary();
-        
-        // Scroll to form
-        dishForm.scrollIntoView({ behavior: 'smooth' });
+        if (snapshot.exists()) {
+          console.log(`Data found at path: ${path}`);
+          console.log('Data:', snapshot.val());
+        } else {
+          console.log(`No data found at path: ${path}`);
+        }
+      } catch (error) {
+        console.error(`Error accessing path ${path}: ${error.message}`);
+      }
     }
-}
-
-// Update summary statistics
-function updateSummary() {
-    // Update UI
-    totalParticipantsElement.textContent = participants.length;
-    totalDishesElement.textContent = dishes.length;
-}
-
-// Handle clearing all data
-function handleClearAll() {
-    if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
-        // Clear all data
-        dishes = [];
-        participants = [];
-        availabilityData = {};
-        selectedDates = [];
-        selectedTimeSlots = [];
-        selectedFinalDate = null;
+    
+    // Check root paths
+    try {
+      console.log('Checking root paths');
+      const rootRef = ref(database, '/');
+      const snapshot = await get(rootRef);
+      
+      if (snapshot.exists()) {
+        console.log('Root data structure:');
+        const data = snapshot.val();
         
-        // Clear from Firebase if online
-        if (isOnline) {
-            // Import needed Firebase functions
-            import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js').then(module => {
-                const { ref, remove } = module;
-                
-                remove(ref(database, `sessions/${sessionId}`))
-                    .then(() => {
-                        showNotification('All data cleared successfully!');
-                    })
-                    .catch(error => {
-                        console.error("Error clearing data from Firebase:", error);
-                        showNotification('Error clearing data from Firebase. Some data may remain on the server.');
-                    });
-            }).catch(error => {
-                console.error("Error importing Firebase modules:", error);
-                showNotification('Error accessing Firebase. Data cleared locally only.');
-            });
+        // Log the top-level keys
+        console.log('Top-level keys:', Object.keys(data));
+        
+        // Check if 'sessions' exists
+        if (data.sessions) {
+          console.log('Sessions keys:', Object.keys(data.sessions));
         }
         
-        // Clear from localStorage
-        saveData();
-        localStorage.removeItem('selectedFinalDate');
-        
-        // Generate a new session ID
-        sessionId = generateSessionId();
-        localStorage.setItem('sessionId', sessionId);
-        
-        // Reset UI
-        renderCalendar();
-        renderDishes();
-        renderParticipantsList();
-        renderAvailabilityResults();
-        renderBestTimes();
-        updateSummary();
-        
-        // Reset form fields
-        participantNameInput.value = '';
-        scheduleNotesInput.value = '';
-        dishForm.reset();
-        
-        // Uncheck all time slots
-        timeSlotCheckboxes.forEach(checkbox => checkbox.checked = false);
-        
-        // Update final date display
-        finalDateDisplay.textContent = 'Not yet selected';
-        selectDateButton.textContent = 'Select This Date';
-        
-        showNotification('All data has been cleared');
+        // Check if 'data' exists
+        if (data.data) {
+          console.log('Data keys:', Object.keys(data.data));
+        }
+      } else {
+        console.log('No data found at root');
+      }
+    } catch (error) {
+      console.error(`Error accessing root: ${error.message}`);
     }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error importing Firebase modules: ${error.message}`);
+    return false;
+  }
 }
 
-// Handle share functionality
-function handleShare() {
-    // Make sure data is synced with Firebase before sharing
-    if (isOnline) {
-        syncWithFirebase().then(() => {
-            // Create shareable URL with session ID
-            const shareUrl = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
-            
-            // Update share link input
-            shareLinkInput.value = shareUrl;
-            
-            // Show modal
-            shareModal.style.display = 'flex';
-            
-            // Select the link text
-            shareLinkInput.select();
-            
-            // Update share options with dynamic links
-            updateShareOptions(shareUrl);
-            
-            // Show notification
-            showNotification('Your plan is now collaborative! Share the link with others.');
-        }).catch(error => {
-            console.error("Error syncing before share:", error);
-            showNotification('Error preparing share link. Please try again.');
-        });
+// Initialize global variables if they don't exist
+function initializeGlobalVariables() {
+  console.log('Initializing global variables');
+  
+  // Initialize selectedDate if it doesn't exist
+  if (typeof window.selectedDate === 'undefined') {
+    console.log('selectedDate is undefined, initializing it');
+    window.selectedDate = null;
+  }
+  
+  // Initialize other variables if needed
+  if (typeof window.dishes === 'undefined') {
+    console.log('dishes is undefined, initializing it');
+    window.dishes = [];
+  }
+  
+  if (typeof window.participants === 'undefined') {
+    console.log('participants is undefined, initializing it');
+    window.participants = [];
+  }
+  
+  if (typeof window.availabilityData === 'undefined') {
+    console.log('availabilityData is undefined, initializing it');
+    window.availabilityData = {};
+  }
+  
+  if (typeof window.selectedFinalDate === 'undefined') {
+    console.log('selectedFinalDate is undefined, initializing it');
+    window.selectedFinalDate = null;
+  }
+}
+
+// Safe function to update UI elements
+function safeUpdateUI(elementId, updateFunction) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    updateFunction(element);
+    return true;
+  } else {
+    // Only log a warning if we're not in the initialization phase
+    if (window.appInitialized) {
+      console.warn(`Element with ID '${elementId}' not found`);
     } else {
-        // Offline fallback - use the old method with encoded data
-        const dataToShare = {
-            dishes: dishes,
-            participants: participants,
-            availabilityData: availabilityData,
-            selectedFinalDate: selectedFinalDate,
-            sessionId: sessionId
-        };
-        
-        // Convert to base64 string
-        const encodedData = btoa(JSON.stringify(dataToShare));
-        
-        // Create shareable URL
-        const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encodedData}`;
-        
-        // Update share link input
-        shareLinkInput.value = shareUrl;
-        
-        // Show modal
-        shareModal.style.display = 'flex';
-        
-        // Select the link text
-        shareLinkInput.select();
-        
-        // Update share options with dynamic links
-        updateShareOptions(shareUrl);
-        
-        // Show notification about offline mode
-        showNotification('You are sharing in offline mode. Some features may be limited.');
+      console.log(`Element with ID '${elementId}' not found during initialization`);
     }
+    return false;
+  }
 }
 
-// Update share options with dynamic links
-function updateShareOptions(shareUrl) {
-    const whatsappBtn = document.querySelector('.share-option.whatsapp');
-    const emailBtn = document.querySelector('.share-option.email');
-    const messageBtn = document.querySelector('.share-option.message');
+// Update dish list safely
+function updateDishList() {
+  console.log('Updating dish list');
+  safeUpdateUI('dishes-list', (element) => {
+    // Clear the current list
+    element.innerHTML = '';
     
-    // WhatsApp
-    whatsappBtn.addEventListener('click', () => {
-        const text = encodeURIComponent(`Join our Iftar planning! Click the link to see available dates and add yours: ${shareUrl}`);
-        window.open(`https://wa.me/?text=${text}`, '_blank');
+    // Add each dish to the list
+    window.dishes.forEach((dish, index) => {
+      const dishItem = document.createElement('div');
+      dishItem.className = 'dish-item';
+      dishItem.innerHTML = `
+        <h3>${dish.name}</h3>
+        <p>Contributed by: ${dish.contributor}</p>
+        <p>Category: ${dish.category}</p>
+        <button class="remove-dish-btn" data-index="${index}">Remove</button>
+      `;
+      element.appendChild(dishItem);
     });
     
-    // Email
-    emailBtn.addEventListener('click', () => {
-        const subject = encodeURIComponent('Iftar Planning');
-        const body = encodeURIComponent(`Join our Iftar planning!\n\nClick the link below to see available dates and add yours:\n${shareUrl}`);
-        window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
-    });
-    
-    // SMS/Messages
-    messageBtn.addEventListener('click', () => {
-        const body = encodeURIComponent(`Join our Iftar planning! Click to see available dates and add yours: ${shareUrl}`);
-        window.open(`sms:?&body=${body}`, '_blank');
-    });
-}
-
-// Handle copy link
-function handleCopyLink() {
-    shareLinkInput.select();
-    document.execCommand('copy');
-    showNotification('Link copied to clipboard!');
-}
-
-// Handle print functionality
-function handlePrint() {
-    // Create a printable version
-    const printWindow = window.open('', '_blank');
-    
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Iftar Scheduler - Details</title>
-            <style>
-                body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
-                    line-height: 1.6;
-                    color: #333;
-                    max-width: 800px;
-                    margin: 0 auto;
-                    padding: 20px;
-                }
-                h1, h2, h3 {
-                    color: #166088;
-                }
-                .section {
-                    margin-top: 30px;
-                    padding-top: 20px;
-                    border-top: 1px solid #eee;
-                }
-                .date-info {
-                    background-color: #f8f9fa;
-                    padding: 15px;
-                    border-radius: 8px;
-                    margin: 20px 0;
-                }
-                .participant {
-                    margin-bottom: 10px;
-                    padding-bottom: 10px;
-                    border-bottom: 1px solid #eee;
-                }
-                .dish {
-                    margin-bottom: 15px;
-                    padding-bottom: 15px;
-                    border-bottom: 1px solid #eee;
-                }
-                .dish h3 {
-                    margin-bottom: 5px;
-                    color: #4a6fa5;
-                }
-                .contributor {
-                    font-style: italic;
-                    color: #666;
-                }
-                .category {
-                    margin-top: 25px;
-                }
-                @media print {
-                    body {
-                        font-size: 12pt;
-                    }
-                    .no-print {
-                        display: none;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            <h1>Iftar Scheduler</h1>
-            
-            <div class="date-info">
-                <h2>Event Details</h2>
-                <p><strong>Date & Time:</strong> ${selectedFinalDate || 'Not yet selected'}</p>
-                <p><strong>Total Participants:</strong> ${participants.length}</p>
-                <p><strong>Total Dishes:</strong> ${dishes.length}</p>
-            </div>
-            
-            <div class="section">
-                <h2>Participants</h2>
-                ${participants.length > 0 ? participants.map(p => `
-                    <div class="participant">
-                        <p><strong>${p.name}</strong></p>
-                        <p><small>Available on ${Object.keys(p.dates).length} dates</small></p>
-                        ${p.notes ? `<p>Notes: ${p.notes}</p>` : ''}
-                    </div>
-                `).join('') : '<p>No participants yet</p>'}
-            </div>
-    `);
-    
-    // Group dishes by category
-    const categories = ['Appetizer', 'Main Course', 'Side Dish', 'Dessert', 'Beverage'];
-    
-    printWindow.document.write(`
-            <div class="section">
-                <h2>Menu</h2>
-    `);
-    
-    if (dishes.length === 0) {
-        printWindow.document.write('<p>No dishes added yet</p>');
-    } else {
-        categories.forEach(category => {
-            const categoryDishes = dishes.filter(dish => dish.category === category);
-            
-            if (categoryDishes.length > 0) {
-                printWindow.document.write(`
-                    <div class="category">
-                        <h3>${category}s</h3>
-                `);
-                
-                categoryDishes.forEach(dish => {
-                    printWindow.document.write(`
-                        <div class="dish">
-                            <h4>${dish.name}</h4>
-                            <p class="contributor">Brought by: ${dish.contributor}</p>
-                        </div>
-                    `);
-                });
-                
-                printWindow.document.write(`</div>`);
-            }
-        });
+    // Update total dishes count if the element exists
+    const totalDishesElement = document.getElementById('total-dishes');
+    if (totalDishesElement) {
+      totalDishesElement.textContent = window.dishes.length;
     }
     
-    printWindow.document.write(`
-            </div>
-            
-            <div class="no-print" style="margin-top: 30px; text-align: center;">
-                <button onclick="window.print();" style="padding: 10px 20px; background: #4fc3a1; color: white; border: none; border-radius: 4px; cursor: pointer;">Print</button>
-                <button onclick="window.close();" style="padding: 10px 20px; background: #f8f9fa; color: #333; border: 1px solid #dee2e6; border-radius: 4px; margin-left: 10px; cursor: pointer;">Close</button>
-            </div>
-        </body>
-        </html>
-    `);
-    
-    printWindow.document.close();
+    // Add event listeners to remove buttons
+    document.querySelectorAll('.remove-dish-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const index = e.target.getAttribute('data-index');
+        window.dishes.splice(index, 1);
+        updateDishList();
+        saveToFirebase(sessionId);
+      });
+    });
+  });
 }
 
-// Show notification
-function showNotification(message) {
+// Update participant list safely
+function updateParticipantList() {
+  console.log('Updating participant list');
+  safeUpdateUI('participants', (element) => {
+    // Clear the current list
+    element.innerHTML = '';
+    
+    // Add each participant to the list
+    window.participants.forEach((participant, index) => {
+      const participantItem = document.createElement('div');
+      participantItem.className = 'participant-item';
+      participantItem.innerHTML = `
+        <p>${participant.name}</p>
+        <button class="remove-participant-btn" data-index="${index}">Remove</button>
+      `;
+      element.appendChild(participantItem);
+    });
+    
+    // Update total participants count if the element exists
+    const totalParticipantsElement = document.getElementById('total-participants');
+    if (totalParticipantsElement) {
+      totalParticipantsElement.textContent = window.participants.length;
+    }
+    
+    // Add event listeners to remove buttons
+    document.querySelectorAll('.remove-participant-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const index = e.target.getAttribute('data-index');
+        window.participants.splice(index, 1);
+        updateParticipantList();
+        saveToFirebase(sessionId);
+      });
+    });
+  });
+}
+
+// Update availability table safely
+function updateAvailabilityTable() {
+  console.log('Updating availability table');
+  safeUpdateUI('availability-calendar', (element) => {
+    // Implementation depends on your specific UI structure
+    // This is a placeholder for the actual implementation
+    console.log('Availability data:', window.availabilityData);
+  });
+}
+
+// Save data to localStorage
+function saveToLocalStorage(sessionIdOrForce) {
+  // If a boolean is passed (for backward compatibility), use the current session ID
+  let sessionId = typeof sessionIdOrForce === 'boolean' ? window.sessionId : sessionIdOrForce;
+  
+  console.log(`Saving data to localStorage for session: ${sessionId}`);
+  
+  if (!sessionId || sessionId === '') {
+    console.log('No session ID provided, generating a new one');
+    sessionId = generateSessionId();
+    localStorage.setItem('sessionId', sessionId);
+  }
+  
+  // Ensure sessionId is a string
+  sessionId = String(sessionId);
+  
+  try {
+    // Create a data object with all the current state
+    const data = {
+      dishes: window.dishes || [],
+      participants: window.participants || [],
+      availabilityData: window.availabilityData || {},
+      selectedFinalDate: window.selectedFinalDate || null,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    localStorage.setItem(`iftar-scheduler-data-${sessionId}`, JSON.stringify(data));
+    console.log('Data successfully saved to localStorage');
+    
+    return true;
+  } catch (error) {
+    console.error(`Error saving to localStorage: ${error.message}`);
+    return false;
+  }
+}
+
+// Utility functions
+function showNotification(message, type = 'info') {
+  console.log(`Notification (${type}): ${message}`);
+  
   // Create notification element if it doesn't exist
   let notification = document.getElementById('notification');
   if (!notification) {
     notification = document.createElement('div');
     notification.id = 'notification';
-    notification.className = 'notification';
+    notification.style.position = 'fixed';
+    notification.style.bottom = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '10px 20px';
+    notification.style.borderRadius = '4px';
+    notification.style.color = 'white';
+    notification.style.fontWeight = 'bold';
+    notification.style.zIndex = '1000';
+    notification.style.transition = 'opacity 0.5s ease-in-out';
     document.body.appendChild(notification);
   }
   
-  // Set the message and show the notification
-  notification.textContent = message;
-  notification.classList.add('show');
+  // Set notification style based on type
+  switch (type) {
+    case 'success':
+      notification.style.backgroundColor = '#4CAF50';
+      break;
+    case 'error':
+      notification.style.backgroundColor = '#F44336';
+      break;
+    case 'warning':
+      notification.style.backgroundColor = '#FF9800';
+      break;
+    default:
+      notification.style.backgroundColor = '#2196F3';
+  }
   
-  // Hide the notification after 3 seconds
+  // Set message and show notification
+  notification.textContent = message;
+  notification.style.opacity = '1';
+  
+  // Hide notification after 3 seconds
   setTimeout(() => {
-    notification.classList.remove('show');
+    notification.style.opacity = '0';
   }, 3000);
 }
 
-// Save dishes to localStorage and Firebase
-function saveDishes() {
-    // This function is now replaced by the more comprehensive saveData function
-    saveData();
+// Handle share button click
+function handleShare() {
+  // Generate a shareable link
+  const shareableLink = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
+  
+  // Update the share link input
+  safeUpdateUI('share-link', (element) => {
+    element.value = shareableLink;
+  });
+  
+  // Show the share modal
+  safeUpdateUI('share-modal', (element) => {
+    element.style.display = 'block';
+  });
+  
+  showNotification('Share link generated', 'success');
 }
 
-// Update share link with current session ID
-function updateShareLink() {
-    const shareUrl = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
-    shareLinkInput.value = shareUrl;
-}
-
-// Check for shared data in URL
-function checkForSharedData() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const sharedData = urlParams.get('share');
+// Handle copy link button click
+function handleCopyLink() {
+  // Get the share link input
+  const shareLinkInput = document.getElementById('share-link');
+  
+  if (shareLinkInput) {
+    // Select the text
+    shareLinkInput.select();
+    shareLinkInput.setSelectionRange(0, 99999); // For mobile devices
     
-    if (sharedData) {
-        try {
-            const data = JSON.parse(atob(sharedData));
-            
-            if (data) {
-                if (confirm('Would you like to load the shared Iftar plan?')) {
-                    if (data.dishes) dishes = data.dishes;
-                    if (data.participants) participants = data.participants;
-                    if (data.availabilityData) availabilityData = data.availabilityData;
-                    if (data.selectedFinalDate) {
-                        selectedFinalDate = data.selectedFinalDate;
-                        finalDateDisplay.textContent = selectedFinalDate;
-                        selectDateButton.textContent = 'Change Date';
-                    }
-                    if (data.sessionId) {
-                        sessionId = data.sessionId;
-                        isSharedSession = true;
-                    }
-                    
-                    saveDishes();
-                    localStorage.setItem('availabilityData', JSON.stringify(availabilityData));
-                    localStorage.setItem('selectedFinalDate', selectedFinalDate);
-                    localStorage.setItem('sessionId', sessionId);
-                    
-                    renderDishes();
-                    renderCalendar();
-                    renderAvailabilityResults();
-                    updateSummary();
-                    
-                    showNotification('Shared data loaded successfully! You can now add your availability.');
-                    
-                    // Scroll to the date picker
-                    setTimeout(() => {
-                        document.querySelector('.date-picker-container').scrollIntoView({ behavior: 'smooth' });
-                    }, 1000);
-                }
-            }
-        } catch (error) {
-            console.error('Error parsing shared data:', error);
-            showNotification('Error loading shared data. Please try again.');
-        }
+    // Copy the text
+    try {
+      document.execCommand('copy');
+      showNotification('Link copied to clipboard', 'success');
+    } catch (err) {
+      // Fallback for modern browsers
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareLinkInput.value)
+          .then(() => {
+            showNotification('Link copied to clipboard', 'success');
+          })
+          .catch(err => {
+            showNotification('Failed to copy link', 'error');
+            console.error('Could not copy text: ', err);
+          });
+      } else {
+        showNotification('Failed to copy link', 'error');
+        console.error('Could not copy text: ', err);
+      }
     }
-}
-
-// Make selectThisDate function global for direct HTML onclick
-window.selectThisDate = selectThisDate;
-
-// Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-    checkForSharedData();
-});
-
-// Force reset the syncing state
-function forceResetSync() {
-  console.log("Forcing reset of sync state");
-  
-  // Clear any existing timeout
-  if (window.syncStatusTimeout) {
-    clearTimeout(window.syncStatusTimeout);
-    window.syncStatusTimeout = null;
-  }
-  
-  // Update the status indicator
-  updateSyncStatus('synced');
-  
-  // Show notification
-  showNotification("Connection reset. Attempting to reconnect...");
-  
-  // Try to reinitialize Firebase
-  if (!database || !firebaseInitialized) {
-    console.log("Attempting to reinitialize Firebase");
-    tryFallbackFirebaseInit();
-  }
-  
-  // Load data from localStorage as fallback
-  loadDataFromLocalStorage();
-  
-  // Render the UI
-  renderHeatmapCalendar();
-  renderBestTimes();
-  
-  if (selectedDate && selectedTimeSlot) {
-    document.getElementById('selected-date-display').textContent = 
-      `Selected: ${formatDate(selectedDate)} at ${selectedTimeSlot}`;
-  }
-  
-  // Try to sync with Firebase if online and session ID is available
-  if (navigator.onLine && sessionId && database) {
-    console.log("Attempting to sync with Firebase after reset");
-    syncWithFirebase()
-      .then(() => {
-        console.log("Sync with Firebase completed successfully after reset");
-        showNotification("Reconnected to online database!");
-      })
-      .catch(error => {
-        console.error("Error syncing with Firebase after reset:", error);
-        showNotification("Could not reconnect to online database. Working in local mode.");
-      });
+  } else {
+    showNotification('Share link not found', 'error');
   }
 }
 
-function updateSyncStatus(status) {
-  const statusIndicator = document.getElementById('sync-status');
-  if (!statusIndicator) return;
-  
-  // Clear any existing timeout
-  if (window.syncStatusTimeout) {
-    clearTimeout(window.syncStatusTimeout);
-    window.syncStatusTimeout = null;
-  }
-  
-  // Update the status indicator
-  switch (status) {
-    case 'syncing':
-      statusIndicator.textContent = 'Syncing...';
-      statusIndicator.className = 'sync-status syncing';
-      
-      // Set a timeout to reset the status if it takes too long
-      window.syncStatusTimeout = setTimeout(() => {
-        console.warn("Sync operation taking too long, resetting status");
-        updateSyncStatus('error');
-        forceResetSync();
-      }, 10000); // 10 seconds timeout
-      break;
-      
-    case 'synced':
-      statusIndicator.textContent = 'Online';
-      statusIndicator.className = 'sync-status synced';
-      break;
-      
-    case 'error':
-      statusIndicator.textContent = 'Sync Error';
-      statusIndicator.className = 'sync-status error';
-      
-      // Show a notification
-      showNotification("Error syncing with Firebase. Using local data.");
-      break;
-      
-    case 'offline':
-      statusIndicator.textContent = 'Offline';
-      statusIndicator.className = 'sync-status offline';
-      break;
-      
-    default:
-      statusIndicator.textContent = 'Unknown';
-      statusIndicator.className = 'sync-status';
-  }
+// Handle print button click
+function handlePrint() {
+  window.print();
 }
 
-function saveToLocalStorage(sessionId) {
-  console.log("Saving data to localStorage for session:", sessionId);
-  
-  // Prepare the data to save
-  const dataToSave = {
-    availability: availabilityData,
-    selectedDate: selectedDate,
-    selectedTimeSlot: selectedTimeSlot,
-    lastUpdated: new Date().toISOString()
-  };
-  
-  // Save to local storage
-  localStorage.setItem(`iftar-scheduler-data-${sessionId}`, JSON.stringify(dataToSave));
-  console.log("Data saved to localStorage");
-}
-
-async function saveToFirebase(isInitialSave = false) {
-  console.log('Saving data to Firebase for session:', sessionId);
-  
-  try {
-    const { ref, set } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
-    console.log('Firebase database module imported for saving');
+// Handle clear all button click
+function handleClearAll() {
+  if (confirm('Are you sure you want to clear all data? This cannot be undone.')) {
+    // Clear all data
+    window.dishes = [];
+    window.participants = [];
+    window.availabilityData = {};
+    window.selectedFinalDate = null;
     
-    // Use the same very simple path structure as in loadDataFromFirebase
-    const path = `s/${sessionId}`;
-    console.log('Attempting to save data to path:', path);
-    const sessionRef = ref(database, path);
+    // Update UI
+    updateDishList();
+    updateParticipantList();
+    updateAvailabilityTable();
     
-    const data = {
-      dishes,
-      participants,
-      availabilityData,
-      selectedFinalDate,
-      lastUpdated: new Date().toISOString()
-    };
+    // Hide final date section
+    safeUpdateUI('finalDateSection', (element) => {
+      element.style.display = 'none';
+    });
     
-    await set(sessionRef, data);
-    console.log('Data saved to Firebase successfully');
-    showNotification('Changes saved to Firebase');
-    return true;
-  } catch (error) {
-    console.error('Error saving to Firebase:', error);
-    showNotification('Error saving to Firebase. Changes saved locally.');
-    return false;
+    // Save to Firebase and localStorage
+    saveToFirebase();
+    
+    showNotification('All data cleared', 'success');
   }
 }
 
-function renderParticipantsList() {
-  console.log("Rendering participants list");
-  const participantsList = document.getElementById('participants');
-  if (!participantsList) return;
+// Handle select final date button click
+function handleSelectFinalDate() {
+  // Get the selected date from the UI
+  const selectedDateInput = document.getElementById('selected-date');
+  const selectedTimeInput = document.getElementById('selected-time');
   
-  // Clear previous content
-  participantsList.innerHTML = '';
-  
-  // Check if there are any participants
-  if (participants.length === 0) {
-    participantsList.innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-users"></i>
-        <p>No participants yet. Be the first to join!</p>
-      </div>
-    `;
+  if (!selectedDateInput || !selectedTimeInput) {
+    showNotification('Date selection inputs not found', 'error');
     return;
   }
   
-  // Sort participants by name
-  const sortedParticipants = [...participants].sort((a, b) => a.name.localeCompare(b.name));
+  const selectedDate = selectedDateInput.value;
+  const selectedTime = selectedTimeInput.value;
   
-  // Create list items
-  sortedParticipants.forEach(participant => {
-    const listItem = document.createElement('div');
-    listItem.className = 'participant-item';
-    
-    // Create content
-    listItem.innerHTML = `
-      <div class="participant-info">
-        <h3>${participant.name}</h3>
-        <div class="participant-meta">
-          <span>Available on ${Object.keys(participant.dates || {}).length} dates</span>
-          ${participant.notes ? `<p class="notes">${participant.notes}</p>` : ''}
-        </div>
-      </div>
-    `;
-    
-    participantsList.appendChild(listItem);
+  if (!selectedDate) {
+    showNotification('Please select a date', 'error');
+    return;
+  }
+  
+  if (!selectedTime) {
+    showNotification('Please select a time', 'error');
+    return;
+  }
+  
+  // Format the final date
+  const finalDate = `${selectedDate} at ${selectedTime}`;
+  
+  // Update the final date
+  window.selectedFinalDate = finalDate;
+  
+  // Update UI
+  safeUpdateUI('finalDateDisplay', (element) => {
+    element.textContent = finalDate;
   });
   
-  // Update total count
-  if (totalParticipantsElement) {
-    totalParticipantsElement.textContent = participants.length;
+  safeUpdateUI('finalDateSection', (element) => {
+    element.style.display = 'block';
+  });
+  
+  // Save to Firebase and localStorage
+  saveToFirebase(sessionId);
+  
+  showNotification('Final date selected', 'success');
+}
+
+// Navigate month in the calendar
+function navigateMonth(direction) {
+  // Update the current date
+  currentDate = new Date(currentDate);
+  currentDate.setMonth(currentDate.getMonth() + direction);
+  
+  // Update the calendar UI
+  updateCalendar();
+  
+  // Show notification
+  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const year = currentDate.getFullYear();
+  showNotification(`Navigated to ${monthName} ${year}`, 'info');
+}
+
+// Update calendar UI
+function updateCalendar() {
+  console.log('Updating calendar for', currentDate.toLocaleDateString());
+  
+  // Update month display
+  safeUpdateUI('current-month', (element) => {
+    const monthName = currentDate.toLocaleString('default', { month: 'long' });
+    const year = currentDate.getFullYear();
+    element.textContent = `${monthName} ${year}`;
+    console.log('Updated month display to', `${monthName} ${year}`);
+  });
+  
+  // Clear existing calendar days - handle multiple calendar-days elements
+  const calendarDaysElements = [
+    ...document.querySelectorAll('#calendar-days'),
+    ...document.querySelectorAll('#calendar-days-mobile')
+  ];
+  console.log('Found', calendarDaysElements.length, 'calendar days elements');
+  
+  if (calendarDaysElements.length === 0) {
+    console.warn('No calendar days elements found');
+    return;
   }
+  
+  // Generate calendar days
+  const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  const startingDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  
+  console.log('Generating calendar for', firstDay.toLocaleDateString(), 'to', lastDay.toLocaleDateString());
+  console.log('Month has', lastDay.getDate(), 'days, starting on', ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][startingDayOfWeek]);
+  
+  // Create calendar days HTML
+  let calendarHTML = '';
+  
+  // Add empty cells for days before the first day of the month
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    calendarHTML += '<div class="calendar-day empty"></div>';
+  }
+  
+  // Add days of the current month
+  for (let i = 1; i <= lastDay.getDate(); i++) {
+    const dateString = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${i.toString().padStart(2, '0')}`;
+    
+    let dayHTML = `
+      <div class="calendar-day">
+        <input type="checkbox" class="date-checkbox" value="${dateString}" id="date-${dateString}" 
+          ${selectedDates && selectedDates.includes(dateString) ? 'checked' : ''}>
+        <label for="date-${dateString}">${i}</label>
+    `;
+    
+    // Add availability indicator if data exists
+    if (window.availabilityData && window.availabilityData[dateString]) {
+      const uniqueParticipants = new Set();
+      Object.values(window.availabilityData[dateString]).forEach(participants => {
+        participants.forEach(participant => {
+          uniqueParticipants.add(participant);
+        });
+      });
+      
+      dayHTML += `
+        <div class="availability-indicator">${uniqueParticipants.size}</div>
+      `;
+    }
+    
+    dayHTML += `</div>`;
+    calendarHTML += dayHTML;
+  }
+  
+  // Update all calendar-days elements
+  calendarDaysElements.forEach((element, index) => {
+    element.innerHTML = calendarHTML;
+    console.log(`Updated calendar days element ${index + 1} with ${lastDay.getDate()} days`);
+    
+    // Add event listeners to checkboxes
+    const checkboxes = element.querySelectorAll('.date-checkbox');
+    console.log(`Added ${checkboxes.length} date checkboxes to element ${index + 1}`);
+    
+    checkboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        if (!window.selectedDates) {
+          window.selectedDates = [];
+          console.log('Initialized window.selectedDates array');
+        }
+        
+        const dateString = e.target.value;
+        
+        if (e.target.checked) {
+          if (!selectedDates.includes(dateString)) {
+            selectedDates.push(dateString);
+            console.log('Added date to selection:', dateString);
+          }
+        } else {
+          const index = selectedDates.indexOf(dateString);
+          if (index !== -1) {
+            selectedDates.splice(index, 1);
+            console.log('Removed date from selection:', dateString);
+          }
+        }
+        
+        // Update all other checkboxes with the same value
+        document.querySelectorAll(`.date-checkbox[value="${dateString}"]`).forEach(cb => {
+          if (cb !== e.target) {
+            cb.checked = e.target.checked;
+          }
+        });
+      });
+    });
+  });
+  
+  console.log('Calendar update completed for', currentDate.toLocaleDateString());
 }
