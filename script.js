@@ -2,134 +2,63 @@
 
 // Debug information
 console.log('Script loaded:', new Date().toISOString());
-console.log('Script version: 1.7.0');
+console.log('Script version: 1.8.0');
 
-// Show a notification message
+// Show notification
 function showNotification(message, type = 'info') {
   console.log(`Notification: ${message} (${type})`);
   
   // Create notification element if it doesn't exist
-  let notificationContainer = document.getElementById('notification-container');
+  let notification = document.getElementById('notification');
   
-  if (!notificationContainer) {
-    notificationContainer = document.createElement('div');
-    notificationContainer.id = 'notification-container';
-    notificationContainer.style.position = 'fixed';
-    notificationContainer.style.top = '20px';
-    notificationContainer.style.right = '20px';
-    notificationContainer.style.zIndex = '9999';
-    document.body.appendChild(notificationContainer);
+  if (!notification) {
+    notification = document.createElement('div');
+    notification.id = 'notification';
+    notification.style.position = 'fixed';
+    notification.style.top = '20px';
+    notification.style.right = '20px';
+    notification.style.padding = '10px 20px';
+    notification.style.borderRadius = '5px';
+    notification.style.color = 'white';
+    notification.style.fontWeight = 'bold';
+    notification.style.zIndex = '9999';
+    notification.style.opacity = '0';
+    notification.style.transition = 'opacity 0.3s ease';
+    document.body.appendChild(notification);
   }
   
-  // Create notification
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.style.backgroundColor = type === 'error' ? '#f44336' : '#4CAF50';
-  notification.style.color = 'white';
-  notification.style.padding = '15px';
-  notification.style.marginBottom = '10px';
-  notification.style.borderRadius = '5px';
-  notification.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-  notification.style.minWidth = '250px';
-  notification.style.opacity = '0';
-  notification.style.transition = 'opacity 0.3s ease-in-out';
+  // Set notification style based on type
+  switch (type) {
+    case 'success':
+      notification.style.backgroundColor = '#4caf50';
+      break;
+    case 'error':
+      notification.style.backgroundColor = '#f44336';
+      break;
+    case 'warning':
+      notification.style.backgroundColor = '#ff9800';
+      break;
+    default:
+      notification.style.backgroundColor = '#2196f3';
+  }
   
-  // Add message
-  notification.innerHTML = `
-    <span style="margin-right: 10px;">
-      <i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
-    </span>
-    <span>${message}</span>
-    <span style="float: right; cursor: pointer;" onclick="this.parentElement.style.opacity = '0'; setTimeout(() => this.parentElement.remove(), 300);">
-      &times;
-    </span>
-  `;
-  
-  // Add to container
-  notificationContainer.appendChild(notification);
+  // Set notification message
+  notification.textContent = message;
   
   // Show notification
-  setTimeout(() => {
-    notification.style.opacity = '1';
-  }, 10);
+  notification.style.opacity = '1';
   
-  // Auto-hide after 5 seconds
+  // Hide notification after 3 seconds
   setTimeout(() => {
     notification.style.opacity = '0';
-    setTimeout(() => {
-      try {
-        notification.remove();
-      } catch (e) {
-        console.log('Notification already removed');
-      }
-    }, 300);
-  }, 5000);
-}
-
-// Show the current session ID in the UI
-function showSessionId() {
-  console.log('Showing session ID in UI');
-  
-  // Get the current session ID
-  const currentSessionId = localStorage.getItem('sessionId') || window.location.hash.substring(1);
-  
-  if (!currentSessionId) {
-    console.log('No session ID found');
-    return;
-  }
-  
-  // Create session ID display if it doesn't exist
-  let sessionIdDisplay = document.getElementById('session-id-display');
-  
-  if (!sessionIdDisplay) {
-    sessionIdDisplay = document.createElement('div');
-    sessionIdDisplay.id = 'session-id-display';
-    sessionIdDisplay.style.position = 'fixed';
-    sessionIdDisplay.style.bottom = '20px';
-    sessionIdDisplay.style.left = '20px';
-    sessionIdDisplay.style.backgroundColor = '#f8f9fa';
-    sessionIdDisplay.style.padding = '10px';
-    sessionIdDisplay.style.borderRadius = '5px';
-    sessionIdDisplay.style.boxShadow = '0 2px 5px rgba(0,0,0,0.1)';
-    sessionIdDisplay.style.fontSize = '12px';
-    sessionIdDisplay.style.zIndex = '9999';
-    document.body.appendChild(sessionIdDisplay);
-  }
-  
-  // Update session ID display
-  sessionIdDisplay.innerHTML = `
-    <div>
-      <strong>Session ID:</strong> ${currentSessionId}
-      <button onclick="copyToClipboard('${currentSessionId}')" style="margin-left: 5px; border: none; background: none; cursor: pointer;">
-        <i class="fas fa-copy"></i>
-      </button>
-    </div>
-    <div>
-      <button onclick="debugFirebasePaths('${currentSessionId}')" style="margin-top: 5px; border: none; background: none; cursor: pointer; color: #007bff;">
-        Debug Firebase Paths
-      </button>
-    </div>
-  `;
-  
-  // Add copy to clipboard function if it doesn't exist
-  if (typeof window.copyToClipboard !== 'function') {
-    window.copyToClipboard = function(text) {
-      const textarea = document.createElement('textarea');
-      textarea.value = text;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      showNotification('Session ID copied to clipboard');
-    };
-  }
+  }, 3000);
 }
 
 // Call this function after the app is initialized
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
-    showSessionId();
-    showNotification('Application initialized successfully');
+    // Initialize any required functionality here
+    console.log('Application initialized');
   }, 3000);
 });
 
@@ -137,10 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
 if (typeof window.appReady === 'function') {
   console.log('Calling appReady function to hide loading message');
   window.appReady();
-  
-  // Show session ID and notification
-  showSessionId();
-  showNotification('Application initialized successfully');
 } else {
   console.log('appReady function not found');
 }

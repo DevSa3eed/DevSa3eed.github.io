@@ -4,7 +4,7 @@
 
 // Debug information
 console.log(`Script loaded at: ${new Date().toLocaleString()}`);
-console.log('Script version: 2.3.7');
+console.log('Script version: 2.4.1');
 
 // Global variables
 window.dishes = [];
@@ -20,6 +20,9 @@ let selectedTimeSlots = [];
 
 // Initialize selectedDates in the window object for global access
 window.selectedDates = selectedDates;
+window.currentDate = currentDate;
+window.selectedTimeSlots = selectedTimeSlots;
+window.dishes = window.dishes || [];
 
 // Initialize global variables
 initializeGlobalVariables();
@@ -135,12 +138,62 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCalendar();
   
   // Add event listeners for month navigation
-  if (prevMonthButton) {
-    prevMonthButton.addEventListener('click', () => navigateMonth(-1));
+  const prevMonthButtons = document.querySelectorAll('#prev-month');
+  const nextMonthButtons = document.querySelectorAll('#next-month');
+  
+  prevMonthButtons.forEach(button => {
+    button.addEventListener('click', () => navigateMonth(-1));
+  });
+  
+  nextMonthButtons.forEach(button => {
+    button.addEventListener('click', () => navigateMonth(1));
+  });
+  
+  console.log(`Initialized ${prevMonthButtons.length} prev month buttons and ${nextMonthButtons.length} next month buttons`);
+  
+  // Set up tab switching
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  if (tabButtons.length > 0) {
+    console.log(`Found ${tabButtons.length} tab buttons`);
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        // Hide all tab contents
+        const tabContents = document.querySelectorAll('.tab-content');
+        tabContents.forEach(content => content.classList.add('hidden'));
+        
+        // Show the corresponding tab content
+        const tabId = button.getAttribute('data-tab');
+        console.log(`Switching to tab: ${tabId}`);
+        const tabContent = document.getElementById(tabId);
+        if (tabContent) {
+          tabContent.classList.remove('hidden');
+          console.log(`Switched to tab: ${tabId}`);
+        } else {
+          console.error(`Tab content not found for id: ${tabId}`);
+        }
+      });
+    });
+  } else {
+    console.error('No tab buttons found');
   }
   
-  if (nextMonthButton) {
-    nextMonthButton.addEventListener('click', () => navigateMonth(1));
+  // Set up filter functionality for dishes
+  const filterSelect = document.getElementById('filter');
+  if (filterSelect) {
+    console.log('Initializing filter select');
+    filterSelect.addEventListener('change', () => {
+      const filterValue = filterSelect.value;
+      console.log(`Filtering dishes by: ${filterValue}`);
+      updateDishList(filterValue);
+    });
+  } else {
+    console.error('Filter select not found');
   }
 });
 
@@ -770,6 +823,13 @@ function handleSubmitAvailability() {
 function handleAddDish(event) {
   event.preventDefault();
   
+  // Ensure form elements exist
+  if (!dishNameInput || !contributorInput || !categorySelect) {
+    console.error('Dish form elements not found');
+    showNotification('Error: Form elements not found', 'error');
+    return;
+  }
+  
   const dishName = dishNameInput.value.trim();
   const contributor = contributorInput.value.trim();
   const category = categorySelect.value;
@@ -782,6 +842,16 @@ function handleAddDish(event) {
   if (!contributor) {
     showNotification('Please enter your name', 'error');
     return;
+  }
+  
+  if (!category) {
+    showNotification('Please select a category', 'error');
+    return;
+  }
+  
+  // Ensure dishes array exists
+  if (!window.dishes) {
+    window.dishes = [];
   }
   
   // Create dish entry
@@ -1122,109 +1192,6 @@ async function setupRealtimeListeners(sessionId) {
   }
 }
 
-// Function to directly migrate data from a specific old session ID to a new one
-async function migrateSpecificSession(oldSessionId) {
-  console.log(`Attempting to migrate specific session: ${oldSessionId}`);
-  
-  // Generate a new Firebase-safe session ID
-  const newSessionId = generateSessionId();
-  console.log(`Generated new Firebase-safe session ID: ${newSessionId}`);
-  
-  // Try to migrate the data
-  const success = await migrateDataFromOldSession(oldSessionId, newSessionId);
-  
-  if (success) {
-    console.log(`Successfully migrated data from ${oldSessionId} to ${newSessionId}`);
-    
-    // Update the current session ID in both local variable and window object
-    sessionId = newSessionId;
-    window.sessionId = newSessionId;
-    localStorage.setItem('sessionId', newSessionId);
-    
-    // Store the mapping
-    const migrationMap = JSON.parse(localStorage.getItem('sessionIdMigrationMap') || '{}');
-    migrationMap[oldSessionId] = newSessionId;
-    localStorage.setItem('sessionIdMigrationMap', JSON.stringify(migrationMap));
-    
-    // Set up listeners for the new session
-    await setupRealtimeListeners(newSessionId);
-    
-    // Reload the UI
-    updateDishList();
-    updateParticipantList();
-    updateAvailabilityTable();
-    
-    showNotification(`Successfully migrated data to new session ID: ${newSessionId}`);
-    return true;
-  } else {
-    console.log(`Failed to migrate data from ${oldSessionId}`);
-    showNotification(`Could not find data for session: ${oldSessionId}`);
-    return false;
-  }
-}
-
-// Add a migration button to the UI
-function addMigrationButton() {
-  // Check if the button already exists
-  if (document.getElementById('migrate-button')) {
-    return;
-  }
-  
-  // Create the button
-  const button = document.createElement('button');
-  button.id = 'migrate-button';
-  button.className = 'action-button';
-  button.innerHTML = '<i class="fas fa-sync"></i> Migrate Data';
-  button.style.backgroundColor = '#4a6da7';
-  button.style.color = 'white';
-  button.style.padding = '8px 16px';
-  button.style.border = 'none';
-  button.style.borderRadius = '4px';
-  button.style.cursor = 'pointer';
-  button.style.margin = '10px 0';
-  button.style.display = 'block';
-  
-  // Add click event
-  button.addEventListener('click', async () => {
-    // Show a loading indicator
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Migrating...';
-    button.disabled = true;
-    
-    try {
-      // Try to migrate from the known session ID
-      const success = await migrateSpecificSession('iftarx31pu1w8g9ol8');
-      
-      if (!success) {
-        // If that fails, try other known session IDs
-        const otherIds = ['m7w45qzy-bynp0r', 'iftar-uulxr0cqo525q0srnl62n'];
-        
-        for (const id of otherIds) {
-          const result = await migrateSpecificSession(id);
-          if (result) {
-            break;
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error during migration:', error);
-      showNotification('Error during migration. Please try again.');
-    } finally {
-      // Reset the button
-      button.innerHTML = '<i class="fas fa-sync"></i> Migrate Data';
-      button.disabled = false;
-    }
-  });
-  
-  // Add the button to the UI
-  const container = document.querySelector('.party-summary') || document.body;
-  container.prepend(button);
-}
-
-// Call this function after the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  setTimeout(addMigrationButton, 1000); // Add a delay to ensure the UI is fully loaded
-});
-
 // Automatically try to migrate data when the app loads
 async function autoMigrateData() {
   console.log('Auto-migrating data from old paths to new paths');
@@ -1248,23 +1215,29 @@ async function autoMigrateData() {
     
     if (oldSnapshot.exists()) {
       console.log(`Found data in old path: sessions/${currentSessionId}`);
+      
+      // Get the data
       const data = oldSnapshot.val();
       
+      // Create the new path
+      const newPathRef = ref(database, `dish-party/${currentSessionId}`);
+      
       // Save to the new path
-      const newPathRef = ref(database, `data/${currentSessionId}`);
       await set(newPathRef, data);
-      console.log(`Successfully migrated data to new path: data/${currentSessionId}`);
+      console.log(`Migrated data to new path: dish-party/${currentSessionId}`);
       
-      // Show notification
-      showNotification('Data migrated to new path structure');
+      // Delete the old data
+      await set(oldPathRef, null);
+      console.log(`Deleted data from old path: sessions/${currentSessionId}`);
       
+      showNotification('Data migrated successfully', 'success');
       return true;
     } else {
       console.log(`No data found in old path: sessions/${currentSessionId}`);
       return false;
     }
   } catch (error) {
-    console.error(`Error auto-migrating data: ${error.message}`);
+    console.error('Error during auto-migration:', error);
     return false;
   }
 }
@@ -1485,21 +1458,59 @@ function safeUpdateUI(elementId, updateFunction) {
 }
 
 // Update dish list safely
-function updateDishList() {
-  console.log('Updating dish list');
+function updateDishList(filterValue = 'All') {
+  console.log('Updating dish list with filter:', filterValue);
+  
+  // Ensure dishes array exists
+  if (!window.dishes) {
+    console.log('Initializing dishes array');
+    window.dishes = [];
+  }
+  
+  // Check if dishes-list element exists
+  const dishesList = document.getElementById('dishes-list');
+  if (!dishesList) {
+    console.error('Dishes list element not found');
+    return;
+  }
+  
   safeUpdateUI('dishes-list', (element) => {
     // Clear the current list
     element.innerHTML = '';
     
+    // Filter dishes if needed
+    const filteredDishes = filterValue === 'All' 
+      ? window.dishes 
+      : window.dishes.filter(dish => dish.category === filterValue);
+    
+    if (!filteredDishes || filteredDishes.length === 0) {
+      // Show empty state
+      element.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-utensils"></i>
+          <p>No dishes added yet. Be the first to contribute!</p>
+        </div>
+      `;
+      return;
+    }
+    
     // Add each dish to the list
-    window.dishes.forEach((dish, index) => {
+    filteredDishes.forEach((dish, index) => {
       const dishItem = document.createElement('div');
-      dishItem.className = 'dish-item';
+      dishItem.className = 'dish-card';
       dishItem.innerHTML = `
-        <h3>${dish.name}</h3>
-        <p>Contributed by: ${dish.contributor}</p>
-        <p>Category: ${dish.category}</p>
-        <button class="remove-dish-btn" data-index="${index}">Remove</button>
+        <div class="dish-info">
+          <h3>${dish.name}</h3>
+          <div class="dish-meta">
+            <span><i class="fas fa-user"></i> ${dish.contributor}</span>
+            <span><i class="fas fa-tag"></i> ${dish.category}</span>
+          </div>
+        </div>
+        <div class="dish-actions">
+          <button class="remove-dish-btn" data-index="${window.dishes.indexOf(dish)}">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
       `;
       element.appendChild(dishItem);
     });
@@ -1513,10 +1524,13 @@ function updateDishList() {
     // Add event listeners to remove buttons
     document.querySelectorAll('.remove-dish-btn').forEach(button => {
       button.addEventListener('click', (e) => {
-        const index = e.target.getAttribute('data-index');
-        window.dishes.splice(index, 1);
-        updateDishList();
-        saveToFirebase(sessionId);
+        const index = parseInt(e.target.getAttribute('data-index') || e.target.parentElement.getAttribute('data-index'));
+        if (!isNaN(index) && index >= 0 && index < window.dishes.length) {
+          window.dishes.splice(index, 1);
+          updateDishList(filterValue);
+          saveToFirebase();
+          showNotification('Dish removed successfully', 'success');
+        }
       });
     });
   });
@@ -1907,3 +1921,59 @@ function updateCalendar() {
   
   console.log('Calendar update completed for', currentDate.toLocaleDateString());
 }
+
+async function migrateSpecificSession(oldSessionId) {
+  console.log(`Attempting to migrate specific session: ${oldSessionId}`);
+  
+  if (!oldSessionId) {
+    console.log('No session ID provided for migration');
+    return false;
+  }
+  
+  try {
+    // Import Firebase functions
+    const { ref, get, set } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
+    
+    // Check if data exists in the old path
+    const oldPathRef = ref(database, `sessions/${oldSessionId}`);
+    const oldSnapshot = await get(oldPathRef);
+    
+    if (oldSnapshot.exists()) {
+      console.log(`Found data in old path: sessions/${oldSessionId}`);
+      
+      // Get the data
+      const data = oldSnapshot.val();
+      
+      // Create a new session ID without underscores
+      const newSessionId = oldSessionId.replace(/_/g, '-');
+      
+      // Create the new path
+      const newPathRef = ref(database, `dish-party/${newSessionId}`);
+      
+      // Save to the new path
+      await set(newPathRef, data);
+      console.log(`Migrated data to new path: dish-party/${newSessionId}`);
+      
+      // Update the UI with the migrated data
+      updateDishList();
+      updateParticipantList();
+      updateAvailabilityTable();
+      
+      // Show notification
+      showNotification(`Successfully migrated data from ${oldSessionId} to ${newSessionId}`, 'success');
+      
+      return true;
+    } else {
+      console.log(`No data found in old path: sessions/${oldSessionId}`);
+      return false;
+    }
+  } catch (error) {
+    console.error(`Error migrating session: ${error.message}`);
+    return false;
+  }
+}
+
+// Call this function after the DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  // No migration button needed
+});
