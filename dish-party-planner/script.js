@@ -815,8 +815,8 @@ function handleSubmitAvailability() {
     });
   });
   
-  // Save to Firebase and localStorage
-  saveToFirebase();
+  // Save to Firebase and localStorage using the current session ID
+  saveToFirebase(window.sessionId);
   
   // Update UI
   updateParticipantList();
@@ -1318,9 +1318,15 @@ async function saveToFirebase(sessionIdOrForce) {
   console.log(`Saving data to Firebase for session: ${sessionId}`);
   
   if (!sessionId || sessionId === '') {
-    console.log('No session ID provided, generating a new one');
-    sessionId = generateSessionId();
-    window.location.hash = sessionId;
+    console.log('No session ID provided, using current session ID');
+    sessionId = window.sessionId;
+    
+    if (!sessionId) {
+      console.log('No current session ID, generating a new one');
+      sessionId = generateSessionId();
+      window.sessionId = sessionId;
+      localStorage.setItem('sessionId', sessionId);
+    }
   }
   
   // Migrate session ID if it contains underscores
@@ -1335,6 +1341,15 @@ async function saveToFirebase(sessionIdOrForce) {
   try {
     const { ref, set } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
     
+    // Ensure all required properties exist and have valid values for Firebase
+    if (typeof window.dishes === 'undefined') window.dishes = [];
+    if (typeof window.participants === 'undefined') window.participants = [];
+    if (typeof window.availabilityData === 'undefined') window.availabilityData = {};
+    if (typeof window.selectedFinalDate === 'undefined' || window.selectedFinalDate === undefined) {
+      console.log('selectedFinalDate is undefined, setting to null for Firebase compatibility');
+      window.selectedFinalDate = null;
+    }
+    
     // Create a data object with all the current state
     const data = {
       dishes: window.dishes,
@@ -1343,6 +1358,15 @@ async function saveToFirebase(sessionIdOrForce) {
       selectedFinalDate: window.selectedFinalDate,
       lastUpdated: new Date().toISOString()
     };
+    
+    // Log the data being saved to help debug
+    console.log('Saving data to Firebase:', {
+      sessionId,
+      hasSelectedFinalDate: window.selectedFinalDate !== undefined,
+      selectedFinalDateValue: window.selectedFinalDate,
+      participantsCount: window.participants.length,
+      dishesCount: window.dishes.length
+    });
     
     // Save to the new path structure
     const sessionRef = ref(database, `data/${sessionId}`);
