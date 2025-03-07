@@ -4,7 +4,7 @@
 
 // Debug information
 console.log(`Script loaded at: ${new Date().toLocaleString()}`);
-console.log('Script version: 2.4.1');
+console.log('Script version: 2.4.3');
 
 // Global variables
 window.dishes = [];
@@ -890,7 +890,7 @@ function handleAddDish(event) {
   window.dishes.push(dishEntry);
   
   // Save to Firebase and localStorage
-  saveToFirebase();
+  saveToFirebase(window.sessionId);
   
   // Update UI
   updateDishList();
@@ -1576,7 +1576,7 @@ function updateDishList(filterValue = 'All') {
         if (!isNaN(index) && index >= 0 && index < window.dishes.length) {
           window.dishes.splice(index, 1);
           updateDishList(filterValue);
-          saveToFirebase();
+          saveToFirebase(window.sessionId);
           showNotification('Dish removed successfully', 'success');
         }
       });
@@ -1614,7 +1614,7 @@ function updateParticipantList() {
         const index = e.target.getAttribute('data-index');
         window.participants.splice(index, 1);
         updateParticipantList();
-        saveToFirebase(sessionId);
+        saveToFirebase(window.sessionId);
       });
     });
   });
@@ -1837,7 +1837,7 @@ function handleSelectFinalDate() {
   });
   
   // Save to Firebase and localStorage
-  saveToFirebase(sessionId);
+  saveToFirebase(window.sessionId);
   
   showNotification('Final date selected', 'success');
 }
