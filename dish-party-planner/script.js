@@ -717,6 +717,25 @@ function initializeApp() {
   closeModalButton.addEventListener('click', () => shareModal.style.display = 'none');
   copyLinkButton.addEventListener('click', handleCopyLink);
   
+  // Add event listeners for time slot checkboxes
+  const timeSlotCheckboxes = document.querySelectorAll('input[name="time-slot"]');
+  if (timeSlotCheckboxes.length > 0) {
+    console.log(`Found ${timeSlotCheckboxes.length} time slot checkboxes`);
+    timeSlotCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', () => {
+        // Update selectedTimeSlots array when checkboxes change
+        selectedTimeSlots = [];
+        document.querySelectorAll('input[name="time-slot"]:checked').forEach(cb => {
+          selectedTimeSlots.push(cb.value);
+        });
+        window.selectedTimeSlots = selectedTimeSlots;
+        console.log('Selected time slots:', selectedTimeSlots);
+      });
+    });
+  } else {
+    console.error('No time slot checkboxes found');
+  }
+  
   // Close modal when clicking outside
   window.addEventListener('click', (event) => {
     if (event.target === shareModal) {
@@ -746,6 +765,12 @@ function handleSubmitAvailability() {
     showNotification('Please select at least one date', 'error');
     return;
   }
+  
+  // Collect selected time slots before validation
+  selectedTimeSlots = [];
+  document.querySelectorAll('input[name="time-slot"]:checked').forEach(checkbox => {
+    selectedTimeSlots.push(checkbox.value);
+  });
   
   if (selectedTimeSlots.length === 0) {
     showNotification('Please select at least one time slot', 'error');
@@ -783,13 +808,10 @@ function handleSubmitAvailability() {
         window.availabilityData[date][timeSlot] = [];
       }
       
-      // Remove existing entries for this participant
-      window.availabilityData[date][timeSlot] = window.availabilityData[date][timeSlot].filter(
-        p => p.toLowerCase() !== participantName.toLowerCase()
-      );
-      
-      // Add participant to this date and time slot
-      window.availabilityData[date][timeSlot].push(participantName);
+      // Add participant to this date and time slot if not already present
+      if (!window.availabilityData[date][timeSlot].includes(participantName)) {
+        window.availabilityData[date][timeSlot].push(participantName);
+      }
     });
   });
   
@@ -804,7 +826,9 @@ function handleSubmitAvailability() {
   participantNameInput.value = '';
   scheduleNotesInput.value = '';
   selectedDates = [];
+  window.selectedDates = [];
   selectedTimeSlots = [];
+  window.selectedTimeSlots = [];
   
   // Uncheck all date checkboxes
   document.querySelectorAll('.date-checkbox').forEach(checkbox => {
