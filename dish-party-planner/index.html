@@ -263,9 +263,16 @@
             <div id="selected-date-display" class="selected-date">
                 <h3>Selected Date & Time</h3>
                 <p id="final-date">Not yet selected</p>
-                <button id="select-date" class="btn-secondary">
-                    <i class="fas fa-calendar-check"></i> Select This Date
-                </button>
+                <div id="final-date-details" class="final-date-details" style="display: none;">
+                    <div class="date-attendees">
+                        <h4>Who's Coming:</h4>
+                        <ul id="date-attendees-list"></ul>
+                    </div>
+                    <div class="date-dishes">
+                        <h4>Planned Dishes:</h4>
+                        <ul id="date-dishes-list"></ul>
+                    </div>
+                </div>
             </div>
             
             <div class="summary-stats">
@@ -276,6 +283,10 @@
                 <div class="stat">
                     <span id="total-dishes">0</span>
                     <p>Total Dishes</p>
+                </div>
+                <div class="stat">
+                    <span id="total-dates">0</span>
+                    <p>Dates Available</p>
                 </div>
             </div>
             
@@ -328,7 +339,7 @@
     </div>
     
     <!-- App Scripts -->
-    <script src="script.js?v=2.5.1&t=20250308"></script>
+    <script src="script.js?v=2.8.0&t=20250308"></script>
     <script src="calendar-functions.js?v=1.0.0"></script>
     
     <script>

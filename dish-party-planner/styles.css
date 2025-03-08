@@ -1476,4 +1476,168 @@ footer a {
     padding: 3px 8px;
     border-radius: 10px;
     font-size: 0.8rem;
+}
+
+/* Availability Table */
+.availability-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.availability-table th,
+.availability-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.availability-table th {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+
+.availability-table tr:last-child td {
+    border-bottom: none;
+}
+
+.availability-table tr:nth-child(even) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.available-person {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin: 0.1rem;
+    font-size: 0.9rem;
+}
+
+/* Best Times List */
+.best-times {
+    margin-top: 2rem;
+}
+
+.best-time-option {
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.best-time-date {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--primary-color);
+}
+
+.best-time-slot {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.best-time-people {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.people-count {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+
+.people-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+/* Empty States */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.empty-state i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    opacity: 0.5;
+}
+
+/* Final Date Details */
+.final-date-details {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.date-attendees,
+.date-dishes {
+    margin-bottom: 1rem;
+}
+
+.date-attendees h4,
+.date-dishes h4 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+}
+
+.date-attendees ul,
+.date-dishes ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.date-attendees li,
+.date-dishes li {
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.date-attendees li i,
+.date-dishes li i {
+    margin-right: 0.5rem;
+    color: var(--accent-color);
+}
+
+.date-dishes li .dish-category {
+    margin-left: auto;
+    font-size: 0.8rem;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.no-items {
+    font-style: italic;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 0.5rem;
 } 

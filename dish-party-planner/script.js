@@ -474,6 +474,10 @@ function initializeApp() {
           updateParticipantList();
           updateAvailabilityTable();
           updateDishList();
+          updateSummaryStats();
+          
+          // Automatically select the best date
+          autoSelectBestDate();
           
           showNotification('Loaded shared plan successfully!', 'success');
         } else {
@@ -482,6 +486,10 @@ function initializeApp() {
           updateParticipantList();
           updateAvailabilityTable();
           updateDishList();
+          updateSummaryStats();
+          
+          // Automatically select the best date
+          autoSelectBestDate();
         }
       } catch (error) {
         console.error("Error loading shared session:", error);
@@ -491,6 +499,10 @@ function initializeApp() {
         updateParticipantList();
         updateAvailabilityTable();
         updateDishList();
+        updateSummaryStats();
+        
+        // Automatically select the best date
+        autoSelectBestDate();
       }
     })();
   } else {
@@ -522,12 +534,22 @@ function initializeApp() {
             
             // Auto-migrate data from old paths
             await autoMigrateData();
+            
+            // Update summary stats
+            updateSummaryStats();
+            
+            // Automatically select the best date
+            autoSelectBestDate();
           } else {
             console.log("Firebase not available, loading from localStorage");
             loadFromLocalStorage(migratedSessionId);
             updateParticipantList();
             updateAvailabilityTable();
             updateDishList();
+            updateSummaryStats();
+            
+            // Automatically select the best date
+            autoSelectBestDate();
           }
         } catch (error) {
           console.error("Error during session initialization:", error);
@@ -537,6 +559,10 @@ function initializeApp() {
           updateParticipantList();
           updateAvailabilityTable();
           updateDishList();
+          updateSummaryStats();
+          
+          // Automatically select the best date
+          autoSelectBestDate();
         }
       })();
     } else {
@@ -551,16 +577,8 @@ function initializeApp() {
       window.availabilityData = {};
       window.dishes = [];
       
-      // Save initial data to Firebase
-      if (database && firebaseInitialized) {
-        saveToFirebase(newSessionId)
-          .then(() => {
-            console.log("Initial data saved to Firebase successfully");
-          })
-          .catch(error => {
-            console.error("Error saving initial data to Firebase:", error);
-          });
-      }
+      // Update summary stats
+      updateSummaryStats();
     }
   }
   
@@ -572,7 +590,6 @@ function initializeApp() {
   shareButton.addEventListener('click', handleShare);
   printButton.addEventListener('click', handlePrint);
   clearAllButton.addEventListener('click', handleClearAll);
-  selectDateButton.addEventListener('click', handleSelectFinalDate);
   closeModalButton.addEventListener('click', () => shareModal.style.display = 'none');
   copyLinkButton.addEventListener('click', handleCopyLink);
   
@@ -609,6 +626,60 @@ function initializeApp() {
   } else {
     console.log('appReady function not found');
   }
+}
+
+// Automatically select the best date
+function autoSelectBestDate() {
+  console.log('Automatically selecting the best date');
+  
+  // Get the best date-time options
+  const bestOptions = getBestDateTimeOptions();
+  
+  if (bestOptions.length === 0) {
+    console.log('No availability data to select from');
+    return;
+  }
+  
+  // Use the best option
+  const bestOption = bestOptions[0];
+  const dateObj = new Date(bestOption.date);
+  const formattedDate = dateObj.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    month: 'long', 
+    day: 'numeric',
+    year: 'numeric'
+  });
+  
+  // Format the final date
+  const finalDate = `${formattedDate} at ${formatTimeSlot(bestOption.timeSlot)}`;
+  
+  // Update the final date
+  window.selectedFinalDate = finalDate;
+  window.selectedDateData = {
+    date: bestOption.date,
+    timeSlot: bestOption.timeSlot,
+    attendees: bestOption.people
+  };
+  
+  // Update UI
+  safeUpdateUI('final-date', (element) => {
+    element.textContent = finalDate;
+  });
+  
+  safeUpdateUI('final-date-details', (element) => {
+    element.style.display = 'block';
+  });
+  
+  // Update attendees list
+  updateDateAttendeesList(bestOption.people);
+  
+  // Update dishes list
+  updateDateDishesList();
+  
+  // Save to Firebase and localStorage
+  saveToFirebase(window.sessionId);
+  
+  console.log('Best date selected automatically:', finalDate);
 }
 
 // Handle submit availability
@@ -680,6 +751,9 @@ function handleSubmitAvailability() {
   // Update UI
   updateParticipantList();
   updateAvailabilityTable();
+  
+  // Automatically select the best date
+  autoSelectBestDate();
   
   // Reset form
   participantNameInput.value = '';
@@ -1350,11 +1424,8 @@ function updateDishList(filterValue = 'All') {
       element.appendChild(dishItem);
     });
     
-    // Update total dishes count if the element exists
-    const totalDishesElement = document.getElementById('total-dishes');
-    if (totalDishesElement) {
-      totalDishesElement.textContent = window.dishes.length;
-    }
+    // Update summary stats
+    updateSummaryStats();
     
     // Add event listeners to remove buttons
     document.querySelectorAll('.remove-dish-btn').forEach(button => {
@@ -1389,11 +1460,8 @@ function updateParticipantList() {
       element.appendChild(participantItem);
     });
     
-    // Update total participants count if the element exists
-    const totalParticipantsElement = document.getElementById('total-participants');
-    if (totalParticipantsElement) {
-      totalParticipantsElement.textContent = window.participants.length;
-    }
+    // Update summary stats
+    updateSummaryStats();
     
     // Add event listeners to remove buttons
     document.querySelectorAll('.remove-participant-btn').forEach(button => {
@@ -1411,9 +1479,164 @@ function updateParticipantList() {
 function updateAvailabilityTable() {
   console.log('Updating availability table');
   safeUpdateUI('availability-calendar', (element) => {
-    // Implementation depends on your specific UI structure
-    // This is a placeholder for the actual implementation
-    console.log('Availability data:', window.availabilityData);
+    // Clear the current content
+    element.innerHTML = '';
+    
+    // Check if there's any availability data
+    const availabilityDates = Object.keys(window.availabilityData);
+    
+    if (availabilityDates.length === 0) {
+      // Show empty state
+      element.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-users"></i>
+          <p>No availability submitted yet. Be the first to add yours!</p>
+        </div>
+      `;
+      return;
+    }
+    
+    // Create a table to display availability
+    const table = document.createElement('table');
+    table.className = 'availability-table';
+    
+    // Create header row with dates
+    const headerRow = document.createElement('tr');
+    headerRow.innerHTML = '<th>Date</th><th>Time</th><th>Available People</th>';
+    table.appendChild(headerRow);
+    
+    // Sort dates chronologically
+    availabilityDates.sort();
+    
+    // For each date in the availability data
+    availabilityDates.forEach(date => {
+      const dateObj = new Date(date);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      // Get time slots for this date
+      const timeSlots = Object.keys(window.availabilityData[date]);
+      
+      // For each time slot
+      timeSlots.forEach((timeSlot, index) => {
+        // Get people available at this time
+        const people = window.availabilityData[date][timeSlot];
+        
+        // Create a row for this date and time
+        const row = document.createElement('tr');
+        
+        // Only show the date in the first row for this date
+        if (index === 0) {
+          row.innerHTML = `
+            <td rowspan="${timeSlots.length}">${formattedDate}</td>
+            <td>${formatTimeSlot(timeSlot)}</td>
+            <td>${formatPeopleList(people)}</td>
+          `;
+        } else {
+          row.innerHTML = `
+            <td>${formatTimeSlot(timeSlot)}</td>
+            <td>${formatPeopleList(people)}</td>
+          `;
+        }
+        
+        table.appendChild(row);
+      });
+    });
+    
+    // Add the table to the element
+    element.appendChild(table);
+    
+    // Update best times list
+    updateBestTimesList();
+  });
+}
+
+// Format time slot for display
+function formatTimeSlot(timeSlot) {
+  switch (timeSlot) {
+    case 'sunset':
+      return 'Sunset (Maghrib - around 6:00 PM)';
+    case 'dinner':
+      return 'Dinner (8:00 PM)';
+    case 'late':
+      return 'Late Night (11:00 PM onwards)';
+    default:
+      return timeSlot;
+  }
+}
+
+// Format people list for display
+function formatPeopleList(people) {
+  if (!people || people.length === 0) {
+    return 'No one available';
+  }
+  
+  return people.map(person => `<span class="available-person">${person}</span>`).join(', ');
+}
+
+// Update best times list
+function updateBestTimesList() {
+  safeUpdateUI('best-times-list', (element) => {
+    // Clear the current list
+    element.innerHTML = '';
+    
+    // Get all date-time combinations
+    const dateTimeCombinations = [];
+    
+    // For each date in the availability data
+    Object.keys(window.availabilityData).forEach(date => {
+      // For each time slot
+      Object.keys(window.availabilityData[date]).forEach(timeSlot => {
+        // Get people available at this time
+        const people = window.availabilityData[date][timeSlot];
+        
+        // Add to the list
+        dateTimeCombinations.push({
+          date,
+          timeSlot,
+          people,
+          count: people.length
+        });
+      });
+    });
+    
+    // Sort by number of people available (descending)
+    dateTimeCombinations.sort((a, b) => b.count - a.count);
+    
+    // Take the top 3
+    const bestOptions = dateTimeCombinations.slice(0, 3);
+    
+    if (bestOptions.length === 0) {
+      // Show empty state
+      element.innerHTML = '<li class="empty-state">No availability data yet</li>';
+      return;
+    }
+    
+    // Add each option to the list
+    bestOptions.forEach(option => {
+      const dateObj = new Date(option.date);
+      const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+      
+      const li = document.createElement('li');
+      li.className = 'best-time-option';
+      li.innerHTML = `
+        <div class="best-time-date">${formattedDate}</div>
+        <div class="best-time-slot">${formatTimeSlot(option.timeSlot)}</div>
+        <div class="best-time-people">
+          <span class="people-count">${option.count} people</span>
+          <span class="people-list">${formatPeopleList(option.people)}</span>
+        </div>
+      `;
+      
+      element.appendChild(li);
+    });
   });
 }
 
@@ -1592,49 +1815,95 @@ function handleClearAll() {
   }
 }
 
-// Handle select final date button click
-function handleSelectFinalDate() {
-  // Get the selected date from the UI
-  const selectedDateInput = document.getElementById('selected-date');
-  const selectedTimeInput = document.getElementById('selected-time');
+// Get best date-time options
+function getBestDateTimeOptions() {
+  // Get all date-time combinations
+  const dateTimeCombinations = [];
   
-  if (!selectedDateInput || !selectedTimeInput) {
-    showNotification('Date selection inputs not found', 'error');
-    return;
-  }
-  
-  const selectedDate = selectedDateInput.value;
-  const selectedTime = selectedTimeInput.value;
-  
-  if (!selectedDate) {
-    showNotification('Please select a date', 'error');
-    return;
-  }
-  
-  if (!selectedTime) {
-    showNotification('Please select a time', 'error');
-    return;
-  }
-  
-  // Format the final date
-  const finalDate = `${selectedDate} at ${selectedTime}`;
-  
-  // Update the final date
-  window.selectedFinalDate = finalDate;
-  
-  // Update UI
-  safeUpdateUI('finalDateDisplay', (element) => {
-    element.textContent = finalDate;
+  // For each date in the availability data
+  Object.keys(window.availabilityData).forEach(date => {
+    // For each time slot
+    Object.keys(window.availabilityData[date]).forEach(timeSlot => {
+      // Get people available at this time
+      const people = window.availabilityData[date][timeSlot];
+      
+      // Add to the list
+      dateTimeCombinations.push({
+        date,
+        timeSlot,
+        people,
+        count: people.length
+      });
+    });
   });
   
-  safeUpdateUI('finalDateSection', (element) => {
-    element.style.display = 'block';
+  // Sort by number of people available (descending)
+  dateTimeCombinations.sort((a, b) => b.count - a.count);
+  
+  return dateTimeCombinations;
+}
+
+// Update date attendees list
+function updateDateAttendeesList(attendees) {
+  safeUpdateUI('date-attendees-list', (element) => {
+    // Clear the current list
+    element.innerHTML = '';
+    
+    if (!attendees || attendees.length === 0) {
+      element.innerHTML = '<li class="no-items">No attendees yet</li>';
+      return;
+    }
+    
+    // Add each attendee to the list
+    attendees.forEach(attendee => {
+      const li = document.createElement('li');
+      li.innerHTML = `<i class="fas fa-user"></i> ${attendee}`;
+      element.appendChild(li);
+    });
+  });
+}
+
+// Update date dishes list
+function updateDateDishesList() {
+  safeUpdateUI('date-dishes-list', (element) => {
+    // Clear the current list
+    element.innerHTML = '';
+    
+    if (!window.dishes || window.dishes.length === 0) {
+      element.innerHTML = '<li class="no-items">No dishes planned yet</li>';
+      return;
+    }
+    
+    // Add each dish to the list
+    window.dishes.forEach(dish => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <i class="fas fa-utensils"></i>
+        <span>${dish.name} by ${dish.contributor}</span>
+        <span class="dish-category">${dish.category}</span>
+      `;
+      element.appendChild(li);
+    });
+  });
+}
+
+// Update summary stats
+function updateSummaryStats() {
+  // Update total participants
+  safeUpdateUI('total-participants', (element) => {
+    element.textContent = window.participants ? window.participants.length : 0;
   });
   
-  // Save to Firebase and localStorage
-  saveToFirebase(window.sessionId);
+  // Update total dishes
+  safeUpdateUI('total-dishes', (element) => {
+    element.textContent = window.dishes ? window.dishes.length : 0;
+  });
   
-  showNotification('Final date selected', 'success');
+  // Update total dates available
+  safeUpdateUI('total-dates', (element) => {
+    const totalDates = window.availabilityData ? Object.keys(window.availabilityData).length : 0;
+    element.textContent = totalDates;
+  });
 }
 
 // Navigate month in the calendar
