@@ -4,7 +4,7 @@
 
 // Debug information
 console.log(`Script loaded at: ${new Date().toLocaleString()}`);
-console.log('Script version: 2.4.3');
+console.log('Script version: 2.5.0');
 
 // Global variables
 window.dishes = [];
@@ -431,277 +431,75 @@ function createFirebaseSafeKey(sessionId) {
 function initializeApp() {
   console.log("Initializing app");
   
-  // Mark the app as initialized
-  window.appInitialized = true;
+  // Initialize global variables
+  initializeGlobalVariables();
   
-  // Check for URL parameters
-  const urlParams = new URLSearchParams(window.location.search);
-  const sharedSessionId = urlParams.get('session');
+  // Check for existing session ID in localStorage
+  const existingSessionId = localStorage.getItem('sessionId');
   
-  if (sharedSessionId) {
-    // User is accessing a shared session
-    console.log("Found shared session ID in URL:", sharedSessionId);
+  if (existingSessionId) {
+    console.log(`Found existing session ID in localStorage: ${existingSessionId}`);
     
     // Migrate the session ID if needed
     (async () => {
-      sessionId = await migrateSessionId(sharedSessionId);
-      console.log("Using migrated session ID:", sessionId);
-      
-      // Store the session ID in localStorage and window object
-      localStorage.setItem('sessionId', sessionId);
-      window.sessionId = sessionId;
-      
-      // Try to load data from Firebase
-      if (database) {
-        console.log("Firebase available, loading shared session");
-        isSyncing = true;
-        updateOnlineStatus();
+      try {
+        const migratedSessionId = await migrateSessionId(existingSessionId);
+        console.log(`Using migrated session ID: ${migratedSessionId}`);
         
-        loadDataFromFirebase(sessionId)
-          .then(success => {
-            console.log("Firebase data load result for shared session:", success);
-            
-            if (success) {
-              // Data loaded successfully
-              setupRealtimeListeners(sessionId);
-              updateParticipantList();
-              updateAvailabilityTable();
-              updateDishList();
-              
-              // Show notification
-              showNotification("Loaded shared plan successfully!");
-            } else {
-              // No data found for this session ID
-              console.log("No data found for shared session, creating new session");
-              isSyncing = false;
-              updateOnlineStatus();
-              
-              // Try to load from localStorage as fallback
-              loadFromLocalStorage(sessionId);
-              updateParticipantList();
-              updateAvailabilityTable();
-              updateDishList();
-            }
-          })
-          .catch(error => {
-            console.error("Error loading shared session:", error);
-            isSyncing = false;
-            updateOnlineStatus();
-            
-            // Fallback to localStorage if Firebase fails
-            loadFromLocalStorage(sessionId);
-            updateParticipantList();
-            updateAvailabilityTable();
-            updateDishList();
-            showNotification("Could not load shared plan. Starting with local data.");
-          });
-      } else {
-        console.log("Firebase not available, loading from localStorage");
-        loadFromLocalStorage(sessionId);
+        // Store the migrated session ID
+        window.sessionId = migratedSessionId;
+        
+        // Check if Firebase is available
+        if (database && firebaseInitialized) {
+          console.log("Firebase available, loading existing session");
+          
+          // Load data from Firebase
+          const loadResult = await loadDataFromFirebase(migratedSessionId);
+          console.log(`Firebase data load result for existing session: ${loadResult}`);
+          
+          // Set up real-time listeners
+          await setupRealtimeListeners(migratedSessionId);
+          
+          // Auto-migrate data from old paths
+          await autoMigrateData();
+        } else {
+          console.log("Firebase not available, loading from localStorage");
+          loadFromLocalStorage(migratedSessionId);
+          updateParticipantList();
+          updateAvailabilityTable();
+          updateDishList();
+        }
+      } catch (error) {
+        console.error("Error during session initialization:", error);
+        
+        // Fallback to localStorage
+        loadFromLocalStorage(existingSessionId);
         updateParticipantList();
         updateAvailabilityTable();
         updateDishList();
-        isSyncing = false;
-        updateOnlineStatus();
-        
-        // Clear the timeout since we're not using Firebase
-        clearTimeout(firebaseInitTimeout);
       }
     })();
   } else {
-    // No shared session, check for existing session in localStorage
-    const savedSessionId = localStorage.getItem('sessionId');
+    // New user, generate session ID
+    console.log("No existing session, creating new session");
+    const newSessionId = generateSessionId();
+    localStorage.setItem('sessionId', newSessionId);
+    window.sessionId = newSessionId;
     
-    if (savedSessionId) {
-      console.log("Found existing session ID in localStorage:", savedSessionId);
-      
-      (async () => {
-        sessionId = await migrateSessionId(savedSessionId);
-        console.log("Using migrated session ID:", sessionId);
-        
-        // Store the session ID in localStorage and window object
-        localStorage.setItem('sessionId', sessionId);
-        window.sessionId = sessionId;
-        
-        // Try to load data from Firebase
-        if (database) {
-          console.log("Firebase available, loading existing session");
-          isSyncing = true;
-          updateOnlineStatus();
-          
-          loadDataFromFirebase(sessionId)
-            .then(success => {
-              console.log("Firebase data load result for existing session:", success);
-              
-              if (!success) {
-                // If we couldn't load data with the current session ID, generate a new one
-                // that's guaranteed to be Firebase-safe
-                console.log("Generating new Firebase-safe session ID");
-                const newSessionId = 'fb' + Math.random().toString(36).substring(2, 8);
-                console.log("New Firebase-safe session ID:", newSessionId);
-                
-                // Store the new session ID in localStorage and window object
-                sessionId = newSessionId;
-                localStorage.setItem('sessionId', sessionId);
-                window.sessionId = sessionId;
-                
-                // Try to load from localStorage with the old session ID
-                loadFromLocalStorage(savedSessionId);
-                
-                // Set up Firebase with the new session ID
-                setupRealtimeListeners(sessionId);
-                
-                // Save the data to Firebase with the new session ID
-                saveToFirebase(sessionId);
-              } else {
-                // Data loaded successfully, set up listeners
-                setupRealtimeListeners(sessionId);
-              }
-              
-              // Render the UI
-              updateParticipantList();
-              updateAvailabilityTable();
-              updateDishList();
-            })
-            .catch(error => {
-              console.error("Error loading existing session:", error);
-              isSyncing = false;
-              updateOnlineStatus();
-              
-              // Generate a new Firebase-safe session ID
-              console.log("Generating new Firebase-safe session ID after error");
-              const newSessionId = 'fb' + Math.random().toString(36).substring(2, 8);
-              console.log("New Firebase-safe session ID:", newSessionId);
-              
-              // Store the new session ID in localStorage and window object
-              sessionId = newSessionId;
-              localStorage.setItem('sessionId', sessionId);
-              window.sessionId = sessionId;
-              
-              // Try to load from localStorage with the old session ID
-              loadFromLocalStorage(savedSessionId);
-              
-              // Set up Firebase with the new session ID
-              setupRealtimeListeners(sessionId);
-              
-              // Save the data to Firebase with the new session ID
-              saveToFirebase(sessionId);
-              
-              // Render the UI
-              updateParticipantList();
-              updateAvailabilityTable();
-              updateDishList();
-            });
-        } else {
-          // No shared session, check for existing session in localStorage
-          const savedSessionId = localStorage.getItem('sessionId');
-          
-          if (savedSessionId) {
-            console.log("Found existing session ID in localStorage:", savedSessionId);
-            sessionId = migrateSessionId(savedSessionId);
-            console.log("Using migrated session ID:", sessionId);
-            
-            // Try to load from Firebase first if available
-            if (database && firebaseInitialized) {
-              loadDataFromFirebase(sessionId)
-                .then(dataLoaded => {
-                  console.log("Firebase data load result for existing session:", dataLoaded);
-                  isSyncing = false;
-                  updateOnlineStatus();
-                  
-                  // Clear the timeout since we've successfully loaded data
-                  clearTimeout(firebaseInitTimeout);
-                  
-                  if (!dataLoaded) {
-                    // If no data in Firebase, load from localStorage
-                    loadFromLocalStorage(sessionId);
-                    updateParticipantList();
-                    updateAvailabilityTable();
-                    updateDishList();
-                  }
-                })
-                .catch(error => {
-                  console.error("Error loading existing session:", error);
-                  isSyncing = false;
-                  updateOnlineStatus();
-                  
-                  // Fallback to localStorage
-                  loadFromLocalStorage(sessionId);
-                  updateParticipantList();
-                  updateAvailabilityTable();
-                  updateDishList();
-                });
-            } else {
-              console.log("Firebase not available, loading from localStorage");
-              loadFromLocalStorage(sessionId);
-              updateParticipantList();
-              updateAvailabilityTable();
-              updateDishList();
-              isSyncing = false;
-              updateOnlineStatus();
-              
-              // Clear the timeout since we're not using Firebase
-              clearTimeout(firebaseInitTimeout);
-            }
-          } else {
-            // New user, generate session ID and load from localStorage
-            console.log("No existing session, creating new session");
-            sessionId = generateSessionId();
-            localStorage.setItem('sessionId', sessionId);
-            window.sessionId = sessionId;
-            loadFromLocalStorage(sessionId);
-            updateParticipantList();
-            updateAvailabilityTable();
-            updateDishList();
-            
-            // Save initial data to Firebase
-            if (database && firebaseInitialized) {
-              saveToFirebase(sessionId)
-                .then(() => {
-                  console.log("Initial data saved to Firebase successfully");
-                })
-                .catch(error => {
-                  console.error("Error saving initial data to Firebase:", error);
-                });
-            }
-            
-            // Clear the timeout since we're not using Firebase for initial load
-            clearTimeout(firebaseInitTimeout);
-            
-            // Reset syncing state
-            isSyncing = false;
-            updateOnlineStatus();
-          }
-        }
-      })();
-    } else {
-      // New user, generate session ID and load from localStorage
-      console.log("No existing session, creating new session");
-      sessionId = generateSessionId();
-      localStorage.setItem('sessionId', sessionId);
-      window.sessionId = sessionId;
-      loadFromLocalStorage(sessionId);
-      updateParticipantList();
-      updateAvailabilityTable();
-      updateDishList();
-      
-      // Save initial data to Firebase
-      if (database && firebaseInitialized) {
-        saveToFirebase(sessionId)
-          .then(() => {
-            console.log("Initial data saved to Firebase successfully");
-          })
-          .catch(error => {
-            console.error("Error saving initial data to Firebase:", error);
-          });
-      }
-      
-      // Clear the timeout since we're not using Firebase for initial load
-      clearTimeout(firebaseInitTimeout);
-      
-      // Reset syncing state
-      isSyncing = false;
-      updateOnlineStatus();
+    // Initialize empty data
+    window.participants = [];
+    window.availabilityData = {};
+    window.dishes = [];
+    
+    // Save initial data to Firebase
+    if (database && firebaseInitialized) {
+      saveToFirebase(newSessionId)
+        .then(() => {
+          console.log("Initial data saved to Firebase successfully");
+        })
+        .catch(error => {
+          console.error("Error saving initial data to Firebase:", error);
+        });
     }
   }
   
@@ -1390,88 +1188,11 @@ async function saveToFirebase(sessionIdOrForce) {
   }
 }
 
-// Debug Firebase paths
-async function debugFirebasePaths(sessionId) {
-  console.log(`Debugging Firebase paths for session: ${sessionId}`);
-  
-  try {
-    const { ref, get } = await import('https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js');
-    
-    // Check both path structures
-    const paths = [
-      `sessions/${sessionId}`,
-      `data/${sessionId}`
-    ];
-    
-    for (const path of paths) {
-      try {
-        console.log(`Checking path: ${path}`);
-        const pathRef = ref(database, path);
-        const snapshot = await get(pathRef);
-        
-        if (snapshot.exists()) {
-          console.log(`Data found at path: ${path}`);
-          console.log('Data:', snapshot.val());
-        } else {
-          console.log(`No data found at path: ${path}`);
-        }
-      } catch (error) {
-        console.error(`Error accessing path ${path}: ${error.message}`);
-      }
-    }
-    
-    // Check root paths
-    try {
-      console.log('Checking root paths');
-      const rootRef = ref(database, '/');
-      const snapshot = await get(rootRef);
-      
-      if (snapshot.exists()) {
-        console.log('Root data structure:');
-        const data = snapshot.val();
-        
-        // Log the top-level keys
-        console.log('Top-level keys:', Object.keys(data));
-        
-        // Check if 'sessions' exists
-        if (data.sessions) {
-          console.log('Sessions keys:', Object.keys(data.sessions));
-        }
-        
-        // Check if 'data' exists
-        if (data.data) {
-          console.log('Data keys:', Object.keys(data.data));
-        }
-      } else {
-        console.log('No data found at root');
-      }
-    } catch (error) {
-      console.error(`Error accessing root: ${error.message}`);
-    }
-    
-    return true;
-  } catch (error) {
-    console.error(`Error importing Firebase modules: ${error.message}`);
-    return false;
-  }
-}
-
-// Initialize global variables if they don't exist
+// Initialize global variables
 function initializeGlobalVariables() {
   console.log('Initializing global variables');
   
-  // Initialize selectedDate if it doesn't exist
-  if (typeof window.selectedDate === 'undefined') {
-    console.log('selectedDate is undefined, initializing it');
-    window.selectedDate = null;
-  }
-  
-  // Initialize other variables if needed
-  if (typeof window.dishes === 'undefined') {
-    console.log('dishes is undefined, initializing it');
-    window.dishes = [];
-  }
-  
+  // Initialize data structures
   if (typeof window.participants === 'undefined') {
     console.log('participants is undefined, initializing it');
     window.participants = [];
@@ -1480,6 +1201,11 @@ function initializeGlobalVariables() {
   if (typeof window.availabilityData === 'undefined') {
     console.log('availabilityData is undefined, initializing it');
     window.availabilityData = {};
+  }
+  
+  if (typeof window.dishes === 'undefined') {
+    console.log('dishes is undefined, initializing it');
+    window.dishes = [];
   }
   
   if (typeof window.selectedFinalDate === 'undefined') {
@@ -1667,50 +1393,58 @@ function saveToLocalStorage(sessionIdOrForce) {
   }
 }
 
-// Utility functions
+// Show notification
 function showNotification(message, type = 'info') {
   console.log(`Notification (${type}): ${message}`);
   
-  // Create notification element if it doesn't exist
-  let notification = document.getElementById('notification');
-  if (!notification) {
-    notification = document.createElement('div');
-    notification.id = 'notification';
-    notification.style.position = 'fixed';
-    notification.style.bottom = '20px';
-    notification.style.right = '20px';
-    notification.style.padding = '10px 20px';
-    notification.style.borderRadius = '4px';
-    notification.style.color = 'white';
-    notification.style.fontWeight = 'bold';
-    notification.style.zIndex = '1000';
-    notification.style.transition = 'opacity 0.5s ease-in-out';
-    document.body.appendChild(notification);
-  }
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.innerHTML = `
+    <div class="notification-content">
+      <i class="fas ${getIconForNotificationType(type)}"></i>
+      <span>${message}</span>
+    </div>
+    <button class="close-notification">×</button>
+  `;
   
-  // Set notification style based on type
+  // Add to document
+  document.body.appendChild(notification);
+  
+  // Add event listener to close button
+  notification.querySelector('.close-notification').addEventListener('click', () => {
+    notification.classList.add('fade-out');
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 300);
+  });
+  
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    if (document.body.contains(notification)) {
+      notification.classList.add('fade-out');
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 300);
+    }
+  }, 5000);
+}
+
+// Get icon for notification type
+function getIconForNotificationType(type) {
   switch (type) {
     case 'success':
-      notification.style.backgroundColor = '#4CAF50';
-      break;
+      return 'fa-check-circle';
     case 'error':
-      notification.style.backgroundColor = '#F44336';
-      break;
+      return 'fa-exclamation-circle';
     case 'warning':
-      notification.style.backgroundColor = '#FF9800';
-      break;
+      return 'fa-exclamation-triangle';
+    case 'info':
     default:
-      notification.style.backgroundColor = '#2196F3';
+      return 'fa-info-circle';
   }
-  
-  // Set message and show notification
-  notification.textContent = message;
-  notification.style.opacity = '1';
-  
-  // Hide notification after 3 seconds
-  setTimeout(() => {
-    notification.style.opacity = '0';
-  }, 3000);
 }
 
 // Handle share button click

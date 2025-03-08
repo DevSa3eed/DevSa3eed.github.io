@@ -298,9 +298,6 @@
                     <div class="col-md-6">
                         <p>&copy; 2023 Iftar Scheduler</p>
                     </div>
-                    <div class="col-md-6 text-right">
-                        <button id="debug-button" class="btn btn-sm btn-secondary">Debug Firebase</button>
-                    </div>
                 </div>
             </div>
         </footer>
@@ -330,35 +327,9 @@
         </div>
     </div>
     
-    <!-- Collaboration Status Indicator -->
-    <div class="collaboration-status" id="collaboration-status">
-        <div class="status-indicator">
-            <i class="fas fa-circle"></i>
-        </div>
-        <span class="status-text">Checking connection...</span>
-        <button id="reset-sync" class="reset-button" onclick="forceResetSync()" title="Reset connection if stuck on syncing">
-            <i class="fas fa-sync-alt"></i>
-        </button>
-    </div>
-    
-    <!-- Sync Status Indicator -->
-    <div id="sync-status-container" class="sync-status-container">
-        <div id="sync-status" class="sync-status">Checking...</div>
-    </div>
-    
     <!-- App Scripts -->
-    <script src="script.js?v=2.4.3&t=20250308"></script>
+    <script src="script.js?v=2.5.0&t=20250308"></script>
     <script src="calendar-functions.js?v=1.0.0"></script>
-    <script>
-      document.getElementById('debug-button').addEventListener('click', function() {
-        const currentSessionId = localStorage.getItem('sessionId') || window.location.hash.substring(1);
-        if (typeof debugFirebasePaths === 'function') {
-          debugFirebasePaths(currentSessionId);
-        } else {
-          console.error('Debug function not available');
-        }
-      });
-    </script>
     
     <script>
         // Hide loading message and show content when the app is ready
