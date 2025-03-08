@@ -832,17 +832,16 @@ textarea {
 
 /* Footer */
 footer {
+    padding: 1.5rem 0;
     text-align: center;
-    padding: var(--spacing-lg) var(--spacing-md);
-    color: var(--text-secondary);
-    font-size: var(--font-size-sm);
-    background-color: var(--card-color);
-    margin-top: var(--spacing-xl);
+    background-color: var(--bg-secondary);
+    margin-top: 2rem;
 }
 
-footer a {
-    color: var(--primary-color);
-    text-decoration: none;
+.copyright {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
 }
 
 /* Modal styles */
