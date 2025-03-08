@@ -4,7 +4,7 @@
 
 // Debug information
 console.log(`Script loaded at: ${new Date().toLocaleString()}`);
-console.log('Script version: 2.5.0');
+console.log('Script version: 2.5.1');
 
 // Global variables
 window.dishes = [];
@@ -28,10 +28,19 @@ window.dishes = window.dishes || [];
 initializeGlobalVariables();
 
 // Add cache-busting query parameter to force reload
-if (window.location.search.indexOf('nocache') === -1 && window.location.search.indexOf('session') === -1) {
+if (window.location.search.indexOf('nocache') === -1) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const sessionParam = urlParams.get('session');
+  
   const cacheBuster = new Date().getTime();
-  const separator = window.location.search ? '&' : '?';
-  window.location.href = window.location.href + separator + 'nocache=' + cacheBuster;
+  let newUrl = window.location.pathname + '?nocache=' + cacheBuster;
+  
+  // Preserve the session parameter if it exists
+  if (sessionParam) {
+    newUrl += '&session=' + sessionParam;
+  }
+  
+  window.location.href = window.location.origin + newUrl;
 }
 
 // Firebase access
@@ -434,34 +443,39 @@ function initializeApp() {
   // Initialize global variables
   initializeGlobalVariables();
   
-  // Check for existing session ID in localStorage
-  const existingSessionId = localStorage.getItem('sessionId');
+  // Check for session ID in URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const sharedSessionId = urlParams.get('session');
   
-  if (existingSessionId) {
-    console.log(`Found existing session ID in localStorage: ${existingSessionId}`);
+  if (sharedSessionId) {
+    console.log(`Found shared session ID in URL: ${sharedSessionId}`);
     
-    // Migrate the session ID if needed
+    // Use the shared session ID
     (async () => {
       try {
-        const migratedSessionId = await migrateSessionId(existingSessionId);
-        console.log(`Using migrated session ID: ${migratedSessionId}`);
+        const migratedSessionId = await migrateSessionId(sharedSessionId);
+        console.log(`Using migrated shared session ID: ${migratedSessionId}`);
         
         // Store the migrated session ID
         window.sessionId = migratedSessionId;
+        localStorage.setItem('sessionId', migratedSessionId);
         
-        // Check if Firebase is available
+        // Load data from Firebase
         if (database && firebaseInitialized) {
-          console.log("Firebase available, loading existing session");
+          console.log("Firebase available, loading shared session");
           
-          // Load data from Firebase
           const loadResult = await loadDataFromFirebase(migratedSessionId);
-          console.log(`Firebase data load result for existing session: ${loadResult}`);
+          console.log(`Firebase data load result for shared session: ${loadResult}`);
           
           // Set up real-time listeners
           await setupRealtimeListeners(migratedSessionId);
           
-          // Auto-migrate data from old paths
-          await autoMigrateData();
+          // Update UI
+          updateParticipantList();
+          updateAvailabilityTable();
+          updateDishList();
+          
+          showNotification('Loaded shared plan successfully!', 'success');
         } else {
           console.log("Firebase not available, loading from localStorage");
           loadFromLocalStorage(migratedSessionId);
@@ -470,36 +484,83 @@ function initializeApp() {
           updateDishList();
         }
       } catch (error) {
-        console.error("Error during session initialization:", error);
+        console.error("Error loading shared session:", error);
         
         // Fallback to localStorage
-        loadFromLocalStorage(existingSessionId);
+        loadFromLocalStorage(sharedSessionId);
         updateParticipantList();
         updateAvailabilityTable();
         updateDishList();
       }
     })();
   } else {
-    // New user, generate session ID
-    console.log("No existing session, creating new session");
-    const newSessionId = generateSessionId();
-    localStorage.setItem('sessionId', newSessionId);
-    window.sessionId = newSessionId;
+    // Check for existing session ID in localStorage
+    const existingSessionId = localStorage.getItem('sessionId');
     
-    // Initialize empty data
-    window.participants = [];
-    window.availabilityData = {};
-    window.dishes = [];
-    
-    // Save initial data to Firebase
-    if (database && firebaseInitialized) {
-      saveToFirebase(newSessionId)
-        .then(() => {
-          console.log("Initial data saved to Firebase successfully");
-        })
-        .catch(error => {
-          console.error("Error saving initial data to Firebase:", error);
-        });
+    if (existingSessionId) {
+      console.log(`Found existing session ID in localStorage: ${existingSessionId}`);
+      
+      // Migrate the session ID if needed
+      (async () => {
+        try {
+          const migratedSessionId = await migrateSessionId(existingSessionId);
+          console.log(`Using migrated session ID: ${migratedSessionId}`);
+          
+          // Store the migrated session ID
+          window.sessionId = migratedSessionId;
+          
+          // Check if Firebase is available
+          if (database && firebaseInitialized) {
+            console.log("Firebase available, loading existing session");
+            
+            // Load data from Firebase
+            const loadResult = await loadDataFromFirebase(migratedSessionId);
+            console.log(`Firebase data load result for existing session: ${loadResult}`);
+            
+            // Set up real-time listeners
+            await setupRealtimeListeners(migratedSessionId);
+            
+            // Auto-migrate data from old paths
+            await autoMigrateData();
+          } else {
+            console.log("Firebase not available, loading from localStorage");
+            loadFromLocalStorage(migratedSessionId);
+            updateParticipantList();
+            updateAvailabilityTable();
+            updateDishList();
+          }
+        } catch (error) {
+          console.error("Error during session initialization:", error);
+          
+          // Fallback to localStorage
+          loadFromLocalStorage(existingSessionId);
+          updateParticipantList();
+          updateAvailabilityTable();
+          updateDishList();
+        }
+      })();
+    } else {
+      // New user, generate session ID
+      console.log("No existing session, creating new session");
+      const newSessionId = generateSessionId();
+      localStorage.setItem('sessionId', newSessionId);
+      window.sessionId = newSessionId;
+      
+      // Initialize empty data
+      window.participants = [];
+      window.availabilityData = {};
+      window.dishes = [];
+      
+      // Save initial data to Firebase
+      if (database && firebaseInitialized) {
+        saveToFirebase(newSessionId)
+          .then(() => {
+            console.log("Initial data saved to Firebase successfully");
+          })
+          .catch(error => {
+            console.error("Error saving initial data to Firebase:", error);
+          });
+      }
     }
   }
   
@@ -1450,7 +1511,7 @@ function getIconForNotificationType(type) {
 // Handle share button click
 function handleShare() {
   // Generate a shareable link
-  const shareableLink = `${window.location.origin}${window.location.pathname}?session=${sessionId}`;
+  const shareableLink = `${window.location.origin}${window.location.pathname}?session=${window.sessionId}`;
   
   // Update the share link input
   safeUpdateUI('share-link', (element) => {
