@@ -1496,62 +1496,255 @@ function updateAvailabilityTable() {
       return;
     }
     
-    // Create a table to display availability
-    const table = document.createElement('table');
-    table.className = 'availability-table';
+    // Create a calendar view to display availability
+    const calendarContainer = document.createElement('div');
+    calendarContainer.className = 'availability-calendar-view';
     
-    // Create header row with dates
-    const headerRow = document.createElement('tr');
-    headerRow.innerHTML = '<th>Date</th><th>Time</th><th>Available People</th>';
-    table.appendChild(headerRow);
+    // Get the month and year from the first date
+    const firstDate = new Date(availabilityDates[0]);
+    const lastDate = new Date(availabilityDates[availabilityDates.length - 1]);
     
-    // Sort dates chronologically
-    availabilityDates.sort();
+    // Create a month container for each month in the range
+    const months = getMonthsInRange(firstDate, lastDate);
     
-    // For each date in the availability data
-    availabilityDates.forEach(date => {
-      const dateObj = new Date(date);
-      const formattedDate = dateObj.toLocaleDateString('en-US', { 
-        weekday: 'short', 
-        month: 'short', 
-        day: 'numeric' 
-      });
-      
-      // Get time slots for this date
-      const timeSlots = Object.keys(window.availabilityData[date]);
-      
-      // For each time slot
-      timeSlots.forEach((timeSlot, index) => {
-        // Get people available at this time
-        const people = window.availabilityData[date][timeSlot];
-        
-        // Create a row for this date and time
-        const row = document.createElement('tr');
-        
-        // Only show the date in the first row for this date
-        if (index === 0) {
-          row.innerHTML = `
-            <td rowspan="${timeSlots.length}">${formattedDate}</td>
-            <td>${formatTimeSlot(timeSlot)}</td>
-            <td>${formatPeopleList(people)}</td>
-          `;
-        } else {
-          row.innerHTML = `
-            <td>${formatTimeSlot(timeSlot)}</td>
-            <td>${formatPeopleList(people)}</td>
-          `;
-        }
-        
-        table.appendChild(row);
-      });
+    months.forEach(date => {
+      const monthContainer = createMonthCalendar(date, availabilityDates);
+      calendarContainer.appendChild(monthContainer);
     });
     
-    // Add the table to the element
-    element.appendChild(table);
+    // Add the calendar to the element
+    element.appendChild(calendarContainer);
     
     // Update best times list
     updateBestTimesList();
   });
+}
+
+// Get all months in a date range
+function getMonthsInRange(startDate, endDate) {
+  const months = [];
+  const currentDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+  
+  while (currentDate <= endDate) {
+    months.push(new Date(currentDate));
+    currentDate.setMonth(currentDate.getMonth() + 1);
+  }
+  
+  return months;
+}
+
+// Create a month calendar
+function createMonthCalendar(date, availabilityDates) {
+  const monthContainer = document.createElement('div');
+  monthContainer.className = 'month-container';
+  
+  // Create month header
+  const monthHeader = document.createElement('div');
+  monthHeader.className = 'month-header';
+  monthHeader.textContent = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  monthContainer.appendChild(monthHeader);
+  
+  // Create weekday headers
+  const weekdaysContainer = document.createElement('div');
+  weekdaysContainer.className = 'weekdays-container';
+  
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  weekdays.forEach(day => {
+    const dayElement = document.createElement('div');
+    dayElement.className = 'weekday';
+    dayElement.textContent = day;
+    weekdaysContainer.appendChild(dayElement);
+  });
+  
+  monthContainer.appendChild(weekdaysContainer);
+  
+  // Create days grid
+  const daysContainer = document.createElement('div');
+  daysContainer.className = 'days-container';
+  
+  // Get the first day of the month
+  const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
+  const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+  
+  // Add empty cells for days before the first day of the month
+  for (let i = 0; i < firstDayOfMonth.getDay(); i++) {
+    const emptyCell = document.createElement('div');
+    emptyCell.className = 'day-cell empty';
+    daysContainer.appendChild(emptyCell);
+  }
+  
+  // Add cells for each day of the month
+  for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
+    const dayCell = document.createElement('div');
+    dayCell.className = 'day-cell';
+    
+    // Create date string in ISO format (YYYY-MM-DD)
+    const currentDate = new Date(date.getFullYear(), date.getMonth(), day);
+    const dateString = currentDate.toISOString().split('T')[0];
+    
+    // Check if this date has availability data
+    const hasAvailability = availabilityDates.includes(dateString);
+    
+    // Create day number
+    const dayNumber = document.createElement('div');
+    dayNumber.className = 'day-number';
+    dayNumber.textContent = day;
+    dayCell.appendChild(dayNumber);
+    
+    if (hasAvailability) {
+      dayCell.classList.add('has-availability');
+      
+      // Get all time slots for this date
+      const timeSlots = Object.keys(window.availabilityData[dateString]);
+      
+      // Create availability indicators
+      const availabilityIndicator = document.createElement('div');
+      availabilityIndicator.className = 'availability-indicators';
+      
+      timeSlots.forEach(timeSlot => {
+        const people = window.availabilityData[dateString][timeSlot];
+        const indicator = document.createElement('div');
+        indicator.className = `time-indicator ${timeSlot}`;
+        indicator.title = `${formatTimeSlot(timeSlot)}: ${people.length} people`;
+        
+        // Add heat level based on number of people
+        const heatLevel = Math.min(Math.ceil(people.length / 2), 5);
+        indicator.classList.add(`heat-level-${heatLevel}`);
+        
+        // Add tooltip with people's names
+        indicator.setAttribute('data-tooltip', people.join(', '));
+        
+        availabilityIndicator.appendChild(indicator);
+      });
+      
+      dayCell.appendChild(availabilityIndicator);
+      
+      // Make the cell clickable to show details
+      dayCell.addEventListener('click', () => {
+        showDateDetails(dateString, timeSlots);
+      });
+    }
+    
+    daysContainer.appendChild(dayCell);
+  }
+  
+  monthContainer.appendChild(daysContainer);
+  return monthContainer;
+}
+
+// Show date details in a popup
+function showDateDetails(date, timeSlots) {
+  // Remove any existing popup
+  const existingPopup = document.querySelector('.date-details-popup');
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+  
+  // Create popup
+  const popup = document.createElement('div');
+  popup.className = 'date-details-popup';
+  
+  // Format date
+  const dateObj = new Date(date);
+  const formattedDate = dateObj.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    month: 'long', 
+    day: 'numeric',
+    year: 'numeric'
+  });
+  
+  // Create popup content
+  popup.innerHTML = `
+    <div class="popup-header">
+      <h3>${formattedDate}</h3>
+      <button class="close-popup-btn"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="popup-content">
+      <div class="time-slots-availability">
+        ${timeSlots.map(timeSlot => {
+          const people = window.availabilityData[date][timeSlot];
+          return `
+            <div class="time-slot-item">
+              <div class="time-slot-header">
+                <h4>${formatTimeSlot(timeSlot)}</h4>
+                <span class="people-count">${people.length} people</span>
+              </div>
+              <div class="people-list">
+                ${people.map(person => `<span class="person-badge">${person}</span>`).join('')}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+      <div class="popup-actions">
+        <button class="select-date-btn" data-date="${date}">
+          <i class="fas fa-calendar-check"></i> Select This Date & Time
+        </button>
+      </div>
+    </div>
+  `;
+  
+  // Add to document
+  document.body.appendChild(popup);
+  
+  // Add event listeners
+  popup.querySelector('.close-popup-btn').addEventListener('click', () => {
+    popup.remove();
+  });
+  
+  // Add event listener to select date button
+  popup.querySelector('.select-date-btn').addEventListener('click', (e) => {
+    const selectedDate = e.target.getAttribute('data-date') || 
+                         e.target.parentElement.getAttribute('data-date');
+    
+    // Find the time slot with the most people
+    const bestTimeSlot = timeSlots.reduce((best, current) => {
+      const currentPeople = window.availabilityData[date][current].length;
+      const bestPeople = best ? window.availabilityData[date][best].length : 0;
+      return currentPeople > bestPeople ? current : best;
+    }, null);
+    
+    // Format the final date
+    const finalDate = `${formattedDate} at ${formatTimeSlot(bestTimeSlot)}`;
+    
+    // Update the final date
+    window.selectedFinalDate = finalDate;
+    window.selectedDateData = {
+      date,
+      timeSlot: bestTimeSlot,
+      attendees: window.availabilityData[date][bestTimeSlot]
+    };
+    
+    // Update UI
+    safeUpdateUI('final-date', (element) => {
+      element.textContent = finalDate;
+    });
+    
+    safeUpdateUI('final-date-details', (element) => {
+      element.style.display = 'block';
+    });
+    
+    // Update attendees list
+    updateDateAttendeesList(window.availabilityData[date][bestTimeSlot]);
+    
+    // Update dishes list
+    updateDateDishesList();
+    
+    // Save to Firebase and localStorage
+    saveToFirebase(window.sessionId);
+    
+    // Close popup
+    popup.remove();
+    
+    showNotification('Date selected successfully', 'success');
+  });
+  
+  // Close popup when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!popup.contains(e.target) && !e.target.closest('.day-cell')) {
+      popup.remove();
+    }
+  }, { once: true });
 }
 
 // Format time slot for display
