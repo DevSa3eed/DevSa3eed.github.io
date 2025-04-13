@@ -10,6 +10,7 @@
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 	<style>
 		:root {
 			--primary: #5E6AD2;
@@ -54,6 +55,8 @@
 			max-width: 1200px;
 			margin: 0 auto;
 			padding: 0 24px;
+			position: relative;
+			z-index: 2;
 		}
 
 		header {
@@ -785,8 +788,9 @@
 
 		.form-group select {
 			width: 100%;
-			padding: 12px;
-			background: var(--background-light);
+			padding: 12px 16px;
+			padding-right: 40px;
+			background: var(--surface-1);
 			border: 1px solid var(--border);
 			border-radius: 8px;
 			color: var(--text);
@@ -795,20 +799,148 @@
 			appearance: none;
 			background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
 			background-repeat: no-repeat;
-			background-position: right 12px top 50%;
+			background-position: right 16px top 50%;
 			background-size: 12px auto;
+			min-height: 48px;
+			line-height: 1.5;
 		}
 
-		.form-group select:focus {
-			outline: none;
-			border-color: var(--primary);
-			box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.2);
+		.form-group select option {
+			padding: 12px 16px;
+			background: var(--background);
+			color: var(--text);
+			min-height: 48px;
+			line-height: 1.5;
+		}
+
+		.form-group textarea {
+			min-height: 120px;
+			resize: vertical;
+			line-height: 1.5;
 		}
 
 		@media (max-width: 768px) {
 			.contact-container {
 				grid-template-columns: 1fr;
 			}
+		}
+
+		/* Background Effects */
+		.section-bg {
+			display: none;
+		}
+
+		/* Hero Section Effect */
+		.hero .section-bg::before {
+			content: '';
+			position: absolute;
+			top: -50%;
+			left: -50%;
+			right: -50%;
+			bottom: -50%;
+			background: 
+				radial-gradient(circle at 20% 20%, rgba(94, 106, 210, 0.04) 0%, transparent 25%),
+				radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.04) 0%, transparent 25%),
+				radial-gradient(circle at 50% 50%, rgba(94, 106, 210, 0.02) 0%, transparent 50%);
+			animation: heroRotate 30s linear infinite;
+		}
+
+		/* About Section Effect */
+		#about .section-bg {
+			background: 
+				linear-gradient(45deg, var(--surface-1) 25%, transparent 25%) -50px 0,
+				linear-gradient(-45deg, var(--surface-1) 25%, transparent 25%) -50px 0,
+				linear-gradient(45deg, transparent 75%, var(--surface-1) 75%),
+				linear-gradient(-45deg, transparent 75%, var(--surface-1) 75%);
+			background-size: 100px 100px;
+			opacity: 0.04;
+			animation: aboutMove 20s linear infinite;
+		}
+
+		/* Work Section Effect */
+		#work .section-bg::before {
+			content: '';
+			position: absolute;
+			width: 200%;
+			height: 200%;
+			top: -50%;
+			left: -50%;
+			background: 
+				radial-gradient(circle at center, var(--surface-1) 1px, transparent 1px),
+				radial-gradient(circle at center, var(--surface-1) 1px, transparent 1px);
+			background-size: 50px 50px;
+			opacity: 0.06;
+			animation: workRotate 40s linear infinite;
+		}
+
+		/* Experience Section Effect */
+		#experience .section-bg {
+			background: 
+				linear-gradient(0deg, transparent 95%, var(--surface-2) 95%),
+				linear-gradient(90deg, transparent 95%, var(--surface-2) 95%);
+			background-size: 30px 30px;
+			opacity: 0.04;
+			animation: experienceMove 15s linear infinite;
+		}
+
+		/* Contact Section Effect */
+		#contact .section-bg::before {
+			content: '';
+			position: absolute;
+			inset: 0;
+			background: 
+				radial-gradient(circle at 0% 0%, rgba(94, 106, 210, 0.05) 0%, transparent 50%),
+				radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+			filter: blur(80px);
+			animation: contactPulse 10s ease-in-out infinite;
+		}
+
+		/* Animations */
+		@keyframes heroRotate {
+			from { transform: rotate(0deg); }
+			to { transform: rotate(360deg); }
+		}
+
+		@keyframes aboutMove {
+			from { background-position: 0 0; }
+			to { background-position: 100px 100px; }
+		}
+
+		@keyframes workRotate {
+			from { transform: rotate(0deg); }
+			to { transform: rotate(360deg); }
+		}
+
+		@keyframes experienceMove {
+			from { background-position: 0 0; }
+			to { background-position: 30px 30px; }
+		}
+
+		@keyframes contactPulse {
+			0% { opacity: 0.3; }
+			50% { opacity: 0.7; }
+			100% { opacity: 0.3; }
+		}
+
+		/* Make sure sections have proper z-index stacking */
+		section {
+			position: relative;
+			z-index: 1;
+		}
+
+		.container {
+			position: relative;
+			z-index: 2;
+		}
+
+		.particles-js {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0;
+			left: 0;
+			z-index: 1;
+			pointer-events: none;
 		}
 	</style>
 </head>
@@ -827,6 +959,7 @@
 
 	<main>
 		<section class="hero">
+			<div id="particles-hero" class="particles-js"></div>
 			<div class="hero-bg">
 				<div class="gradient-overlay"></div>
 				<div class="particles-container"></div>
@@ -867,6 +1000,7 @@
 		</section>
 
 		<section id="about">
+			<div id="particles-about" class="particles-js"></div>
 			<div class="container">
 				<h2>Why Work With Me</h2>
 				<div class="about-content">
@@ -911,6 +1045,7 @@
 		</section>
 
 		<section id="work">
+			<div id="particles-work" class="particles-js"></div>
 			<div class="container">
 				<h2>Featured Work</h2>
 				<div class="work-grid">
@@ -1013,6 +1148,7 @@
 		</section>
 
 		<section id="experience">
+			<div id="particles-experience" class="particles-js"></div>
 			<div class="container">
 				<h2>Experience & Skills</h2>
 				<div class="skills-grid">
@@ -1053,11 +1189,12 @@
 		</section>
 
 		<section id="contact" class="section">
+			<div id="particles-contact" class="particles-js"></div>
 			<div class="container">
 				<h2 class="section-title">Start Your Project</h2>
 				<p class="section-subtitle">Let's discuss how I can help bring your app idea to life</p>
 				
-				<form id="contact-form" class="contact-form">
+				<form id="contact-form" class="contact-form" action="https://formspree.io/f/mohamed.saeed.youssef@gmail.com" method="POST">
 					<div class="form-group">
 						<label for="name">Name</label>
 						<input type="text" id="name" name="name" required>
@@ -1098,6 +1235,8 @@
 					<button type="submit" class="btn btn-primary">Send Project Request</button>
 				</form>
 				
+				<div id="form-status" style="display: none; margin-top: 24px; padding: 16px; border-radius: 8px; text-align: center;"></div>
+				
 				<div class="social-links">
 					<a href="tel:+971507778931" class="social-link" title="Call">
 						<i class="fas fa-phone"></i>
@@ -1126,20 +1265,187 @@
 	</footer>
 
 	<script>
-		// Add smooth scrolling
-		document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-			anchor.addEventListener('click', function (e) {
-				e.preventDefault();
-				document.querySelector(this.getAttribute('href')).scrollIntoView({
-					behavior: 'smooth'
+		document.addEventListener('DOMContentLoaded', function() {
+			// Add smooth scrolling
+			document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+				anchor.addEventListener('click', function (e) {
+					e.preventDefault();
+					document.querySelector(this.getAttribute('href')).scrollIntoView({
+						behavior: 'smooth'
+					});
 				});
 			});
-		});
 
-		// Set current year in footer
-		document.getElementById('currentYear').textContent = new Date().getFullYear();
+			// Set current year in footer
+			document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+			// Initialize particles for each section
+			const sections = ['hero', 'about', 'work', 'experience', 'contact'];
+			
+			// Base configuration that will be customized for each section
+			const baseConfig = {
+				particles: {
+					number: {
+						value: 100,
+						density: {
+							enable: true,
+							value_area: 800
+						}
+					},
+					color: {
+						value: ["#6366F1", "#10B981", "#F59E0B", "#EC4899", "#3B82F6"]
+					},
+					shape: {
+						type: "circle"
+					},
+					opacity: {
+						value: 0.8,
+						random: false,
+						anim: {
+							enable: true,
+							speed: 1,
+							opacity_min: 0.4,
+							sync: false
+						}
+					},
+					size: {
+						value: 6,
+						random: true,
+						anim: {
+							enable: true,
+							speed: 2,
+							size_min: 2,
+							sync: false
+						}
+					},
+					line_linked: {
+						enable: true,
+						distance: 150,
+						color: "#6366F1",
+						opacity: 0.6,
+						width: 2
+					},
+					move: {
+						enable: true,
+						speed: 3,
+						direction: "none",
+						random: false,
+						straight: false,
+						out_mode: "bounce",
+						bounce: true,
+						attract: {
+							enable: true,
+							rotateX: 600,
+							rotateY: 1200
+						}
+					}
+				},
+				interactivity: {
+					detect_on: "canvas",
+					events: {
+						onhover: {
+							enable: true,
+							mode: "grab"
+						},
+						onclick: {
+							enable: true,
+							mode: "push"
+						},
+						resize: true
+					},
+					modes: {
+						grab: {
+							distance: 200,
+							line_linked: {
+								opacity: 0.8
+							}
+						},
+						push: {
+							particles_nb: 6
+						}
+					}
+				},
+				retina_detect: true
+			};
+
+			sections.forEach((sectionId) => {
+				const sectionConfig = JSON.parse(JSON.stringify(baseConfig));
+				
+				switch(sectionId) {
+					case 'hero':
+						sectionConfig.particles.number.value = 120;
+						sectionConfig.particles.color.value = "#6366F1";
+						sectionConfig.particles.line_linked.color = "#6366F1";
+						sectionConfig.particles.move.speed = 4;
+						break;
+					case 'about':
+						sectionConfig.particles.color.value = "#10B981";
+						sectionConfig.particles.line_linked.color = "#10B981";
+						sectionConfig.particles.shape.type = "triangle";
+						break;
+					case 'work':
+						sectionConfig.particles.color.value = "#F59E0B";
+						sectionConfig.particles.line_linked.color = "#F59E0B";
+						sectionConfig.particles.move.direction = "top";
+						break;
+					case 'experience':
+						sectionConfig.particles.color.value = "#EC4899";
+						sectionConfig.particles.line_linked.color = "#EC4899";
+						sectionConfig.particles.shape.type = "star";
+						break;
+					case 'contact':
+						sectionConfig.particles.color.value = "#3B82F6";
+						sectionConfig.particles.line_linked.color = "#3B82F6";
+						sectionConfig.particles.move.direction = "bottom";
+						sectionConfig.particles.size.value = 8;
+						break;
+				}
+
+				particlesJS(`particles-${sectionId}`, sectionConfig);
+			});
+
+			// Handle form submission
+			const form = document.getElementById('contact-form');
+			const formStatus = document.getElementById('form-status');
+
+			form.addEventListener('submit', async (e) => {
+				e.preventDefault();
+				
+				// Show loading state
+				const submitButton = form.querySelector('button[type="submit"]');
+				const originalText = submitButton.textContent;
+				submitButton.disabled = true;
+				submitButton.textContent = 'Sending...';
+				
+				try {
+					const response = await fetch(form.action, {
+						method: 'POST',
+						body: new FormData(form),
+						headers: {
+							'Accept': 'application/json'
+						}
+					});
+
+					if (response.ok) {
+						formStatus.style.display = 'block';
+						formStatus.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+						formStatus.style.color = 'var(--success)';
+						formStatus.textContent = 'Thank you! Your message has been sent successfully.';
+						form.reset();
+					} else {
+						throw new Error('Network response was not ok');
+					}
+				} catch (error) {
+					formStatus.style.display = 'block';
+					formStatus.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+					formStatus.style.color = 'var(--error)';
+					formStatus.textContent = 'Oops! There was a problem sending your message. Please try again.';
+				} finally {
+					submitButton.disabled = false;
+					submitButton.textContent = originalText;
+				}
+			});
+		});
 	</script>
-	<script src="js/main.js"></script>
-	<script src="js/particles.js"></script>
 </body>
 </html>
