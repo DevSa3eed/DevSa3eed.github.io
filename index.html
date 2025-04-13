@@ -9,7 +9,9 @@
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="src/css/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+	<link rel="icon" type="image/png" href="src/images/favicon.png">
 	<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
 	<style>
 		:root {
@@ -517,31 +519,35 @@
 		.screenshot-gallery {
 			display: flex;
 			gap: 24px;
-			overflow-x: hidden;
+			overflow: hidden;
 			padding: 24px 0;
 			position: relative;
 			width: 100%;
 		}
 
-		.screenshot-gallery::before,
-		.screenshot-gallery::after {
-			content: '';
-			position: absolute;
-			top: 0;
-			width: 100px;
-			height: 100%;
-			z-index: 2;
-			pointer-events: none;
+		.screenshot-gallery-container {
+			display: flex;
+			gap: 24px;
+			position: relative;
 		}
 
-		.screenshot-gallery::before {
-			left: 0;
-			background: linear-gradient(to right, var(--background), transparent);
+		.screenshot-gallery img {
+			width: auto;
+			height: 500px;
+			border-radius: 12px;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+			transition: transform 0.3s ease;
+			flex-shrink: 0;
 		}
 
-		.screenshot-gallery::after {
-			right: 0;
-			background: linear-gradient(to left, var(--background), transparent);
+		.screenshot-gallery img:hover {
+			transform: scale(1.02);
+		}
+
+		@media (max-width: 768px) {
+			.screenshot-gallery img {
+				height: 400px;
+			}
 		}
 
 		.device-mockup {
@@ -565,7 +571,7 @@
 				transform: translateX(0);
 			}
 			100% {
-				transform: translateX(calc(-100% - 24px));
+				transform: translateX(calc(-1 * (100% / 2)));
 			}
 		}
 
@@ -1054,41 +1060,19 @@
 						<p>A comprehensive ride-hailing application built for Sharm el Sheikh's tourism market. This app connects tourists with reliable local taxi services, offering a seamless booking experience with real-time tracking and secure payments.</p>
 						
 						<div class="screenshot-gallery">
-							<div class="device-mockup">
-								<div class="device-notch"></div>
-								<div class="device-screen">
-									<img src="images/sharm/Splash.png" alt="Sharm Taxi Splash Screen" loading="lazy">
-								</div>
-							</div>
-							<div class="device-mockup">
-								<div class="device-notch"></div>
-								<div class="device-screen">
-									<img src="images/sharm/Login.png" alt="Sharm Taxi Login Screen" loading="lazy">
-								</div>
-							</div>
-							<div class="device-mockup">
-								<div class="device-notch"></div>
-								<div class="device-screen">
-									<img src="images/sharm/Sign Up.png" alt="Sharm Taxi Sign Up Screen" loading="lazy">
-								</div>
-							</div>
-							<div class="device-mockup">
-								<div class="device-notch"></div>
-								<div class="device-screen">
-									<img src="images/sharm/Map.png" alt="Sharm Taxi Map View" loading="lazy">
-								</div>
-							</div>
-							<div class="device-mockup">
-								<div class="device-notch"></div>
-								<div class="device-screen">
-									<img src="images/sharm/Booking.png" alt="Sharm Taxi Booking Screen" loading="lazy">
-								</div>
-							</div>
-							<div class="device-mockup">
-								<div class="device-notch"></div>
-								<div class="device-screen">
-									<img src="images/sharm/Trips.png" alt="Sharm Taxi Trips History" loading="lazy">
-								</div>
+							<div class="screenshot-gallery-container">
+								<img src="src/images/sharm/Splash.png" alt="Sharm Taxi Splash Screen" loading="lazy">
+								<img src="src/images/sharm/Login.png" alt="Sharm Taxi Login Screen" loading="lazy">
+								<img src="src/images/sharm/Sign Up.png" alt="Sharm Taxi Sign Up Screen" loading="lazy">
+								<img src="src/images/sharm/Map.png" alt="Sharm Taxi Map View" loading="lazy">
+								<img src="src/images/sharm/Booking.png" alt="Sharm Taxi Booking Screen" loading="lazy">
+								<img src="src/images/sharm/Trips.png" alt="Sharm Taxi Trips History" loading="lazy">
+								<img src="src/images/sharm/Splash.png" alt="Sharm Taxi Splash Screen" loading="lazy">
+								<img src="src/images/sharm/Login.png" alt="Sharm Taxi Login Screen" loading="lazy">
+								<img src="src/images/sharm/Sign Up.png" alt="Sharm Taxi Sign Up Screen" loading="lazy">
+								<img src="src/images/sharm/Map.png" alt="Sharm Taxi Map View" loading="lazy">
+								<img src="src/images/sharm/Booking.png" alt="Sharm Taxi Booking Screen" loading="lazy">
+								<img src="src/images/sharm/Trips.png" alt="Sharm Taxi Trips History" loading="lazy">
 							</div>
 						</div>
 
@@ -1444,6 +1428,59 @@
 					submitButton.disabled = false;
 					submitButton.textContent = originalText;
 				}
+			});
+
+			const gallery = document.querySelector('.screenshot-gallery-container');
+			const images = Array.from(gallery.querySelectorAll('img'));
+			let isPaused = false;
+
+			// Clone images and append them to create a seamless loop
+			images.forEach(img => {
+				const clone = img.cloneNode(true);
+				gallery.appendChild(clone);
+			});
+
+			// Set initial position
+			let currentIndex = 0;
+			const imageWidth = images[0].offsetWidth;
+			const gap = 24;
+			const speed = 1; // Increased speed from 0.5 to 1
+
+			function animate() {
+				if (!isPaused) {
+					currentIndex -= speed;
+					
+					// Calculate the width of one complete set of images
+					const singleSetWidth = images.length * (imageWidth + gap);
+					
+					// If we've scrolled past one set, reset position with no visual jump
+					if (Math.abs(currentIndex) >= singleSetWidth) {
+						currentIndex = currentIndex + singleSetWidth;
+					}
+					
+					gallery.style.transform = `translateX(${currentIndex}px)`;
+				}
+				requestAnimationFrame(animate);
+			}
+
+			// Start animation
+			requestAnimationFrame(animate);
+
+			// Pause on hover
+			gallery.addEventListener('mouseenter', () => {
+				isPaused = true;
+			});
+
+			gallery.addEventListener('mouseleave', () => {
+				isPaused = false;
+			});
+
+			// Handle window resize
+			window.addEventListener('resize', () => {
+				// Recalculate image width on resize
+				const newImageWidth = images[0].offsetWidth;
+				const offset = currentIndex % (images.length * (newImageWidth + gap));
+				currentIndex = offset;
 			});
 		});
 	</script>
