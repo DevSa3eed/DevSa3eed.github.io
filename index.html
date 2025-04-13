@@ -525,10 +525,36 @@
 			width: 100%;
 		}
 
+		/* Add fade effects */
+		.screenshot-gallery::before,
+		.screenshot-gallery::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 150px;
+			z-index: 2;
+			pointer-events: none;
+		}
+
+		.screenshot-gallery::before {
+			left: 0;
+			background: linear-gradient(to right, var(--background) 0%, transparent 100%);
+		}
+
+		.screenshot-gallery::after {
+			right: 0;
+			background: linear-gradient(to left, var(--background) 0%, transparent 100%);
+		}
+
 		.screenshot-gallery-container {
 			display: flex;
 			gap: 24px;
-			position: relative;
+			animation: scroll 30s linear infinite;
+		}
+
+		.screenshot-gallery:hover .screenshot-gallery-container {
+			animation-play-state: paused;
 		}
 
 		.screenshot-gallery img {
@@ -544,9 +570,23 @@
 			transform: scale(1.02);
 		}
 
+		@keyframes scroll {
+			0% {
+				transform: translateX(0);
+			}
+			100% {
+				transform: translateX(calc(-100% - 24px));
+			}
+		}
+
 		@media (max-width: 768px) {
 			.screenshot-gallery img {
 				height: 400px;
+			}
+			
+			.screenshot-gallery::before,
+			.screenshot-gallery::after {
+				width: 80px;
 			}
 		}
 
@@ -1067,12 +1107,6 @@
 								<img src="src/images/sharm/Map.png" alt="Sharm Taxi Map View" loading="lazy">
 								<img src="src/images/sharm/Booking.png" alt="Sharm Taxi Booking Screen" loading="lazy">
 								<img src="src/images/sharm/Trips.png" alt="Sharm Taxi Trips History" loading="lazy">
-								<img src="src/images/sharm/Splash.png" alt="Sharm Taxi Splash Screen" loading="lazy">
-								<img src="src/images/sharm/Login.png" alt="Sharm Taxi Login Screen" loading="lazy">
-								<img src="src/images/sharm/Sign Up.png" alt="Sharm Taxi Sign Up Screen" loading="lazy">
-								<img src="src/images/sharm/Map.png" alt="Sharm Taxi Map View" loading="lazy">
-								<img src="src/images/sharm/Booking.png" alt="Sharm Taxi Booking Screen" loading="lazy">
-								<img src="src/images/sharm/Trips.png" alt="Sharm Taxi Trips History" loading="lazy">
 							</div>
 						</div>
 
@@ -1270,10 +1304,10 @@
 			const baseConfig = {
 				particles: {
 					number: {
-						value: 100,
+						value: 50,
 						density: {
 							enable: true,
-							value_area: 800
+							value_area: 1200
 						}
 					},
 					color: {
@@ -1283,35 +1317,35 @@
 						type: "circle"
 					},
 					opacity: {
-						value: 0.8,
+						value: 0.4,
 						random: false,
 						anim: {
 							enable: true,
 							speed: 1,
-							opacity_min: 0.4,
+							opacity_min: 0.2,
 							sync: false
 						}
 					},
 					size: {
-						value: 6,
+						value: 4,
 						random: true,
 						anim: {
 							enable: true,
 							speed: 2,
-							size_min: 2,
+							size_min: 1,
 							sync: false
 						}
 					},
 					line_linked: {
 						enable: true,
-						distance: 150,
+						distance: 200,
 						color: "#6366F1",
-						opacity: 0.6,
-						width: 2
+						opacity: 0.3,
+						width: 1
 					},
 					move: {
 						enable: true,
-						speed: 3,
+						speed: 2,
 						direction: "none",
 						random: false,
 						straight: false,
@@ -1319,8 +1353,8 @@
 						bounce: true,
 						attract: {
 							enable: true,
-							rotateX: 600,
-							rotateY: 1200
+							rotateX: 800,
+							rotateY: 1600
 						}
 					}
 				},
@@ -1341,11 +1375,11 @@
 						grab: {
 							distance: 200,
 							line_linked: {
-								opacity: 0.8
+								opacity: 0.4
 							}
 						},
 						push: {
-							particles_nb: 6
+							particles_nb: 4
 						}
 					}
 				},
@@ -1357,10 +1391,10 @@
 				
 				switch(sectionId) {
 					case 'hero':
-						sectionConfig.particles.number.value = 120;
+						sectionConfig.particles.number.value = 60;
 						sectionConfig.particles.color.value = "#6366F1";
 						sectionConfig.particles.line_linked.color = "#6366F1";
-						sectionConfig.particles.move.speed = 4;
+						sectionConfig.particles.move.speed = 3;
 						break;
 					case 'about':
 						sectionConfig.particles.color.value = "#10B981";
@@ -1381,7 +1415,7 @@
 						sectionConfig.particles.color.value = "#3B82F6";
 						sectionConfig.particles.line_linked.color = "#3B82F6";
 						sectionConfig.particles.move.direction = "bottom";
-						sectionConfig.particles.size.value = 8;
+						sectionConfig.particles.size.value = 6;
 						break;
 				}
 
@@ -1430,57 +1464,66 @@
 				}
 			});
 
-			const gallery = document.querySelector('.screenshot-gallery-container');
-			const images = Array.from(gallery.querySelectorAll('img'));
-			let isPaused = false;
+			const gallery = document.querySelector('.screenshot-gallery');
+			const container = gallery.querySelector('.screenshot-gallery-container');
+			const images = container.querySelectorAll('img');
+			const imageWidth = images[0].offsetWidth + 24; // Width + gap
+			let isDragging = false;
+			let startPos = 0;
+			let currentTranslate = 0;
+			let prevTranslate = 0;
 
-			// Clone images and append them to create a seamless loop
-			images.forEach(img => {
-				const clone = img.cloneNode(true);
-				gallery.appendChild(clone);
-			});
+			// Touch events
+			gallery.addEventListener('touchstart', startDragging);
+			gallery.addEventListener('touchmove', drag);
+			gallery.addEventListener('touchend', stopDragging);
 
-			// Set initial position
-			let currentIndex = 0;
-			const imageWidth = images[0].offsetWidth;
-			const gap = 24;
-			const speed = 1; // Increased speed from 0.5 to 1
+			// Mouse events
+			gallery.addEventListener('mousedown', startDragging);
+			gallery.addEventListener('mousemove', drag);
+			gallery.addEventListener('mouseup', stopDragging);
+			gallery.addEventListener('mouseleave', stopDragging);
 
-			function animate() {
-				if (!isPaused) {
-					currentIndex -= speed;
-					
-					// Calculate the width of one complete set of images
-					const singleSetWidth = images.length * (imageWidth + gap);
-					
-					// If we've scrolled past one set, reset position with no visual jump
-					if (Math.abs(currentIndex) >= singleSetWidth) {
-						currentIndex = currentIndex + singleSetWidth;
-					}
-					
-					gallery.style.transform = `translateX(${currentIndex}px)`;
-				}
-				requestAnimationFrame(animate);
+			function startDragging(e) {
+				isDragging = true;
+				startPos = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX;
+				prevTranslate = currentTranslate;
+				container.style.transition = 'none';
 			}
 
-			// Start animation
-			requestAnimationFrame(animate);
+			function drag(e) {
+				if (!isDragging) return;
+				
+				e.preventDefault();
+				const currentX = e.type === 'mousemove' ? e.pageX : e.touches[0].pageX;
+				const diff = currentX - startPos;
+				currentTranslate = prevTranslate + diff;
+				
+				// Add boundaries
+				const maxTranslate = 0;
+				const minTranslate = -(imageWidth * images.length) + gallery.offsetWidth;
+				currentTranslate = Math.max(minTranslate, Math.min(currentTranslate, maxTranslate));
+				
+				setTransform(currentTranslate);
+			}
 
-			// Pause on hover
-			gallery.addEventListener('mouseenter', () => {
-				isPaused = true;
-			});
+			function stopDragging() {
+				if (!isDragging) return;
+				isDragging = false;
+				container.style.transition = 'transform 0.3s ease-out';
+			}
 
-			gallery.addEventListener('mouseleave', () => {
-				isPaused = false;
-			});
+			function setTransform(translate) {
+				container.style.transform = `translateX(${translate}px)`;
+			}
 
 			// Handle window resize
 			window.addEventListener('resize', () => {
-				// Recalculate image width on resize
-				const newImageWidth = images[0].offsetWidth;
-				const offset = currentIndex % (images.length * (newImageWidth + gap));
-				currentIndex = offset;
+				container.style.transition = 'none';
+				const maxTranslate = 0;
+				const minTranslate = -(imageWidth * images.length) + gallery.offsetWidth;
+				currentTranslate = Math.max(minTranslate, Math.min(currentTranslate, maxTranslate));
+				setTransform(currentTranslate);
 			});
 		});
 	</script>
