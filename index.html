@@ -1,367 +1,637 @@
-<!DOCTYPE HTML>
-<!--Mohamed Saeed - Flutter & iOS Developer - Portfolio website-->
-<html>
-	<head>
-		<title>Mohamed Saeed - Flutter & iOS Developer | Mobile App Specialist</title>
-		<meta charset="utf-8" />
-		<meta name="description" content="Mohamed Saeed - Specialized Flutter & iOS Developer creating beautiful, high-performance mobile applications with clean architecture and modern development practices." />
-		<meta name="keywords" content="Mohamed Saeed, Flutter Developer, iOS Developer, Swift, Mobile Applications, Clean Architecture, Riverpod, Mobile App Development, Portfolio" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-		<link rel="icon" href="favicon.png" />
-		<style>
-			@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
-			
-			:root {
-				--apple-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Helvetica Neue', sans-serif;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Mohamed Saeed - Flutter & iOS Developer</title>
+	<meta name="description" content="Specialized Flutter & iOS Developer creating beautiful, high-performance mobile applications with clean architecture and modern development practices.">
+	<link rel="icon" href="favicon.png">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+	<style>
+		:root {
+			--primary: #0175C2;
+			--primary-dark: #02569B;
+			--secondary: #13B9FD;
+			--text: #FFFFFF;
+			--text-secondary: rgba(255, 255, 255, 0.7);
+			--background: #000000;
+			--background-light: #1A1A1A;
+			--accent: #007AFF;
+			--border: rgba(255, 255, 255, 0.1);
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+			background-color: var(--background);
+			color: var(--text);
+			line-height: 1.5;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 0 24px;
+		}
+
+		header {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			padding: 24px 0;
+			background: rgba(0, 0, 0, 0.8);
+			backdrop-filter: blur(12px);
+			z-index: 100;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.header-content {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+		.logo {
+			font-weight: 600;
+			font-size: 1.25rem;
+			color: var(--text);
+			text-decoration: none;
+		}
+
+		nav {
+			display: flex;
+			gap: 32px;
+		}
+
+		nav a {
+			color: var(--text-secondary);
+			text-decoration: none;
+			font-size: 0.9rem;
+			font-weight: 500;
+			transition: color 0.2s ease;
+		}
+
+		nav a:hover {
+			color: var(--text);
+		}
+
+		.hero {
+			padding: 160px 0 80px;
+			min-height: 100vh;
+			display: flex;
+			align-items: center;
+		}
+
+		.hero-bg {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			z-index: -1;
+		}
+
+		.hero-content {
+			max-width: 800px;
+		}
+
+		h1 {
+			font-size: 4rem;
+			line-height: 1.1;
+			margin-bottom: 24px;
+			background: linear-gradient(to right, var(--text), var(--text-secondary));
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+		}
+
+		.hero p {
+			font-size: 1.25rem;
+			color: var(--text-secondary);
+			margin-bottom: 40px;
+			max-width: 600px;
+		}
+
+		.cta-button {
+			display: inline-flex;
+			align-items: center;
+			padding: 12px 24px;
+			background: var(--primary);
+			color: var(--text);
+			text-decoration: none;
+			border-radius: 8px;
+			font-weight: 500;
+			transition: all 0.2s ease;
+		}
+
+		.cta-button:hover {
+			background: var(--primary-dark);
+			transform: translateY(-1px);
+		}
+
+		section {
+			padding: 120px 0;
+			border-top: 1px solid var(--border);
+		}
+
+		h2 {
+			font-size: 2.5rem;
+			margin-bottom: 48px;
+			color: var(--text);
+		}
+
+		.work-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 32px;
+			margin-top: 48px;
+		}
+
+		.work-item {
+			background: var(--background-light);
+			border-radius: 16px;
+			padding: 32px;
+			transition: all 0.3s ease;
+		}
+
+		.work-item:hover {
+			transform: translateY(-4px);
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+		}
+
+		.work-item h3 {
+			font-size: 1.5rem;
+			margin-bottom: 16px;
+			color: var(--text);
+		}
+
+		.work-item p {
+			color: var(--text-secondary);
+			margin-bottom: 24px;
+		}
+
+		.skills-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 32px;
+		}
+
+		.skill-category {
+			background: var(--background-light);
+			border-radius: 16px;
+			padding: 32px;
+		}
+
+		.skill-category h3 {
+			font-size: 1.25rem;
+			margin-bottom: 24px;
+			color: var(--primary);
+		}
+
+		.skill-list {
+			list-style: none;
+		}
+
+		.skill-list li {
+			color: var(--text-secondary);
+			margin-bottom: 12px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.skill-list li::before {
+			content: "•";
+			color: var(--primary);
+		}
+
+		.form-group {
+			margin-bottom: 24px;
+		}
+
+		.form-group label {
+			display: block;
+			margin-bottom: 8px;
+			color: var(--text);
+			font-weight: 500;
+		}
+
+		.form-group input,
+		.form-group textarea {
+			width: 100%;
+			padding: 12px;
+			background: var(--background-light);
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			color: var(--text);
+			font-family: inherit;
+			font-size: 1rem;
+			transition: all 0.2s ease;
+		}
+
+		.form-group input:focus,
+		.form-group textarea:focus {
+			outline: none;
+			border-color: var(--primary);
+			box-shadow: 0 0 0 2px rgba(1, 117, 194, 0.2);
+		}
+
+		.social-links {
+			display: flex;
+			gap: 24px;
+			margin-top: 48px;
+			justify-content: center;
+		}
+
+		.social-link {
+			color: var(--text-secondary);
+			text-decoration: none;
+			transition: all 0.2s ease;
+			font-size: 1.25rem;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.social-link:hover {
+			color: var(--primary);
+			transform: translateY(-2px);
+		}
+
+		footer {
+			padding: 48px 0;
+			border-top: 1px solid var(--border);
+			text-align: center;
+		}
+
+		footer p {
+			color: var(--text-secondary);
+			font-size: 0.9rem;
+		}
+
+		@media (max-width: 768px) {
+			h1 {
+				font-size: 3rem;
 			}
-			
-			body {
-				font-family: var(--apple-system);
-				-webkit-font-smoothing: antialiased;
-				-moz-osx-font-smoothing: grayscale;
+
+			.hero {
+				padding: 120px 0 60px;
 			}
 
-			h1, h2, h3, h4, h5, h6 {
-				font-family: var(--apple-system);
-				font-weight: 500;
-				letter-spacing: -0.02em;
+			nav {
+				display: none;
 			}
+		}
 
-			.gradient-text {
-				background: linear-gradient(
-					120deg,
-					#0175C2, /* Flutter Blue */
-					#02569B, /* Flutter Dark Blue */
-					#13B9FD, /* Flutter Light Blue */
-					#42A5F5, /* Flutter Material Blue */
-					#007AFF /* iOS Blue */
-				);
-				background-size: 200% auto;
-				color: transparent;
-				-webkit-background-clip: text;
-				background-clip: text;
-				animation: shine 8s linear infinite;
-				text-shadow: 0 0 30px rgba(1, 117, 194, 0.2);
-				display: inline-block;
-			}
+		.device-mockup {
+			position: relative;
+			width: 300px;
+			height: 600px;
+			margin: 0 auto;
+			background: #1a1a1a;
+			border-radius: 40px;
+			padding: 16px;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+		}
 
-			@keyframes shine {
-				to {
-					background-position: 200% center;
-				}
-			}
+		.device-screen {
+			width: 100%;
+			height: 100%;
+			background: #000;
+			border-radius: 28px;
+			overflow: hidden;
+			position: relative;
+			padding: 0;
+		}
 
-			.project-description {
-				font-size: 1.1em;
-				line-height: 1.5;
-				letter-spacing: -0.01em;
-			}
+		.device-screen img {
+			width: 100%;
+			height: 100%;
+			object-fit: contain;
+			background: #000;
+		}
 
-			.project-highlights li {
-				letter-spacing: -0.01em;
-				line-height: 1.6;
-			}
+		.device-notch {
+			position: absolute;
+			top: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 150px;
+			height: 30px;
+			background: #1a1a1a;
+			border-radius: 0 0 20px 20px;
+			z-index: 2;
+		}
 
-			/* Responsive styles for images */
-			.images-row {
-				display: flex;
-				justify-content: center;
-				gap: 2rem;
-				margin: 2rem auto;
-				flex-wrap: wrap;
-			}
+		.screenshot-gallery {
+			display: flex;
+			gap: 24px;
+			overflow-x: auto;
+			padding: 24px 0;
+			scroll-snap-type: x mandatory;
+			-webkit-overflow-scrolling: touch;
+		}
 
-			.app-image {
-				width: 200px;
-				height: 400px;
-				position: relative;
-				border-radius: 24px;
-				background: #1a1a1a;
-				padding: 9px;
-				box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-				transition: all 0.3s ease;
-			}
+		.screenshot-gallery::-webkit-scrollbar {
+			height: 8px;
+		}
 
-			@media screen and (max-width: 736px) {
-				.images-row {
-					gap: 1rem;
-				}
+		.screenshot-gallery::-webkit-scrollbar-track {
+			background: var(--background-light);
+			border-radius: 4px;
+		}
 
-				.app-image {
-					width: 280px;
-					height: 320px;
-					margin-bottom: 1rem;
-				}
+		.screenshot-gallery::-webkit-scrollbar-thumb {
+			background: var(--primary);
+			border-radius: 4px;
+		}
 
-				.app-image > div:first-child {
-					width: 100px;
-					height: 24px;
-				}
-			}
-
-			@media screen and (max-width: 480px) {
-				.app-image {
-					width: 100%;
-					max-width: 300px;
-					height: 280px;
-				}
-			}
-		</style>
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-	</head>
-	<body class="is-preload">
-
-		<!-- Wrapper -->
-		<div id="wrapper">
-
-			<!-- Header -->
-			<header id="header">
-				<div class="logo">
-					<span class="icon solid fas fa-mobile-alt"></span>
-				</div>
-				<div class="content">
-					<div class="inner">
-						<h1 class="gradient-text">Mohamed Saeed</h1>
-						<p>Flutter & iOS Developer</p>
-					</div>
-				</div>
-				<nav>
-					<ul>
-						<li><a href="#work">Work</a></li>
-						<li><a href="#services">Services</a></li>
-						<li><a href="#profile">About Me</a></li>
-						<li><a href="#skills">Skills</a></li>
-						<li><a href="#contact">Contact</a></li>
-					</ul>
-				</nav>
-			</header>
-
-			<!-- Main -->
-			<div id="main">
-
-				<!-- Work -->
-				<article id="work">
-					<h2 class="major">Featured Project</h2>
-					<div class="work-showcase">
-						<p class="project-description">
-							A comprehensive ride-hailing application built for Sharm el Sheikh's tourism market. This app connects tourists with reliable local taxi services, offering a seamless booking experience with real-time tracking and secure payments.
-						</p>
-						
-						<div class="images-row">
-							<div class="app-image">
-								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
-								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
-									<img src="images/sharm/splash.png" alt="Sharm Taxi Logo" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
-								</div>
-							</div>
-							<div class="app-image">
-								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
-								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
-									<img src="images/sharm/Map.png" alt="Booking Screen" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
-								</div>
-							</div>
-							<div class="app-image">
-								<div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 80px; height: 20px; background: #1a1a1a; border-radius: 0 0 16px 16px; z-index: 2;"></div>
-								<div style="width: 100%; height: 100%; overflow: hidden; border-radius: 18px;">
-									<img src="images/sharm/Trips.png" alt="Rides History Screen" style="width: 97%; height: 97%; object-fit: cover; margin: 1.5%;" />
-								</div>
-							</div>
-						</div>
-
-						<div class="project-details">
-							<div class="project-section">
-								<h4>Key Features</h4>
-								<ul class="project-highlights">
-									<li>Real-time taxi tracking and location updates</li>
-									<li>Multi-language support (Arabic, English, French, Spanish, Italian, Russian, German)</li>
-									<li>Smart fare estimation system</li>
-									<li>Multiple taxi types (Normal Taxi, Airport Taxi, Limousine)</li>
-									<li>In-app payment processing</li>
-									<li>Emergency and incident reporting</li>
-									<li>Lost item recovery system</li>
-									<li>Trip history and ratings</li>
-								</ul>
-							</div>
-							<div class="project-section">
-								<h4>Technical Highlights</h4>
-								<ul class="project-highlights">
-									<li>Built with Flutter using Clean Architecture principles</li>
-									<li>Google Maps integration with custom markers and overlays</li>
-									<li>Multi-language localization with efficient string management</li>
-									<li>Secure payment gateway with encrypted transactions</li>
-									<li>Location services with advanced permission handling</li>
-									<li>Real-time database synchronization</li>
-									<li>CI/CD with automated testing and deployment</li>
-								</ul>
-							</div>
-							<div class="project-section">
-								<h4>Impact</h4>
-								<ul class="project-highlights">
-									<li>Operating in Sharm el Sheikh, Egypt</li>
-									<li>Comprehensive trip tracking and analytics</li>
-									<li>Enhanced tourist transportation with multi-language support</li>
-									<li>Emergency response system</li>
-									<li>Driver rating and feedback system</li>
-									<li>Integrated customer support system</li>
-								</ul>
-							</div>
-						</div>
-					</div>
-				</article>
-
-				<!-- Services -->
-				<article id="services">
-					<h2 class="major">Services</h2>
-					<div class="services-grid">
-						<div class="service">
-							<span class="icon brands fab fa-app-store-ios"></span>
-							<h3>iOS Native Development</h3>
-							<p>High-quality native iOS applications built with Swift and SwiftUI</p>
-						</div>
-						<div class="service">
-							<span class="icon solid fas fa-mobile-alt"></span>
-							<h3>Flutter Development</h3>
-							<p>Beautiful, performant Flutter applications with advanced UI/UX</p>
-						</div>
-						<div class="service">
-							<span class="icon solid fas fa-code"></span>
-							<h3>App Architecture</h3>
-							<p>Clean architecture implementation for maintainable and scalable codebases</p>
-						</div>
-						<div class="service">
-							<span class="icon solid fas fa-sync"></span>
-							<h3>App Maintenance & Updates</h3>
-							<p>Ongoing support, feature updates, and performance optimization</p>
-						</div>
-					</div>
-				</article>
-
-				<!-- Profile -->
-				<article id="profile">
-					<h2 class="major">Profile</h2>
-					<span class="image main"><img src="images/profile.jpg" alt="Profile Picture" /></span>
-					<p>
-						I am a <strong>Flutter & iOS Developer</strong> specializing in creating exceptional mobile applications with a focus on performance, design, and user experience. My expertise is concentrated on:
-					</p>
-					<ul class="feature-list">
-						<li>Flutter Development with Clean Architecture</li>
-						<li>Riverpod State Management</li>
-						<li>Native iOS Development with Swift & SwiftUI</li>
-						<li>Custom UI/UX & Complex Animations</li>
-						<li>Firebase & Backend Integration</li>
-					</ul>
-					<p>
-						I'm deeply committed to the Flutter and iOS development ecosystems with years of professional experience building production-grade mobile applications. I stay current with the latest platform updates, design patterns, and best practices through active community participation and continuous learning.
-					</p>
-				</article>
-
-				<!-- Skills -->
-				<article id="skills">
-					<h2 class="major">Skills &amp; Technologies</h2>
-					<h3>Flutter Development</h3>
-					<ul>
-						<li>Flutter & Dart</li>
-						<li>Clean Architecture Implementation</li>
-						<li>State Management (Riverpod, Provider, BLoC)</li>
-						<li>Custom Widgets & Complex Animations</li>
-						<li>Firebase Integration (Auth, Firestore, Functions)</li>
-						<li>REST API & GraphQL Integration</li>
-						<li>Unit, Widget & Integration Testing</li>
-						<li>CI/CD (Codemagic, GitHub Actions)</li>
-						<li>Performance Optimization & Profiling</li>
-					</ul>
-					
-					<h3>iOS Development</h3>
-					<ul>
-						<li>Swift & SwiftUI</li>
-						<li>UIKit Framework</li>
-						<li>Core Data & Local Storage</li>
-						<li>App Store Deployment</li>
-						<li>XCode & Development Tools</li>
-						<li>iOS Design Guidelines</li>
-					</ul>
-					
-					<h3>Development Practices</h3>
-					<ul>
-						<li>Test-Driven Development</li>
-						<li>SOLID Principles</li>
-						<li>Version Control with Git</li>
-						<li>Agile Development Methodologies</li>
-					</ul>
-				</article>
-
-				<!-- About -->
-				<article id="about">
-					<h2 class="major">About</h2>
-					<span class="image main"><img src="images/about.jpg" alt="About Image" /></span>
-					<p>
-						My journey as a mobile developer has been driven by a passion for creating exceptional user experiences. As a specialized Flutter and iOS developer, I've built a strong foundation in both frameworks, allowing me to deliver high-quality applications that leverage the unique strengths of each platform.
-					</p>
-					<p>
-						With Flutter, I create beautiful, performant cross-platform applications using modern architecture patterns like Clean Architecture and effective state management with Riverpod. For iOS-specific projects, I leverage Swift and SwiftUI to build native applications that fully embrace Apple's design philosophy and platform capabilities.
-					</p>
-					<p>
-						I am eager to take on new projects where I can apply my specialized expertise in Flutter and iOS development. If you're looking for a developer who can build polished, maintainable, and scalable mobile applications, <a href="#contact">reach out</a>!
-					</p>
-				</article>
-
-				<!-- Contact -->
-				<article id="contact">
-					<h2 class="major">Contact</h2>
-					<form method="POST" action="https://formspree.io/f/mqkgvogv" id="my-form">
-						<div class="fields">
-							<div class="field half">
-								<label for="name">Name</label>
-								<input type="text" name="name" id="name" />
-							</div>
-							<div class="field half">
-								<label for="email">Email</label>
-								<input type="email" name="email" id="email" />
-							</div>
-							<div class="field">
-								<label for="message">Message</label>
-								<textarea name="message" id="message" rows="4"></textarea>
-							</div>
-						</div>
-						<ul class="actions">
-							<li><input type="submit" value="Send Message" class="primary" /></li>
-							<li><input type="reset" value="Reset" /></li>
-						</ul>
-					</form>
-					<ul class="icons">
-						<li><a href="tel:+971507778931" class="icon solid fas fa-phone" title="Call"><span class="label">Phone</span></a></li>
-						<li><a href="https://wa.me/971507778931" class="icon brands fa-whatsapp" title="WhatsApp"><span class="label">WhatsApp</span></a></li>
-						<li><a href="https://www.linkedin.com/in/mohamed-saeed-youssef/" class="icon brands fa-linkedin" title="LinkedIn"><span class="label">LinkedIn</span></a></li>
-						<li><a href="https://github.com/DevSa3eed" class="icon brands fa-github" title="GitHub"><span class="label">GitHub</span></a></li>
-						<li><a href="mailto:mohamed.saeed@example.com" class="icon solid fas fa-envelope" title="Email"><span class="label">Email</span></a></li>
-					</ul>
-				</article>
-
-			</div>
-
-			<!-- Footer -->
-			<footer id="footer">
-				<p class="copyright">
-					&copy; <span id="currentYear"></span> Mohamed Saeed. All rights reserved.
-				</p>
-			</footer>
+		.screenshot-gallery > div {
+			flex: 0 0 auto;
+			scroll-snap-align: start;
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<div class="container header-content">
+			<a href="#" class="logo">Mohamed Saeed</a>
+			<nav>
+				<a href="#about">About</a>
+				<a href="#work">Work</a>
+				<a href="#experience">Experience</a>
+				<a href="#contact">Contact</a>
+			</nav>
 		</div>
+	</header>
 
-		<!-- BG -->
-		<div id="bg"></div>
+	<main>
+		<section class="hero">
+			<div class="hero-bg">
+				<div class="gradient-overlay"></div>
+				<div class="particles-container"></div>
+			</div>
+			<div class="container hero-content">
+				<div class="hero-text">
+					<h1>Building exceptional mobile experiences with Flutter & iOS</h1>
+					<p>
+						Specialized mobile developer focused on creating beautiful, high-performance applications 
+						using Flutter and native iOS development.
+					</p>
+					<a href="#contact" class="cta-button">Get in touch</a>
+				</div>
+			</div>
+		</section>
 
-		<!-- Scripts -->
-		<script src="assets/js/jquery.min.js"></script>
-		<script src="assets/js/browser.min.js"></script>
-		<script src="assets/js/breakpoints.min.js"></script>
-		<script src="assets/js/util.js"></script>
-		<script src="assets/js/main.js"></script>
-		<script src="script.js?v=2.2.0"></script>
-		<script src="calendar-functions.js?v=1.0.0"></script>
-		<script>
-			document.getElementById('currentYear').textContent = new Date().getFullYear();
-		</script>
+		<section id="about">
+			<div class="container">
+				<h2>About Me</h2>
+				<div class="about-content">
+					<div class="about-text">
+						<p>I'm a passionate mobile developer with a strong focus on creating exceptional user experiences through clean, efficient, and maintainable code. With expertise in both Flutter and native iOS development, I bring a unique perspective to cross-platform mobile applications.</p>
+						
+						<p>My development philosophy centers around:</p>
+						<ul class="about-list">
+							<li>Writing clean, maintainable code following SOLID principles</li>
+							<li>Implementing robust architecture patterns (Clean Architecture, MVVM)</li>
+							<li>Prioritizing performance and user experience</li>
+							<li>Embracing test-driven development practices</li>
+							<li>Staying current with the latest mobile development trends</li>
+						</ul>
 
-	</body>
+						<p>I specialize in building complex mobile applications that require:</p>
+						<ul class="about-list">
+							<li>Real-time data synchronization and offline capabilities</li>
+							<li>Advanced UI/UX implementations with custom animations</li>
+							<li>Secure payment processing and authentication systems</li>
+							<li>Location-based services and mapping integrations</li>
+							<li>Multi-language support and internationalization</li>
+						</ul>
+
+						<p>When I'm not coding, I enjoy contributing to open-source projects, sharing knowledge through technical writing, and exploring new technologies that can enhance the mobile development ecosystem.</p>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="work">
+			<div class="container">
+				<h2>Featured Work</h2>
+				<div class="work-grid">
+					<div class="work-item">
+						<h3>Sharm Taxi App</h3>
+						<p>A comprehensive ride-hailing application built for Sharm el Sheikh's tourism market. This app connects tourists with reliable local taxi services, offering a seamless booking experience with real-time tracking and secure payments.</p>
+						
+						<div class="screenshot-gallery">
+							<div class="device-mockup">
+								<div class="device-notch"></div>
+								<div class="device-screen">
+									<img src="images/sharm/Splash.png" alt="Sharm Taxi Splash Screen" loading="lazy">
+								</div>
+							</div>
+							<div class="device-mockup">
+								<div class="device-notch"></div>
+								<div class="device-screen">
+									<img src="images/sharm/Login.png" alt="Sharm Taxi Login Screen" loading="lazy">
+								</div>
+							</div>
+							<div class="device-mockup">
+								<div class="device-notch"></div>
+								<div class="device-screen">
+									<img src="images/sharm/Sign Up.png" alt="Sharm Taxi Sign Up Screen" loading="lazy">
+								</div>
+							</div>
+							<div class="device-mockup">
+								<div class="device-notch"></div>
+								<div class="device-screen">
+									<img src="images/sharm/Map.png" alt="Sharm Taxi Map View" loading="lazy">
+								</div>
+							</div>
+							<div class="device-mockup">
+								<div class="device-notch"></div>
+								<div class="device-screen">
+									<img src="images/sharm/Booking.png" alt="Sharm Taxi Booking Screen" loading="lazy">
+								</div>
+							</div>
+							<div class="device-mockup">
+								<div class="device-notch"></div>
+								<div class="device-screen">
+									<img src="images/sharm/Trips.png" alt="Sharm Taxi Trips History" loading="lazy">
+								</div>
+							</div>
+						</div>
+
+						<div class="features">
+							<h4>Key Features</h4>
+							<ul>
+								<li>Real-time taxi tracking and location updates</li>
+								<li>Multi-language support (Arabic, English, French, Spanish, Italian, Russian, German)</li>
+								<li>Smart fare estimation system</li>
+								<li>Multiple taxi types (Normal Taxi, Airport Taxi, Limousine)</li>
+								<li>In-app payment processing</li>
+								<li>Emergency and incident reporting</li>
+								<li>Lost item recovery system</li>
+								<li>Trip history and ratings</li>
+							</ul>
+						</div>
+
+						<div class="technical-highlights">
+							<h4>Technical Highlights</h4>
+							<ul>
+								<li>Built with Flutter using Clean Architecture principles</li>
+								<li>Google Maps integration with custom markers and overlays</li>
+								<li>Multi-language localization with efficient string management</li>
+								<li>Secure payment gateway with encrypted transactions</li>
+								<li>Location services with advanced permission handling</li>
+								<li>Real-time database synchronization</li>
+								<li>CI/CD with automated testing and deployment</li>
+							</ul>
+						</div>
+
+						<div class="impact">
+							<h4>Impact</h4>
+							<ul>
+								<li>Operating in Sharm el Sheikh, Egypt</li>
+								<li>Comprehensive trip tracking and analytics</li>
+								<li>Enhanced tourist transportation with multi-language support</li>
+								<li>Emergency response system</li>
+								<li>Driver rating and feedback system</li>
+								<li>Integrated customer support system</li>
+							</ul>
+						</div>
+
+						<div class="technologies">
+							<span class="tech-tag">Flutter</span>
+							<span class="tech-tag">Firebase</span>
+							<span class="tech-tag">Google Maps</span>
+							<span class="tech-tag">Payment Gateway</span>
+							<span class="tech-tag">Clean Architecture</span>
+							<span class="tech-tag">CI/CD</span>
+						</div>
+
+						<a href="https://play.google.com/store/apps/details?id=com.ecards.taxi" class="btn btn-primary" target="_blank" rel="noopener noreferrer">View Project</a>
+					</div>
+					<!-- Add more work items -->
+				</div>
+			</div>
+		</section>
+
+		<section id="experience">
+			<div class="container">
+				<h2>Experience & Skills</h2>
+				<div class="skills-grid">
+					<div class="skill-category">
+						<h3>Flutter Development</h3>
+						<ul class="skill-list">
+							<li>Flutter & Dart</li>
+							<li>Clean Architecture Implementation</li>
+							<li>State Management (Riverpod, Provider, BLoC)</li>
+							<li>Custom Widgets & Complex Animations</li>
+							<li>Firebase Integration</li>
+							<li>REST API & GraphQL Integration</li>
+							<li>Unit, Widget & Integration Testing</li>
+						</ul>
+					</div>
+					<div class="skill-category">
+						<h3>iOS Development</h3>
+						<ul class="skill-list">
+							<li>Swift & SwiftUI</li>
+							<li>UIKit Framework</li>
+							<li>Core Data & Local Storage</li>
+							<li>App Store Deployment</li>
+							<li>XCode & Development Tools</li>
+							<li>iOS Design Guidelines</li>
+						</ul>
+					</div>
+					<div class="skill-category">
+						<h3>Development Practices</h3>
+						<ul class="skill-list">
+							<li>Test-Driven Development</li>
+							<li>SOLID Principles</li>
+							<li>Version Control with Git</li>
+							<li>Agile Development Methodologies</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section id="contact" class="section">
+			<div class="container">
+				<h2 class="section-title">Get in Touch</h2>
+				<p class="section-subtitle">Let's work together on your next project</p>
+				
+				<form id="contact-form" class="contact-form">
+					<div class="form-group">
+						<label for="name">Name</label>
+						<input type="text" id="name" name="name" required>
+					</div>
+					
+					<div class="form-group">
+						<label for="email">Email</label>
+						<input type="email" id="email" name="email" required>
+					</div>
+					
+					<div class="form-group">
+						<label for="message">Message</label>
+						<textarea id="message" name="message" required></textarea>
+					</div>
+					
+					<button type="submit" class="btn btn-primary">Send Message</button>
+				</form>
+				
+				<div class="social-links">
+					<a href="tel:+971507778931" class="social-link" title="Call">
+						<i class="fas fa-phone"></i>
+					</a>
+					<a href="https://wa.me/971507778931" class="social-link" title="WhatsApp">
+						<i class="fab fa-whatsapp"></i>
+					</a>
+					<a href="https://www.linkedin.com/in/mohamed-saeed-youssef/" class="social-link" title="LinkedIn">
+						<i class="fab fa-linkedin"></i>
+					</a>
+					<a href="https://github.com/DevSa3eed" class="social-link" title="GitHub">
+						<i class="fab fa-github"></i>
+					</a>
+					<a href="mailto:mohamed.saeed@example.com" class="social-link" title="Email">
+						<i class="fas fa-envelope"></i>
+					</a>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<footer>
+		<div class="container">
+			<p>&copy; <span id="currentYear"></span> Mohamed Saeed. All rights reserved.</p>
+		</div>
+	</footer>
+
+	<script>
+		// Add smooth scrolling
+		document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+			anchor.addEventListener('click', function (e) {
+				e.preventDefault();
+				document.querySelector(this.getAttribute('href')).scrollIntoView({
+					behavior: 'smooth'
+				});
+			});
+		});
+
+		// Set current year in footer
+		document.getElementById('currentYear').textContent = new Date().getFullYear();
+	</script>
+	<script src="js/main.js"></script>
+	<script src="js/particles.js"></script>
+</body>
 </html>

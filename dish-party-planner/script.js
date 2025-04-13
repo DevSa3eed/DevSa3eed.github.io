@@ -82,20 +82,20 @@ document.addEventListener('firebase-ready', (event) => {
         showNotification('Disconnected from Firebase database');
       }
     });
-    
-    // Initialize database structure
-    initializeDatabaseStructure()
-      .then(() => {
-        console.log("Database structure initialization completed");
-        
-        // Initialize the app if it hasn't been initialized yet
-        if (!window.appInitialized) {
-          initializeApp();
-        }
+  
+  // Initialize database structure
+  initializeDatabaseStructure()
+    .then(() => {
+      console.log("Database structure initialization completed");
+      
+      // Initialize the app if it hasn't been initialized yet
+      if (!window.appInitialized) {
+        initializeApp();
+      }
         window.firebaseInitInProgress = false;
-      })
-      .catch(error => {
-        console.error("Database structure initialization failed:", error);
+    })
+    .catch(error => {
+      console.error("Database structure initialization failed:", error);
         window.firebaseInitInProgress = false;
         
         // Initialize the app anyway, it will fall back to localStorage
@@ -106,11 +106,11 @@ document.addEventListener('firebase-ready', (event) => {
   }).catch(error => {
     console.error("Error importing Firebase database module:", error);
     window.firebaseInitInProgress = false;
-    // Initialize the app anyway, it will fall back to localStorage
-    if (!window.appInitialized) {
-      initializeApp();
-    }
-  });
+      // Initialize the app anyway, it will fall back to localStorage
+      if (!window.appInitialized) {
+        initializeApp();
+      }
+    });
 });
 
 document.addEventListener('firebase-error', (event) => {
@@ -461,7 +461,7 @@ function initializeApp() {
         localStorage.setItem('sessionId', migratedSessionId);
         
         // Load data from Firebase
-        if (database && firebaseInitialized) {
+    if (database && firebaseInitialized) {
           console.log("Firebase available, loading shared session");
           
           const loadResult = await loadDataFromFirebase(migratedSessionId);
@@ -480,7 +480,7 @@ function initializeApp() {
           autoSelectBestDate();
           
           showNotification('Loaded shared plan successfully!', 'success');
-        } else {
+          } else {
           console.log("Firebase not available, loading from localStorage");
           loadFromLocalStorage(migratedSessionId);
           updateParticipantList();
@@ -492,7 +492,7 @@ function initializeApp() {
           autoSelectBestDate();
         }
       } catch (error) {
-        console.error("Error loading shared session:", error);
+          console.error("Error loading shared session:", error);
         
         // Fallback to localStorage
         loadFromLocalStorage(sharedSessionId);
@@ -522,7 +522,7 @@ function initializeApp() {
           window.sessionId = migratedSessionId;
           
           // Check if Firebase is available
-          if (database && firebaseInitialized) {
+      if (database && firebaseInitialized) {
             console.log("Firebase available, loading existing session");
             
             // Load data from Firebase
@@ -540,8 +540,8 @@ function initializeApp() {
             
             // Automatically select the best date
             autoSelectBestDate();
-          } else {
-            console.log("Firebase not available, loading from localStorage");
+      } else {
+        console.log("Firebase not available, loading from localStorage");
             loadFromLocalStorage(migratedSessionId);
             updateParticipantList();
             updateAvailabilityTable();
@@ -747,8 +747,8 @@ function handleSubmitAvailability() {
   
   // Save to Firebase and localStorage using the current session ID
   saveToFirebase(window.sessionId);
-  
-  // Update UI
+            
+            // Update UI
   updateParticipantList();
   updateAvailabilityTable();
   
@@ -793,9 +793,9 @@ function handleAddDish(event) {
   
   if (!dishName) {
     showNotification('Please enter a dish name', 'error');
-    return;
-  }
-  
+                  return;
+                }
+                
   if (!contributor) {
     showNotification('Please enter your name', 'error');
     return;
@@ -824,8 +824,8 @@ function handleAddDish(event) {
   
   // Save to Firebase and localStorage
   saveToFirebase(window.sessionId);
-  
-  // Update UI
+                
+                // Update UI
   updateDishList();
   
   // Reset form
@@ -925,7 +925,7 @@ async function initializeDatabaseStructure() {
     
     console.log("Database structure already exists");
     return true;
-  } catch (error) {
+    } catch (error) {
     console.error("Error initializing database structure:", error);
     return false;
   }
@@ -945,7 +945,7 @@ async function loadDataFromFirebase(sessionId) {
   try {
     sessionId = await migrateSessionId(sessionId);
     console.log(`Using migrated session ID for Firebase load: ${sessionId}`);
-  } catch (error) {
+      } catch (error) {
     console.error(`Error migrating session ID: ${error.message}`);
     // Continue with the original session ID
   }
@@ -1044,8 +1044,8 @@ function loadFromLocalStorage(sessionId) {
       if (parsedData.participants) window.participants = parsedData.participants;
       if (parsedData.availabilityData) window.availabilityData = parsedData.availabilityData;
       if (parsedData.selectedFinalDate) window.selectedFinalDate = parsedData.selectedFinalDate;
-      
-      // Update UI
+          
+          // Update UI
       updateDishList();
       updateParticipantList();
       updateAvailabilityTable();
@@ -1062,7 +1062,7 @@ function loadFromLocalStorage(sessionId) {
       
       console.log('Data successfully loaded from localStorage');
       return true;
-    } else {
+        } else {
       console.log(`No saved data found in localStorage for session: ${sessionId}`);
       return false;
     }
@@ -1139,9 +1139,9 @@ async function setupRealtimeListeners(sessionId) {
               });
             }
           }
-        }
-      });
-    } catch (error) {
+      }
+    });
+  } catch (error) {
       console.error('Error setting up real-time listeners:', error);
     }
   } catch (error) {
@@ -1193,7 +1193,7 @@ async function autoMigrateData() {
       console.log(`No data found in old path: sessions/${currentSessionId}`);
       return false;
     }
-  } catch (error) {
+    } catch (error) {
     console.error('Error during auto-migration:', error);
     return false;
   }
@@ -1229,7 +1229,7 @@ async function migrateDataFromOldSession(oldSessionId, newSessionId) {
         console.log(`Successfully migrated data to new session ID: ${newSessionId}`);
         
         return true;
-      } else {
+                } else {
         console.log(`No data found for old session ID: ${oldSessionId}`);
         return false;
       }
@@ -1355,7 +1355,7 @@ function safeUpdateUI(elementId, updateFunction) {
   if (element) {
     updateFunction(element);
     return true;
-  } else {
+      } else {
     // Only log a warning if we're not in the initialization phase
     if (window.appInitialized) {
       console.warn(`Element with ID '${elementId}' not found`);
@@ -1418,9 +1418,9 @@ function updateDishList(filterValue = 'All') {
         <div class="dish-actions">
           <button class="remove-dish-btn" data-index="${window.dishes.indexOf(dish)}">
             <i class="fas fa-trash"></i>
-          </button>
+            </button>
         </div>
-      `;
+    `;
       element.appendChild(dishItem);
     });
     
@@ -1481,21 +1481,21 @@ function updateAvailabilityTable() {
   safeUpdateUI('availability-calendar', (element) => {
     // Clear the current content
     element.innerHTML = '';
-    
-    // Check if there's any availability data
+  
+  // Check if there's any availability data
     const availabilityDates = Object.keys(window.availabilityData);
     
     if (availabilityDates.length === 0) {
       // Show empty state
       element.innerHTML = `
-        <div class="empty-state">
-          <i class="fas fa-users"></i>
-          <p>No availability submitted yet. Be the first to add yours!</p>
-        </div>
-      `;
-      return;
-    }
-    
+      <div class="empty-state">
+        <i class="fas fa-users"></i>
+        <p>No availability submitted yet. Be the first to add yours!</p>
+      </div>
+    `;
+    return;
+  }
+  
     // Create a calendar view to display availability
     const calendarContainer = document.createElement('div');
     calendarContainer.className = 'availability-calendar-view';
@@ -1825,8 +1825,8 @@ function updateBestTimesList() {
         <div class="best-time-people">
           <span class="people-count">${option.count} people</span>
           <span class="people-list">${formatPeopleList(option.people)}</span>
-        </div>
-      `;
+            </div>
+        `;
       
       element.appendChild(li);
     });
@@ -1966,8 +1966,8 @@ function handleCopyLink() {
           .catch(err => {
             showNotification('Failed to copy link', 'error');
             console.error('Could not copy text: ', err);
-          });
-      } else {
+        });
+    } else {
         showNotification('Failed to copy link', 'error');
         console.error('Could not copy text: ', err);
       }
@@ -2107,8 +2107,8 @@ function navigateMonth(direction) {
   
   // Update the calendar UI
   updateCalendar();
-  
-  // Show notification
+
+// Show notification
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
   const year = currentDate.getFullYear();
   showNotification(`Navigated to ${monthName} ${year}`, 'info');
