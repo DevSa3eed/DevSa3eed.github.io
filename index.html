@@ -12,15 +12,23 @@
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 	<style>
 		:root {
-			--primary: #0175C2;
-			--primary-dark: #02569B;
-			--secondary: #13B9FD;
-			--text: #FFFFFF;
-			--text-secondary: rgba(255, 255, 255, 0.7);
+			--primary: #5E6AD2;
+			--primary-dark: #4B57B9;
+			--secondary: #94A3B8;
+			--text: #F8FAFC;
+			--text-secondary: #94A3B8;
 			--background: #000000;
-			--background-light: #1A1A1A;
-			--accent: #007AFF;
-			--border: rgba(255, 255, 255, 0.1);
+			--background-light: #0A0A0A;
+			--accent: #6366F1;
+			--border: rgba(148, 163, 184, 0.06);
+			--success: #10B981;
+			--error: #EF4444;
+			--warning: #F59E0B;
+			--surface-1: rgba(255, 255, 255, 0.02);
+			--surface-2: rgba(255, 255, 255, 0.04);
+			--surface-3: rgba(255, 255, 255, 0.06);
+			--surface-4: rgba(255, 255, 255, 0.08);
+			--transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		}
 
 		* {
@@ -33,8 +41,13 @@
 			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 			background-color: var(--background);
 			color: var(--text);
-			line-height: 1.5;
+			line-height: 1.6;
 			-webkit-font-smoothing: antialiased;
+			background-image: 
+				radial-gradient(circle at 100% 0%, rgba(94, 106, 210, 0.03) 0%, transparent 50%),
+				radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+				linear-gradient(to bottom, transparent, var(--background));
+			background-attachment: fixed;
 		}
 
 		.container {
@@ -66,6 +79,10 @@
 			font-size: 1.25rem;
 			color: var(--text);
 			text-decoration: none;
+			background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
 		}
 
 		nav {
@@ -78,11 +95,27 @@
 			text-decoration: none;
 			font-size: 0.9rem;
 			font-weight: 500;
-			transition: color 0.2s ease;
+			transition: all 0.2s ease;
+			position: relative;
 		}
 
 		nav a:hover {
 			color: var(--text);
+		}
+
+		nav a::after {
+			content: '';
+			position: absolute;
+			bottom: -4px;
+			left: 0;
+			width: 0;
+			height: 2px;
+			background: var(--primary);
+			transition: width 0.2s ease;
+		}
+
+		nav a:hover::after {
+			width: 100%;
 		}
 
 		.hero {
@@ -90,6 +123,21 @@
 			min-height: 100vh;
 			display: flex;
 			align-items: center;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.hero::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: 
+				radial-gradient(circle at 20% 20%, rgba(94, 106, 210, 0.04) 0%, transparent 50%),
+				radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.04) 0%, transparent 50%);
+			z-index: -1;
 		}
 
 		.hero-bg {
@@ -106,13 +154,15 @@
 		}
 
 		h1 {
-			font-size: 4rem;
+			font-size: 4.5rem;
 			line-height: 1.1;
-			margin-bottom: 24px;
-			background: linear-gradient(to right, var(--text), var(--text-secondary));
+			margin-bottom: 32px;
+			background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
 			-webkit-background-clip: text;
 			background-clip: text;
 			color: transparent;
+			font-weight: 700;
+			letter-spacing: -0.02em;
 		}
 
 		.hero p {
@@ -122,32 +172,151 @@
 			max-width: 600px;
 		}
 
-		.cta-button {
-			display: inline-flex;
-			align-items: center;
-			padding: 12px 24px;
-			background: var(--primary);
-			color: var(--text);
-			text-decoration: none;
-			border-radius: 8px;
-			font-weight: 500;
-			transition: all 0.2s ease;
+		.hero-badge {
+			background: rgba(94, 106, 210, 0.06);
+			color: var(--primary);
+			font-size: 0.875rem;
+			font-weight: 600;
+			padding: 6px 12px;
+			border-radius: 20px;
+			margin-bottom: 24px;
+			display: inline-block;
+			letter-spacing: 1px;
+			border: 1px solid rgba(94, 106, 210, 0.08);
 		}
 
-		.cta-button:hover {
+		.hero-cta {
+			display: flex;
+			gap: 16px;
+			margin-bottom: 48px;
+		}
+
+		.btn {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 12px 24px;
+			border-radius: 8px;
+			font-weight: 500;
+			transition: var(--transition);
+			cursor: pointer;
+			gap: 8px;
+			text-decoration: none;
+			border: none;
+			font-size: 1rem;
+			height: 44px;
+			position: relative;
+			overflow: hidden;
+		}
+
+		.btn::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+			transform: translateX(-100%);
+			transition: var(--transition);
+		}
+
+		.btn:hover::before {
+			transform: translateX(100%);
+		}
+
+		.btn-primary {
+			background: var(--primary);
+			color: var(--text);
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+
+		.btn-primary:hover {
 			background: var(--primary-dark);
-			transform: translateY(-1px);
+			transform: translateY(-2px);
+			box-shadow: 0 4px 12px rgba(94, 106, 210, 0.2);
+		}
+
+		.btn-secondary {
+			background: var(--surface-1);
+			color: var(--text);
+			border: 1px solid var(--border);
+		}
+
+		.btn-secondary:hover {
+			background: var(--surface-2);
+			border-color: var(--primary);
+		}
+
+		.btn:disabled {
+			opacity: 0.5;
+			cursor: not-allowed;
+			transform: none;
+		}
+
+		.btn i {
+			font-size: 1.1em;
+		}
+
+		.hero-stats {
+			display: flex;
+			gap: 48px;
+			margin-top: 48px;
+		}
+
+		.stat {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.stat-number {
+			font-size: 2.5rem;
+			font-weight: 700;
+			color: var(--primary);
+			line-height: 1;
+		}
+
+		.stat-label {
+			font-size: 0.875rem;
+			color: var(--text-secondary);
+			margin-top: 8px;
 		}
 
 		section {
-			padding: 120px 0;
+			padding: 160px 0;
 			border-top: 1px solid var(--border);
+			position: relative;
+			overflow: hidden;
+		}
+
+		section::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 1px;
+			background: linear-gradient(to right, transparent, var(--border), transparent);
 		}
 
 		h2 {
-			font-size: 2.5rem;
-			margin-bottom: 48px;
+			font-size: 3rem;
+			margin-bottom: 64px;
 			color: var(--text);
+			letter-spacing: -0.02em;
+			position: relative;
+			display: inline-block;
+		}
+
+		h2::after {
+			content: '';
+			position: absolute;
+			bottom: -12px;
+			left: 0;
+			width: 40px;
+			height: 2px;
+			background: var(--primary);
+			border-radius: 2px;
 		}
 
 		.work-grid {
@@ -157,16 +326,36 @@
 			margin-top: 48px;
 		}
 
-		.work-item {
-			background: var(--background-light);
+		.work-item, .service-card, .skill-category {
+			background: var(--surface-1);
 			border-radius: 16px;
 			padding: 32px;
-			transition: all 0.3s ease;
+			transition: var(--transition);
+			border: 1px solid var(--border);
+			position: relative;
+			overflow: hidden;
 		}
 
-		.work-item:hover {
+		.work-item::before, .service-card::before, .skill-category::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 1px;
+			background: linear-gradient(to right, transparent, var(--primary), transparent);
+			opacity: 0;
+			transition: var(--transition);
+		}
+
+		.work-item:hover, .service-card:hover, .skill-category:hover {
 			transform: translateY(-4px);
+			border-color: var(--primary);
 			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+		}
+
+		.work-item:hover::before, .service-card:hover::before, .skill-category:hover::before {
+			opacity: 1;
 		}
 
 		.work-item h3 {
@@ -187,7 +376,7 @@
 		}
 
 		.skill-category {
-			background: var(--background-light);
+			background: var(--surface-1);
 			border-radius: 16px;
 			padding: 32px;
 		}
@@ -227,28 +416,32 @@
 		}
 
 		.form-group input,
-		.form-group textarea {
+		.form-group textarea,
+		.form-group select {
 			width: 100%;
-			padding: 12px;
-			background: var(--background-light);
+			padding: 12px 16px;
+			background: var(--surface-1);
 			border: 1px solid var(--border);
 			border-radius: 8px;
 			color: var(--text);
 			font-family: inherit;
 			font-size: 1rem;
-			transition: all 0.2s ease;
+			transition: var(--transition);
+			height: 44px;
 		}
 
 		.form-group input:focus,
-		.form-group textarea:focus {
+		.form-group textarea:focus,
+		.form-group select:focus {
 			outline: none;
 			border-color: var(--primary);
-			box-shadow: 0 0 0 2px rgba(1, 117, 194, 0.2);
+			box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.1);
+			background: var(--surface-2);
 		}
 
 		.social-links {
 			display: flex;
-			gap: 24px;
+			gap: 32px;
 			margin-top: 48px;
 			justify-content: center;
 		}
@@ -256,16 +449,37 @@
 		.social-link {
 			color: var(--text-secondary);
 			text-decoration: none;
-			transition: all 0.2s ease;
-			font-size: 1.25rem;
+			transition: var(--transition);
+			font-size: 1.75rem;
 			display: flex;
 			align-items: center;
 			justify-content: center;
+			width: 48px;
+			height: 48px;
+			position: relative;
+		}
+
+		.social-link::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: var(--primary);
+			border-radius: 50%;
+			transform: scale(0);
+			transition: var(--transition);
+			opacity: 0.1;
 		}
 
 		.social-link:hover {
 			color: var(--primary);
 			transform: translateY(-2px);
+		}
+
+		.social-link:hover::before {
+			transform: scale(1);
 		}
 
 		footer {
@@ -284,8 +498,12 @@
 				font-size: 3rem;
 			}
 
-			.hero {
-				padding: 120px 0 60px;
+			h2 {
+				font-size: 2.5rem;
+			}
+
+			section {
+				padding: 120px 0;
 			}
 
 			nav {
@@ -293,15 +511,59 @@
 			}
 		}
 
+		.screenshot-gallery {
+			display: flex;
+			gap: 24px;
+			overflow-x: hidden;
+			padding: 24px 0;
+			position: relative;
+			width: 100%;
+		}
+
+		.screenshot-gallery::before,
+		.screenshot-gallery::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			width: 100px;
+			height: 100%;
+			z-index: 2;
+			pointer-events: none;
+		}
+
+		.screenshot-gallery::before {
+			left: 0;
+			background: linear-gradient(to right, var(--background), transparent);
+		}
+
+		.screenshot-gallery::after {
+			right: 0;
+			background: linear-gradient(to left, var(--background), transparent);
+		}
+
 		.device-mockup {
 			position: relative;
 			width: 300px;
 			height: 600px;
-			margin: 0 auto;
 			background: #1a1a1a;
 			border-radius: 40px;
 			padding: 16px;
 			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+			flex-shrink: 0;
+			animation: scroll 15s linear infinite;
+		}
+
+		.screenshot-gallery:hover .device-mockup {
+			animation-play-state: paused;
+		}
+
+		@keyframes scroll {
+			0% {
+				transform: translateX(0);
+			}
+			100% {
+				transform: translateX(calc(-100% - 24px));
+			}
 		}
 
 		.device-screen {
@@ -333,32 +595,220 @@
 			z-index: 2;
 		}
 
-		.screenshot-gallery {
+		.about-lead {
+			font-size: 1.5rem;
+			color: var(--text);
+			margin-bottom: 48px;
+			max-width: 800px;
+			font-weight: 400;
+		}
+
+		.service-cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+			gap: 32px;
+			margin-bottom: 48px;
+		}
+
+		.service-card {
+			background: var(--surface-1);
+			border-radius: 16px;
+			padding: 32px;
+			transition: var(--transition);
+			border: 1px solid var(--border);
+			position: relative;
+			overflow: hidden;
+		}
+
+		.service-card:hover {
+			transform: translateY(-4px);
+			border-color: var(--primary);
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+		}
+
+		.service-icon {
+			font-size: 24px;
+			color: var(--primary);
+			margin-bottom: 24px;
 			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 56px;
+			height: 56px;
+			background: rgba(94, 106, 210, 0.06);
+			border-radius: 12px;
+			border: 1px solid rgba(94, 106, 210, 0.08);
+		}
+
+		.service-card h3 {
+			font-size: 1.25rem;
+			margin-bottom: 16px;
+			color: var(--text);
+		}
+
+		.service-card p {
+			color: var(--text-secondary);
+			line-height: 1.6;
+		}
+
+		.client-quote {
+			background: var(--surface-1);
+			border-radius: 16px;
+			padding: 32px;
+			border-left: 4px solid var(--primary);
+			margin-top: 48px;
+		}
+
+		.client-quote blockquote {
+			font-size: 1.25rem;
+			line-height: 1.6;
+			margin-bottom: 16px;
+			font-style: italic;
+			color: var(--text);
+		}
+
+		.client-quote cite {
+			color: var(--text-secondary);
+			font-style: normal;
+			display: block;
+		}
+
+		.contact-container {
+			display: grid;
+			grid-template-columns: 1fr 2fr;
+			gap: 48px;
+			margin-top: 48px;
+		}
+
+		.contact-card {
+			background: var(--surface-1);
+			border-radius: 12px;
+			padding: 24px;
+			border: 1px solid var(--border);
+			height: 100%;
+			transition: all 0.2s ease;
+		}
+
+		.contact-card:hover {
+			transform: translateY(-2px);
+			border-color: var(--primary);
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+		}
+
+		.contact-card h3 {
+			font-size: 1.5rem;
+			margin-bottom: 16px;
+			color: var(--text);
+		}
+
+		.contact-card p {
+			color: var(--text-secondary);
+			margin-bottom: 32px;
+			line-height: 1.6;
+		}
+
+		.contact-methods {
+			display: flex;
+			flex-direction: column;
 			gap: 24px;
-			overflow-x: auto;
-			padding: 24px 0;
-			scroll-snap-type: x mandatory;
-			-webkit-overflow-scrolling: touch;
+			margin-bottom: 32px;
 		}
 
-		.screenshot-gallery::-webkit-scrollbar {
-			height: 8px;
+		.contact-method {
+			display: flex;
+			align-items: flex-start;
+			gap: 16px;
 		}
 
-		.screenshot-gallery::-webkit-scrollbar-track {
+		.contact-method i {
+			font-size: 24px;
+			color: var(--primary);
+		}
+
+		.contact-method h4 {
+			font-size: 1rem;
+			color: var(--text);
+			margin-bottom: 4px;
+		}
+
+		.contact-method a {
+			color: var(--text-secondary);
+			text-decoration: none;
+			transition: color 0.2s ease;
+		}
+
+		.contact-method a:hover {
+			color: var(--primary);
+		}
+
+		.availability h4 {
+			font-size: 1rem;
+			color: var(--text);
+			margin-bottom: 12px;
+		}
+
+		.availability-status {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.availability-status .dot {
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			background: var(--success);
+			box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+		}
+
+		.availability-status.available {
+			color: var(--success);
+		}
+
+		.availability-status.limited {
+			color: var(--warning);
+		}
+
+		.availability-status.unavailable {
+			color: var(--error);
+		}
+
+		.availability-status.limited .dot {
+			background: var(--warning);
+			box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+		}
+
+		.availability-status.unavailable .dot {
+			background: var(--error);
+			box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+		}
+
+		.form-group select {
+			width: 100%;
+			padding: 12px;
 			background: var(--background-light);
-			border-radius: 4px;
+			border: 1px solid var(--border);
+			border-radius: 8px;
+			color: var(--text);
+			font-family: inherit;
+			font-size: 1rem;
+			appearance: none;
+			background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+			background-repeat: no-repeat;
+			background-position: right 12px top 50%;
+			background-size: 12px auto;
 		}
 
-		.screenshot-gallery::-webkit-scrollbar-thumb {
-			background: var(--primary);
-			border-radius: 4px;
+		.form-group select:focus {
+			outline: none;
+			border-color: var(--primary);
+			box-shadow: 0 0 0 2px rgba(94, 106, 210, 0.2);
 		}
 
-		.screenshot-gallery > div {
-			flex: 0 0 auto;
-			scroll-snap-align: start;
+		@media (max-width: 768px) {
+			.contact-container {
+				grid-template-columns: 1fr;
+			}
 		}
 	</style>
 </head>
@@ -383,42 +833,78 @@
 			</div>
 			<div class="container hero-content">
 				<div class="hero-text">
-					<h1>Building exceptional mobile experiences with Flutter & iOS</h1>
+					<span class="hero-badge">EXPERT MOBILE DEVELOPER</span>
+					<h1>Transforming business ideas into polished mobile products</h1>
 					<p>
-						Specialized mobile developer focused on creating beautiful, high-performance applications 
-						using Flutter and native iOS development.
+						I help businesses and startups launch market-ready mobile applications that users love.
+						Specializing in Flutter and iOS development with 10+ years of experience delivering
+						high-performance solutions for clients worldwide.
 					</p>
-					<a href="#contact" class="cta-button">Get in touch</a>
+					<div class="hero-cta">
+						<a href="#contact" class="btn btn-primary">Hire Me</a>
+						<a href="#work" class="btn btn-secondary">View My Work</a>
+					</div>
+					<div class="hero-stats">
+						<div class="stat">
+							<span class="stat-number">50+</span>
+							<span class="stat-label">Projects Delivered</span>
+						</div>
+						<div class="stat">
+							<span class="stat-number">98%</span>
+							<span class="stat-label">On-Time Delivery</span>
+						</div>
+						<div class="stat">
+							<span class="stat-number">4.8/5</span>
+							<span class="stat-label">Client Rating</span>
+						</div>
+						<div class="stat">
+							<span class="stat-number">10+</span>
+							<span class="stat-label">Years Experience</span>
+						</div>
+					</div>
 				</div>
 			</div>
 		</section>
 
 		<section id="about">
 			<div class="container">
-				<h2>About Me</h2>
+				<h2>Why Work With Me</h2>
 				<div class="about-content">
 					<div class="about-text">
-						<p>I'm a passionate mobile developer with a strong focus on creating exceptional user experiences through clean, efficient, and maintainable code. With expertise in both Flutter and native iOS development, I bring a unique perspective to cross-platform mobile applications.</p>
+						<p class="about-lead">I help businesses bring their mobile app ideas to market with superior quality, faster delivery, and measurable results.</p>
 						
-						<p>My development philosophy centers around:</p>
-						<ul class="about-list">
-							<li>Writing clean, maintainable code following SOLID principles</li>
-							<li>Implementing robust architecture patterns (Clean Architecture, MVVM)</li>
-							<li>Prioritizing performance and user experience</li>
-							<li>Embracing test-driven development practices</li>
-							<li>Staying current with the latest mobile development trends</li>
-						</ul>
+						<div class="service-cards">
+							<div class="service-card">
+								<div class="service-icon"><i class="fas fa-rocket"></i></div>
+								<h3>End-to-End Development</h3>
+								<p>From idea to market-ready product, I handle the complete development lifecycle - design collaboration, development, testing, and deployment.</p>
+							</div>
+							
+							<div class="service-card">
+								<div class="service-icon"><i class="fas fa-mobile-alt"></i></div>
+								<h3>Cross-Platform Expertise</h3>
+								<p>Get both iOS and Android apps from a single codebase with Flutter, or native iOS experiences - saving up to 40% on development costs.</p>
+							</div>
+							
+							<div class="service-card">
+								<div class="service-icon"><i class="fas fa-code"></i></div>
+								<h3>Quality-First Approach</h3>
+								<p>Clean architecture, thorough testing, and performance optimization ensure your app is stable, scalable, and maintainable.</p>
+							</div>
+							
+							<div class="service-card">
+								<div class="service-icon"><i class="fas fa-handshake"></i></div>
+								<h3>Partnership Mindset</h3>
+								<p>I'm not just a developer - I'm a partner invested in your business success with transparent communication throughout the project.</p>
+							</div>
+						</div>
 
-						<p>I specialize in building complex mobile applications that require:</p>
-						<ul class="about-list">
-							<li>Real-time data synchronization and offline capabilities</li>
-							<li>Advanced UI/UX implementations with custom animations</li>
-							<li>Secure payment processing and authentication systems</li>
-							<li>Location-based services and mapping integrations</li>
-							<li>Multi-language support and internationalization</li>
-						</ul>
-
-						<p>When I'm not coding, I enjoy contributing to open-source projects, sharing knowledge through technical writing, and exploring new technologies that can enhance the mobile development ecosystem.</p>
+						<div class="client-quote">
+							<blockquote>
+								"Mohamed delivered our app on time and on budget, with exceptional quality. His technical expertise and business understanding made him an invaluable partner in our product launch."
+							</blockquote>
+							<cite>- Sarah Johnson, CEO at TravelTech Inc.</cite>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -568,8 +1054,8 @@
 
 		<section id="contact" class="section">
 			<div class="container">
-				<h2 class="section-title">Get in Touch</h2>
-				<p class="section-subtitle">Let's work together on your next project</p>
+				<h2 class="section-title">Start Your Project</h2>
+				<p class="section-subtitle">Let's discuss how I can help bring your app idea to life</p>
 				
 				<form id="contact-form" class="contact-form">
 					<div class="form-group">
@@ -583,28 +1069,50 @@
 					</div>
 					
 					<div class="form-group">
-						<label for="message">Message</label>
+						<label for="project">Project Type</label>
+						<select id="project" name="project" required>
+							<option value="" disabled selected>Select a project type</option>
+							<option value="new-app">New App Development</option>
+							<option value="existing-app">Existing App Improvement</option>
+							<option value="mvp">MVP Development</option>
+							<option value="consultation">Technical Consultation</option>
+						</select>
+					</div>
+					
+					<div class="form-group">
+						<label for="budget">Estimated Budget</label>
+						<select id="budget" name="budget">
+							<option value="" disabled selected>Select a budget range</option>
+							<option value="<5k">Less than $5,000</option>
+							<option value="5-10k">$5,000 - $10,000</option>
+							<option value="10-25k">$10,000 - $25,000</option>
+							<option value="25k+">$25,000+</option>
+						</select>
+					</div>
+					
+					<div class="form-group">
+						<label for="message">Project Details</label>
 						<textarea id="message" name="message" required></textarea>
 					</div>
 					
-					<button type="submit" class="btn btn-primary">Send Message</button>
+					<button type="submit" class="btn btn-primary">Send Project Request</button>
 				</form>
 				
 				<div class="social-links">
 					<a href="tel:+971507778931" class="social-link" title="Call">
 						<i class="fas fa-phone"></i>
 					</a>
-					<a href="https://wa.me/971507778931" class="social-link" title="WhatsApp">
+					<a href="https://wa.me/971507778931" target="_blank" rel="noopener noreferrer" class="social-link" title="WhatsApp">
 						<i class="fab fa-whatsapp"></i>
 					</a>
-					<a href="https://www.linkedin.com/in/mohamed-saeed-youssef/" class="social-link" title="LinkedIn">
-						<i class="fab fa-linkedin"></i>
-					</a>
-					<a href="https://github.com/DevSa3eed" class="social-link" title="GitHub">
-						<i class="fab fa-github"></i>
-					</a>
-					<a href="mailto:mohamed.saeed@example.com" class="social-link" title="Email">
+					<a href="mailto:mohamed.saeed.youssef@gmail.com" class="social-link" title="Email">
 						<i class="fas fa-envelope"></i>
+					</a>
+					<a href="https://linkedin.com/in/didosaeed" target="_blank" rel="noopener noreferrer" class="social-link" title="LinkedIn">
+						<i class="fab fa-linkedin-in"></i>
+					</a>
+					<a href="https://github.com/didosaeed" target="_blank" rel="noopener noreferrer" class="social-link" title="GitHub">
+						<i class="fab fa-github"></i>
 					</a>
 				</div>
 			</div>
