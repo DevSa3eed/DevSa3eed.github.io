@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+	<head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Mohamed Saeed - Flutter & iOS Developer</title>
@@ -12,9 +12,8 @@
 	<link rel="stylesheet" href="src/css/style.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	<link rel="icon" type="image/png" href="src/images/favicon.png">
-	<script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-	<style>
-		:root {
+		<style>
+			:root {
 			--primary: #5E6AD2;
 			--primary-dark: #4B57B9;
 			--secondary: #94A3B8;
@@ -38,19 +37,14 @@
 			margin: 0;
 			padding: 0;
 			box-sizing: border-box;
-		}
-
-		body {
+			}
+			
+			body {
 			font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 			background-color: var(--background);
 			color: var(--text);
 			line-height: 1.6;
-			-webkit-font-smoothing: antialiased;
-			background-image: 
-				radial-gradient(circle at 100% 0%, rgba(94, 106, 210, 0.03) 0%, transparent 50%),
-				radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
-				linear-gradient(to bottom, transparent, var(--background));
-			background-attachment: fixed;
+				-webkit-font-smoothing: antialiased;
 		}
 
 		.container {
@@ -87,7 +81,7 @@
 			background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
 			-webkit-background-clip: text;
 			background-clip: text;
-			color: transparent;
+				color: transparent;
 		}
 
 		nav {
@@ -132,19 +126,6 @@
 			overflow: hidden;
 		}
 
-		.hero::before {
-			content: '';
-			position: absolute;
-			top: 0;
-			left: 0;
-			right: 0;
-			bottom: 0;
-			background: 
-				radial-gradient(circle at 20% 20%, rgba(94, 106, 210, 0.04) 0%, transparent 50%),
-				radial-gradient(circle at 80% 80%, rgba(99, 102, 241, 0.04) 0%, transparent 50%);
-			z-index: -1;
-		}
-
 		.hero-bg {
 			position: absolute;
 			top: 0;
@@ -152,6 +133,16 @@
 			width: 100%;
 			height: 100%;
 			z-index: -1;
+		}
+
+		.gradient-overlay {
+			position: absolute;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(to bottom, transparent, var(--background));
+			z-index: 1;
 		}
 
 		.hero-content {
@@ -163,8 +154,8 @@
 			line-height: 1.1;
 			margin-bottom: 32px;
 			background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
-			-webkit-background-clip: text;
-			background-clip: text;
+				-webkit-background-clip: text;
+				background-clip: text;
 			color: transparent;
 			font-weight: 700;
 			letter-spacing: -0.02em;
@@ -185,7 +176,7 @@
 			padding: 6px 12px;
 			border-radius: 20px;
 			margin-bottom: 24px;
-			display: inline-block;
+				display: inline-block;
 			letter-spacing: 1px;
 			border: 1px solid rgba(94, 106, 210, 0.08);
 		}
@@ -260,7 +251,7 @@
 		}
 
 		.btn i {
-			font-size: 1.1em;
+				font-size: 1.1em;
 		}
 
 		.hero-stats {
@@ -270,7 +261,7 @@
 		}
 
 		.stat {
-			display: flex;
+				display: flex;
 			flex-direction: column;
 		}
 
@@ -292,6 +283,7 @@
 			border-top: 1px solid var(--border);
 			position: relative;
 			overflow: hidden;
+			z-index: 1;
 		}
 
 		section::before {
@@ -448,7 +440,7 @@
 			display: flex;
 			gap: 32px;
 			margin-top: 48px;
-			justify-content: center;
+				justify-content: center;
 		}
 
 		.social-link {
@@ -591,10 +583,10 @@
 		}
 
 		.device-mockup {
-			position: relative;
+				position: relative;
 			width: 300px;
 			height: 600px;
-			background: #1a1a1a;
+				background: #1a1a1a;
 			border-radius: 40px;
 			padding: 16px;
 			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
@@ -833,7 +825,7 @@
 		}
 
 		.form-group select {
-			width: 100%;
+					width: 100%;
 			padding: 12px 16px;
 			padding-right: 40px;
 			background: var(--surface-1);
@@ -988,8 +980,138 @@
 			z-index: 1;
 			pointer-events: none;
 		}
-	</style>
-</head>
+
+		/* Update floating device styles */
+		.floating-device {
+			position: fixed;
+			width: 300px;
+			height: 600px;
+			background: #1a1a1a;
+			border-radius: 40px;
+			padding: 16px;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+			z-index: 1000;
+			transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+			pointer-events: none;
+			opacity: 1;
+		}
+
+		.device-screen {
+			width: 100%;
+			height: 100%;
+			background: #000;
+			border-radius: 28px;
+			overflow: hidden;
+			position: relative;
+			display: flex;
+			flex-direction: column;
+			background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+		}
+
+		.device-screen img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			opacity: 1;
+		}
+
+		.device-notch {
+			position: absolute;
+			top: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			width: 150px;
+			height: 30px;
+			background: #1a1a1a;
+			border-radius: 0 0 20px 20px;
+			z-index: 2;
+		}
+
+		/* Add fitness app mockup content */
+		.fitness-app {
+			display: flex;
+			flex-direction: column;
+			height: 100%;
+			padding: 20px;
+			color: white;
+		}
+
+		.fitness-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 20px;
+		}
+
+		.fitness-title {
+			font-size: 24px;
+			font-weight: 600;
+		}
+
+		.fitness-stats {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 15px;
+			margin-bottom: 20px;
+		}
+
+		.stat-card {
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 12px;
+			padding: 15px;
+			text-align: center;
+		}
+
+		.stat-value {
+			font-size: 24px;
+			font-weight: 600;
+			color: #6366F1;
+		}
+
+		.stat-label {
+			font-size: 12px;
+			color: rgba(255, 255, 255, 0.7);
+			margin-top: 5px;
+		}
+
+		.fitness-progress {
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 12px;
+			padding: 15px;
+			margin-bottom: 20px;
+		}
+
+		.progress-bar {
+			height: 8px;
+			background: rgba(255, 255, 255, 0.2);
+			border-radius: 4px;
+			margin-top: 10px;
+			overflow: hidden;
+		}
+
+		.progress-fill {
+			height: 100%;
+			width: 75%;
+			background: #6366F1;
+			border-radius: 4px;
+		}
+
+		.fitness-actions {
+			display: flex;
+			gap: 10px;
+			margin-top: auto;
+		}
+
+		.action-button {
+			flex: 1;
+			background: #6366F1;
+			border-radius: 12px;
+			padding: 12px;
+			text-align: center;
+			font-weight: 500;
+			}
+		</style>
+	</head>
 <body>
 	<header>
 		<div class="container header-content">
@@ -1005,11 +1127,9 @@
 
 	<main>
 		<section class="hero">
-			<div id="particles-hero" class="particles-js"></div>
 			<div class="hero-bg">
 				<div class="gradient-overlay"></div>
-				<div class="particles-container"></div>
-			</div>
+				</div>
 			<div class="container hero-content">
 				<div class="hero-text">
 					<span class="hero-badge">EXPERT MOBILE DEVELOPER</span>
@@ -1027,7 +1147,7 @@
 						<div class="stat">
 							<span class="stat-number">50+</span>
 							<span class="stat-label">Projects Delivered</span>
-						</div>
+				</div>
 						<div class="stat">
 							<span class="stat-number">98%</span>
 							<span class="stat-label">On-Time Delivery</span>
@@ -1046,7 +1166,6 @@
 		</section>
 
 		<section id="about">
-			<div id="particles-about" class="particles-js"></div>
 			<div class="container">
 				<h2>Why Work With Me</h2>
 				<div class="about-content">
@@ -1064,7 +1183,7 @@
 								<div class="service-icon"><i class="fas fa-mobile-alt"></i></div>
 								<h3>Cross-Platform Expertise</h3>
 								<p>Get both iOS and Android apps from a single codebase with Flutter, or native iOS experiences - saving up to 40% on development costs.</p>
-							</div>
+								</div>
 							
 							<div class="service-card">
 								<div class="service-icon"><i class="fas fa-code"></i></div>
@@ -1076,22 +1195,21 @@
 								<div class="service-icon"><i class="fas fa-handshake"></i></div>
 								<h3>Partnership Mindset</h3>
 								<p>I'm not just a developer - I'm a partner invested in your business success with transparent communication throughout the project.</p>
+								</div>
 							</div>
-						</div>
 
 						<div class="client-quote">
 							<blockquote>
 								"Mohamed delivered our app on time and on budget, with exceptional quality. His technical expertise and business understanding made him an invaluable partner in our product launch."
 							</blockquote>
 							<cite>- Sarah Johnson, CEO at TravelTech Inc.</cite>
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
 			</div>
 		</section>
 
 		<section id="work">
-			<div id="particles-work" class="particles-js"></div>
 			<div class="container">
 				<h2>Featured Work</h2>
 				<div class="work-grid">
@@ -1111,21 +1229,21 @@
 						</div>
 
 						<div class="features">
-							<h4>Key Features</h4>
+								<h4>Key Features</h4>
 							<ul>
-								<li>Real-time taxi tracking and location updates</li>
-								<li>Multi-language support (Arabic, English, French, Spanish, Italian, Russian, German)</li>
-								<li>Smart fare estimation system</li>
-								<li>Multiple taxi types (Normal Taxi, Airport Taxi, Limousine)</li>
-								<li>In-app payment processing</li>
-								<li>Emergency and incident reporting</li>
-								<li>Lost item recovery system</li>
-								<li>Trip history and ratings</li>
-							</ul>
-						</div>
+									<li>Real-time taxi tracking and location updates</li>
+									<li>Multi-language support (Arabic, English, French, Spanish, Italian, Russian, German)</li>
+									<li>Smart fare estimation system</li>
+									<li>Multiple taxi types (Normal Taxi, Airport Taxi, Limousine)</li>
+									<li>In-app payment processing</li>
+									<li>Emergency and incident reporting</li>
+									<li>Lost item recovery system</li>
+									<li>Trip history and ratings</li>
+								</ul>
+							</div>
 
 						<div class="technical-highlights">
-							<h4>Technical Highlights</h4>
+								<h4>Technical Highlights</h4>
 							<ul>
 								<li>Built with Flutter using Clean Architecture principles</li>
 								<li>Google Maps integration with custom markers and overlays</li>
@@ -1134,20 +1252,20 @@
 								<li>Location services with advanced permission handling</li>
 								<li>Real-time database synchronization</li>
 								<li>CI/CD with automated testing and deployment</li>
-							</ul>
-						</div>
+								</ul>
+							</div>
 
 						<div class="impact">
-							<h4>Impact</h4>
+								<h4>Impact</h4>
 							<ul>
-								<li>Operating in Sharm el Sheikh, Egypt</li>
-								<li>Comprehensive trip tracking and analytics</li>
-								<li>Enhanced tourist transportation with multi-language support</li>
-								<li>Emergency response system</li>
-								<li>Driver rating and feedback system</li>
-								<li>Integrated customer support system</li>
-							</ul>
-						</div>
+									<li>Operating in Sharm el Sheikh, Egypt</li>
+									<li>Comprehensive trip tracking and analytics</li>
+									<li>Enhanced tourist transportation with multi-language support</li>
+									<li>Emergency response system</li>
+									<li>Driver rating and feedback system</li>
+									<li>Integrated customer support system</li>
+								</ul>
+							</div>
 
 						<div class="technologies">
 							<span class="tech-tag">Flutter</span>
@@ -1159,28 +1277,27 @@
 						</div>
 
 						<a href="https://play.google.com/store/apps/details?id=com.ecards.taxi" class="btn btn-primary" target="_blank" rel="noopener noreferrer">View Project</a>
-					</div>
+						</div>
 					<!-- Add more work items -->
-				</div>
-			</div>
+						</div>
+						</div>
 		</section>
 
 		<section id="experience">
-			<div id="particles-experience" class="particles-js"></div>
 			<div class="container">
 				<h2>Experience & Skills</h2>
 				<div class="skills-grid">
 					<div class="skill-category">
-						<h3>Flutter Development</h3>
+					<h3>Flutter Development</h3>
 						<ul class="skill-list">
-							<li>Flutter & Dart</li>
+						<li>Flutter & Dart</li>
 							<li>Clean Architecture Implementation</li>
 							<li>State Management (Riverpod, Provider, BLoC)</li>
-							<li>Custom Widgets & Complex Animations</li>
+						<li>Custom Widgets & Complex Animations</li>
 							<li>Firebase Integration</li>
 							<li>REST API & GraphQL Integration</li>
 							<li>Unit, Widget & Integration Testing</li>
-						</ul>
+					</ul>
 					</div>
 					<div class="skill-category">
 						<h3>iOS Development</h3>
@@ -1191,7 +1308,7 @@
 							<li>App Store Deployment</li>
 							<li>XCode & Development Tools</li>
 							<li>iOS Design Guidelines</li>
-						</ul>
+					</ul>
 					</div>
 					<div class="skill-category">
 						<h3>Development Practices</h3>
@@ -1207,21 +1324,20 @@
 		</section>
 
 		<section id="contact" class="section">
-			<div id="particles-contact" class="particles-js"></div>
 			<div class="container">
 				<h2 class="section-title">Start Your Project</h2>
 				<p class="section-subtitle">Let's discuss how I can help bring your app idea to life</p>
 				
 				<form id="contact-form" class="contact-form" action="https://formspree.io/f/mohamed.saeed.youssef@gmail.com" method="POST">
 					<div class="form-group">
-						<label for="name">Name</label>
+								<label for="name">Name</label>
 						<input type="text" id="name" name="name" required>
-					</div>
+							</div>
 					
 					<div class="form-group">
-						<label for="email">Email</label>
+								<label for="email">Email</label>
 						<input type="email" id="email" name="email" required>
-					</div>
+							</div>
 					
 					<div class="form-group">
 						<label for="project">Project Type</label>
@@ -1232,7 +1348,7 @@
 							<option value="mvp">MVP Development</option>
 							<option value="consultation">Technical Consultation</option>
 						</select>
-					</div>
+							</div>
 					
 					<div class="form-group">
 						<label for="budget">Estimated Budget</label>
@@ -1243,7 +1359,7 @@
 							<option value="10-25k">$10,000 - $25,000</option>
 							<option value="25k+">$25,000+</option>
 						</select>
-					</div>
+						</div>
 					
 					<div class="form-group">
 						<label for="message">Project Details</label>
@@ -1251,7 +1367,7 @@
 					</div>
 					
 					<button type="submit" class="btn btn-primary">Send Project Request</button>
-				</form>
+					</form>
 				
 				<div id="form-status" style="display: none; margin-top: 24px; padding: 16px; border-radius: 8px; text-align: center;"></div>
 				
@@ -1271,7 +1387,7 @@
 					<a href="https://github.com/devsa3eed" target="_blank" rel="noopener noreferrer" class="social-link" title="GitHub">
 						<i class="fab fa-github"></i>
 					</a>
-				</div>
+			</div>
 			</div>
 		</section>
 	</main>
@@ -1280,147 +1396,34 @@
 		<div class="container">
 			<p>&copy; <span id="currentYear"></span> Mohamed Saeed. All rights reserved.</p>
 		</div>
-	</footer>
+			</footer>
 
-	<script>
+	<div class="floating-device">
+		<div class="device-notch"></div>
+		<div class="device-screen" id="device-content">
+			<!-- Content will be inserted here -->
+		</div>
+		</div>
+
+		<script>
 		document.addEventListener('DOMContentLoaded', function() {
 			// Add smooth scrolling
 			document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 				anchor.addEventListener('click', function (e) {
 					e.preventDefault();
-					document.querySelector(this.getAttribute('href')).scrollIntoView({
-						behavior: 'smooth'
-					});
+					const targetId = this.getAttribute('href');
+					if (targetId === '#') return;
+					const targetElement = document.querySelector(targetId);
+					if (targetElement) {
+						targetElement.scrollIntoView({
+							behavior: 'smooth'
+						});
+					}
 				});
 			});
 
 			// Set current year in footer
 			document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-			// Initialize particles for each section
-			const sections = ['hero', 'about', 'work', 'experience', 'contact'];
-			
-			// Base configuration that will be customized for each section
-			const baseConfig = {
-				particles: {
-					number: {
-						value: 50,
-						density: {
-							enable: true,
-							value_area: 1200
-						}
-					},
-					color: {
-						value: ["#6366F1", "#10B981", "#F59E0B", "#EC4899", "#3B82F6"]
-					},
-					shape: {
-						type: "circle"
-					},
-					opacity: {
-						value: 0.4,
-						random: false,
-						anim: {
-							enable: true,
-							speed: 1,
-							opacity_min: 0.2,
-							sync: false
-						}
-					},
-					size: {
-						value: 4,
-						random: true,
-						anim: {
-							enable: true,
-							speed: 2,
-							size_min: 1,
-							sync: false
-						}
-					},
-					line_linked: {
-						enable: true,
-						distance: 200,
-						color: "#6366F1",
-						opacity: 0.3,
-						width: 1
-					},
-					move: {
-						enable: true,
-						speed: 2,
-						direction: "none",
-						random: false,
-						straight: false,
-						out_mode: "bounce",
-						bounce: true,
-						attract: {
-							enable: true,
-							rotateX: 800,
-							rotateY: 1600
-						}
-					}
-				},
-				interactivity: {
-					detect_on: "canvas",
-					events: {
-						onhover: {
-							enable: true,
-							mode: "grab"
-						},
-						onclick: {
-							enable: true,
-							mode: "push"
-						},
-						resize: true
-					},
-					modes: {
-						grab: {
-							distance: 200,
-							line_linked: {
-								opacity: 0.4
-							}
-						},
-						push: {
-							particles_nb: 4
-						}
-					}
-				},
-				retina_detect: true
-			};
-
-			sections.forEach((sectionId) => {
-				const sectionConfig = JSON.parse(JSON.stringify(baseConfig));
-				
-				switch(sectionId) {
-					case 'hero':
-						sectionConfig.particles.number.value = 60;
-						sectionConfig.particles.color.value = "#6366F1";
-						sectionConfig.particles.line_linked.color = "#6366F1";
-						sectionConfig.particles.move.speed = 3;
-						break;
-					case 'about':
-						sectionConfig.particles.color.value = "#10B981";
-						sectionConfig.particles.line_linked.color = "#10B981";
-						sectionConfig.particles.shape.type = "triangle";
-						break;
-					case 'work':
-						sectionConfig.particles.color.value = "#F59E0B";
-						sectionConfig.particles.line_linked.color = "#F59E0B";
-						sectionConfig.particles.move.direction = "top";
-						break;
-					case 'experience':
-						sectionConfig.particles.color.value = "#EC4899";
-						sectionConfig.particles.line_linked.color = "#EC4899";
-						sectionConfig.particles.shape.type = "star";
-						break;
-					case 'contact':
-						sectionConfig.particles.color.value = "#3B82F6";
-						sectionConfig.particles.line_linked.color = "#3B82F6";
-						sectionConfig.particles.move.direction = "bottom";
-						sectionConfig.particles.size.value = 6;
-						break;
-				}
-
-				particlesJS(`particles-${sectionId}`, sectionConfig);
-			});
 
 			// Handle form submission
 			const form = document.getElementById('contact-form');
@@ -1464,68 +1467,71 @@
 				}
 			});
 
-			const gallery = document.querySelector('.screenshot-gallery');
-			const container = gallery.querySelector('.screenshot-gallery-container');
-			const images = container.querySelectorAll('img');
-			const imageWidth = images[0].offsetWidth + 24; // Width + gap
-			let isDragging = false;
-			let startPos = 0;
-			let currentTranslate = 0;
-			let prevTranslate = 0;
+			// Floating device implementation
+			const device = document.querySelector('.floating-device');
+			const deviceContent = document.getElementById('device-content');
+			const pageSections = document.querySelectorAll('section');
+			const devicePositions = {
+				hero: { top: '50%', left: '70%', transform: 'translateY(-50%)' },
+				about: { top: '30%', left: '20%', transform: 'rotate(-10deg)' },
+				work: { top: '60%', left: '80%', transform: 'rotate(10deg)' },
+				experience: { top: '40%', left: '30%', transform: 'rotate(-5deg)' },
+				contact: { top: '50%', left: '70%', transform: 'rotate(0deg)' }
+			};
+			
+			const deviceContentMap = {
+				hero: 'src/images/mockups/budget.png',
+				about: 'src/images/mockups/cards.png',
+				work: 'src/images/mockups/transfer.png',
+				experience: 'src/images/mockups/info.png',
+				contact: 'src/images/mockups/budget.png'
+			};
 
-			// Touch events
-			gallery.addEventListener('touchstart', startDragging);
-			gallery.addEventListener('touchmove', drag);
-			gallery.addEventListener('touchend', stopDragging);
-
-			// Mouse events
-			gallery.addEventListener('mousedown', startDragging);
-			gallery.addEventListener('mousemove', drag);
-			gallery.addEventListener('mouseup', stopDragging);
-			gallery.addEventListener('mouseleave', stopDragging);
-
-			function startDragging(e) {
-				isDragging = true;
-				startPos = e.type === 'mousedown' ? e.pageX : e.touches[0].pageX;
-				prevTranslate = currentTranslate;
-				container.style.transition = 'none';
-			}
-
-			function drag(e) {
-				if (!isDragging) return;
+			let currentSection = 'hero';
+			
+			// Set initial position
+			Object.assign(device.style, devicePositions.hero);
+			
+			// Handle scroll
+			window.addEventListener('scroll', () => {
+				const scrollPosition = window.scrollY + window.innerHeight / 2;
 				
-				e.preventDefault();
-				const currentX = e.type === 'mousemove' ? e.pageX : e.touches[0].pageX;
-				const diff = currentX - startPos;
-				currentTranslate = prevTranslate + diff;
-				
-				// Add boundaries
-				const maxTranslate = 0;
-				const minTranslate = -(imageWidth * images.length) + gallery.offsetWidth;
-				currentTranslate = Math.max(minTranslate, Math.min(currentTranslate, maxTranslate));
-				
-				setTransform(currentTranslate);
-			}
-
-			function stopDragging() {
-				if (!isDragging) return;
-				isDragging = false;
-				container.style.transition = 'transform 0.3s ease-out';
-			}
-
-			function setTransform(translate) {
-				container.style.transform = `translateX(${translate}px)`;
-			}
-
-			// Handle window resize
+				pageSections.forEach(section => {
+					const sectionTop = section.offsetTop;
+					const sectionHeight = section.offsetHeight;
+					const sectionId = section.id || 'hero';
+					
+					if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+						if (currentSection !== sectionId) {
+							currentSection = sectionId;
+							
+							// Update position
+							Object.assign(device.style, devicePositions[sectionId]);
+							
+							// Update content
+							const deviceContent = document.querySelector('.device-screen');
+							if (deviceContent) {
+								// Remove any existing content
+								deviceContent.innerHTML = '';
+								// Add the new content
+								deviceContent.innerHTML = `<img src="${deviceContentMap[sectionId]}" alt="App Preview">`;
+							}
+							
+							// Add animation class
+							device.classList.add('device-transition');
+							setTimeout(() => {
+								device.classList.remove('device-transition');
+							}, 800);
+						}
+					}
+				});
+			});
+			
+			// Handle resize
 			window.addEventListener('resize', () => {
-				container.style.transition = 'none';
-				const maxTranslate = 0;
-				const minTranslate = -(imageWidth * images.length) + gallery.offsetWidth;
-				currentTranslate = Math.max(minTranslate, Math.min(currentTranslate, maxTranslate));
-				setTransform(currentTranslate);
+				Object.assign(device.style, devicePositions[currentSection]);
 			});
 		});
 	</script>
-</body>
+	</body>
 </html>
