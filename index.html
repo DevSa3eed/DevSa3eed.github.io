@@ -14,22 +14,22 @@
 	<link rel="icon" type="image/png" href="src/images/favicon.png">
 		<style>
 			:root {
-			--primary: #5E6AD2;
-			--primary-dark: #4B57B9;
+			--primary: #FDE047;
+			--primary-dark: #FACC15;
 			--secondary: #94A3B8;
 			--text: #F8FAFC;
 			--text-secondary: #94A3B8;
-			--background: #000000;
-			--background-light: #0A0A0A;
-			--accent: #6366F1;
-			--border: rgba(148, 163, 184, 0.06);
+			--background: #0A0A0A;
+			--background-light: #1A1A1A;
+			--accent: #FEF08A;
+			--border: rgba(148, 163, 184, 0.1);
 			--success: #10B981;
 			--error: #EF4444;
 			--warning: #F59E0B;
-			--surface-1: rgba(255, 255, 255, 0.02);
-			--surface-2: rgba(255, 255, 255, 0.04);
-			--surface-3: rgba(255, 255, 255, 0.06);
-			--surface-4: rgba(255, 255, 255, 0.08);
+			--surface-1: rgba(26, 26, 26, 0.5);
+			--surface-2: rgba(26, 26, 26, 0.7);
+			--surface-3: rgba(26, 26, 26, 0.9);
+			--surface-4: rgba(26, 26, 26, 1);
 			--transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 		}
 
@@ -61,10 +61,10 @@
 			left: 0;
 			right: 0;
 			padding: 24px 0;
-			background: rgba(0, 0, 0, 0.8);
+			background: rgba(10, 10, 10, 0.95);
 			backdrop-filter: blur(12px);
 			z-index: 100;
-			border-bottom: 1px solid var(--border);
+			border-bottom: 1px solid rgba(163, 230, 53, 0.1);
 		}
 
 		.header-content {
@@ -74,14 +74,12 @@
 		}
 
 		.logo {
-			font-weight: 600;
-			font-size: 1.25rem;
-			color: var(--text);
+			font-weight: 700;
+			font-size: 1.5rem;
+			color: var(--primary);
 			text-decoration: none;
-			background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
-			-webkit-background-clip: text;
-			background-clip: text;
-				color: transparent;
+			text-shadow: none;
+			letter-spacing: -0.02em;
 		}
 
 		nav {
@@ -133,6 +131,7 @@
 			width: 100%;
 			height: 100%;
 			z-index: -1;
+			background: var(--background);
 		}
 
 		.gradient-overlay {
@@ -141,7 +140,7 @@
 			left: 0;
 			width: 100%;
 			height: 100%;
-			background: linear-gradient(to bottom, transparent, var(--background));
+			background: linear-gradient(to bottom, rgba(10, 10, 10, 0.8), rgba(10, 10, 10, 0.95));
 			z-index: 1;
 		}
 
@@ -149,15 +148,19 @@
 			max-width: 800px;
 		}
 
+		h1, h2, h3 {
+			color: var(--text);
+			background: none;
+			-webkit-background-clip: none;
+			background-clip: none;
+			text-shadow: none;
+		}
+
 		h1 {
-			font-size: 4.5rem;
+			font-size: 5rem;
 			line-height: 1.1;
 			margin-bottom: 32px;
-			background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
-				-webkit-background-clip: text;
-				background-clip: text;
-			color: transparent;
-			font-weight: 700;
+			font-weight: 800;
 			letter-spacing: -0.02em;
 		}
 
@@ -169,16 +172,18 @@
 		}
 
 		.hero-badge {
-			background: rgba(94, 106, 210, 0.06);
+			background: rgba(163, 230, 53, 0.1);
 			color: var(--primary);
-			font-size: 0.875rem;
+			font-size: 1rem;
 			font-weight: 600;
-			padding: 6px 12px;
+			padding: 8px 16px;
 			border-radius: 20px;
 			margin-bottom: 24px;
-				display: inline-block;
+			display: inline-block;
 			letter-spacing: 1px;
-			border: 1px solid rgba(94, 106, 210, 0.08);
+			border: 1px solid rgba(163, 230, 53, 0.2);
+			text-transform: uppercase;
+			box-shadow: none;
 		}
 
 		.hero-cta {
@@ -223,14 +228,13 @@
 
 		.btn-primary {
 			background: var(--primary);
-			color: var(--text);
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			color: #0A0A0A;
+			box-shadow: none;
 		}
 
 		.btn-primary:hover {
 			background: var(--primary-dark);
 			transform: translateY(-2px);
-			box-shadow: 0 4px 12px rgba(94, 106, 210, 0.2);
 		}
 
 		.btn-secondary {
@@ -266,8 +270,8 @@
 		}
 
 		.stat-number {
-			font-size: 2.5rem;
-			font-weight: 700;
+			font-size: 3rem;
+			font-weight: 800;
 			color: var(--primary);
 			line-height: 1;
 		}
@@ -297,12 +301,17 @@
 		}
 
 		h2 {
-			font-size: 3rem;
+			font-size: 3.5rem;
 			margin-bottom: 64px;
 			color: var(--text);
 			letter-spacing: -0.02em;
 			position: relative;
 			display: inline-block;
+			font-weight: 700;
+			background: none;
+			-webkit-background-clip: none;
+			background-clip: none;
+			color: transparent;
 		}
 
 		h2::after {
@@ -310,8 +319,8 @@
 			position: absolute;
 			bottom: -12px;
 			left: 0;
-			width: 40px;
-			height: 2px;
+			width: 60px;
+			height: 3px;
 			background: var(--primary);
 			border-radius: 2px;
 		}
@@ -328,9 +337,10 @@
 			border-radius: 16px;
 			padding: 32px;
 			transition: var(--transition);
-			border: 1px solid var(--border);
+			border: 1px solid rgba(163, 230, 53, 0.1);
 			position: relative;
 			overflow: hidden;
+			box-shadow: none;
 		}
 
 		.work-item::before, .service-card::before, .skill-category::before {
@@ -356,9 +366,14 @@
 		}
 
 		.work-item h3 {
-			font-size: 1.5rem;
+			font-size: 1.75rem;
 			margin-bottom: 16px;
 			color: var(--text);
+			font-weight: 700;
+			background: none;
+			-webkit-background-clip: none;
+			background-clip: none;
+			color: transparent;
 		}
 
 		.work-item p {
@@ -379,9 +394,14 @@
 		}
 
 		.skill-category h3 {
-			font-size: 1.25rem;
+			font-size: 1.5rem;
 			margin-bottom: 24px;
 			color: var(--primary);
+			font-weight: 700;
+			background: none;
+			-webkit-background-clip: none;
+			background-clip: none;
+			color: transparent;
 		}
 
 		.skill-list {
@@ -610,11 +630,12 @@
 		.device-screen {
 			width: 100%;
 			height: 100%;
-			background: #000;
+			background: #0A0A0A;
 			border-radius: 28px;
 			overflow: hidden;
 			position: relative;
 			padding: 0;
+			border: 1px solid rgba(163, 230, 53, 0.05);
 		}
 
 		.device-screen img {
@@ -656,7 +677,7 @@
 			border-radius: 16px;
 			padding: 32px;
 			transition: var(--transition);
-			border: 1px solid var(--border);
+			border: 1px solid rgba(163, 230, 53, 0.1);
 			position: relative;
 			overflow: hidden;
 		}
@@ -682,9 +703,14 @@
 		}
 
 		.service-card h3 {
-			font-size: 1.25rem;
+			font-size: 1.5rem;
 			margin-bottom: 16px;
 			color: var(--text);
+			font-weight: 700;
+			background: none;
+			-webkit-background-clip: none;
+			background-clip: none;
+			color: transparent;
 		}
 
 		.service-card p {
@@ -986,26 +1012,27 @@
 			position: fixed;
 			width: 300px;
 			height: 600px;
-			background: #1a1a1a;
+			background: #1A1A1A;
 			border-radius: 40px;
 			padding: 16px;
-			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+			box-shadow: none;
 			z-index: 1000;
 			transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 			pointer-events: none;
 			opacity: 1;
+			border: 1px solid rgba(163, 230, 53, 0.1);
 		}
 
 		.device-screen {
 			width: 100%;
 			height: 100%;
-			background: #000;
+			background: #0A0A0A;
 			border-radius: 28px;
 			overflow: hidden;
 			position: relative;
 			display: flex;
 			flex-direction: column;
-			background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+			border: 1px solid rgba(163, 230, 53, 0.05);
 		}
 
 		.device-screen img {
@@ -1110,12 +1137,30 @@
 			text-align: center;
 			font-weight: 500;
 			}
+
+		.section-title {
+			font-size: 3.5rem;
+			margin-bottom: 16px;
+			color: var(--text);
+			font-weight: 700;
+			background: none;
+			-webkit-background-clip: none;
+			background-clip: none;
+			color: transparent;
+		}
+
+		.section-subtitle {
+			font-size: 1.25rem;
+			color: var(--text-secondary);
+			margin-bottom: 48px;
+			font-weight: 500;
+		}
 		</style>
 	</head>
 <body>
 	<header>
 		<div class="container header-content">
-			<a href="#" class="logo">Mohamed Saeed</a>
+			<a href="#hero" class="logo">Mohamed Saeed</a>
 			<nav>
 				<a href="#about">About</a>
 				<a href="#work">Work</a>
@@ -1473,10 +1518,10 @@
 			const pageSections = document.querySelectorAll('section');
 			const devicePositions = {
 				hero: { top: '50%', left: '70%', transform: 'translateY(-50%)' },
-				about: { top: '30%', left: '20%', transform: 'rotate(-10deg)' },
-				work: { top: '60%', left: '80%', transform: 'rotate(10deg)' },
-				experience: { top: '40%', left: '30%', transform: 'rotate(-5deg)' },
-				contact: { top: '50%', left: '70%', transform: 'rotate(0deg)' }
+				about: { top: '30%', left: '10%', transform: 'rotate(-10deg)' },
+				work: { top: '40%', left: '60%', transform: 'rotate(10deg)' },
+				experience: { top: '20%', left: '80%', transform: 'rotate(5deg)' },
+				contact: { top: '30%', left: '3%', transform: 'rotate(0deg)' }
 			};
 			
 			const deviceContentMap = {
@@ -1484,13 +1529,14 @@
 				about: 'src/images/mockups/cards.png',
 				work: 'src/images/mockups/transfer.png',
 				experience: 'src/images/mockups/info.png',
-				contact: 'src/images/mockups/budget.png'
+				contact: 'src/images/mockups/transparent.png'
 			};
 
 			let currentSection = 'hero';
 			
-			// Set initial position
+			// Set initial position and content
 			Object.assign(device.style, devicePositions.hero);
+			deviceContent.innerHTML = `<img src="${deviceContentMap.hero}" alt="App Preview">`;
 			
 			// Handle scroll
 			window.addEventListener('scroll', () => {
