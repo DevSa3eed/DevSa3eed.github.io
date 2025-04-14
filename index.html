@@ -76,10 +76,35 @@
 		.logo {
 			font-weight: 700;
 			font-size: 1.5rem;
-			color: var(--primary);
 			text-decoration: none;
 			text-shadow: none;
 			letter-spacing: -0.02em;
+			background: linear-gradient(
+				to right,
+				#0071E3, /* Apple Blue */
+				#AC39FF, /* Apple Purple */
+				#FF2D55, /* Apple Pink */
+				#FF9F0A, /* Apple Orange */
+				#2AC9DE, /* Apple Teal */
+				#0071E3  /* Back to Blue */
+			);
+			background-size: 400% 100%;
+			-webkit-background-clip: text;
+			background-clip: text;
+			color: transparent;
+			animation: gradientShift 12s linear infinite;
+		}
+
+		@keyframes gradientShift {
+			0% {
+				background-position: 0% 50%;
+			}
+			50% {
+				background-position: 100% 50%;
+			}
+			100% {
+				background-position: 0% 50%;
+			}
 		}
 
 		nav {
