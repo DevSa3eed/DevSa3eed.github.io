@@ -1021,29 +1021,29 @@
 			/* Update floating device styles */
 			.floating-device {
 				position: fixed;
-				width: 300px;
-				height: 600px;
-				background: #1A1A1A;
-				border-radius: 40px;
-				padding: 16px;
-				box-shadow: none;
+				/* Reduced size */
+				width: 250px; 
+				height: 540px; 
+				background: #1C1C1E; 
+				/* Proportionally reduced border-radius */
+				border-radius: 44px; 
+				/* Proportionally reduced padding */
+				padding: 10px; 
+				box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); /* Slightly reduced shadow */
 				z-index: 1000;
 				transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 				pointer-events: none;
 				opacity: 1;
-				border: 1px solid rgba(163, 230, 53, 0.1);
 			}
 
 			.device-screen {
 				width: 100%;
 				height: 100%;
-				background: #0A0A0A;
-				border-radius: 28px;
+				background: #000000;
+				/* Proportionally reduced inner radius */
+				border-radius: 34px; 
 				overflow: hidden;
 				position: relative;
-				display: flex;
-				flex-direction: column;
-				border: 1px solid rgba(163, 230, 53, 0.05);
 			}
 
 			.device-screen img {
@@ -1051,19 +1051,30 @@
 				height: 100%;
 				object-fit: cover;
 				opacity: 1;
-			}
-
-			.device-notch {
+				/* Ensure image covers the screen area */
 				position: absolute;
 				top: 0;
+				left: 0;
+			}
+
+			/* Add Dynamic Island */
+			.device-screen::before {
+				content: '';
+				position: absolute;
+				top: 10px; /* Adjusted position */
 				left: 50%;
 				transform: translateX(-50%);
-				width: 150px;
-				height: 30px;
-				background: #1a1a1a;
-				border-radius: 0 0 20px 20px;
+				/* Reduced size */
+				width: 96px; 
+				height: 24px; 
+				background: #000;
+				border-radius: 16px; /* Adjusted radius */
 				z-index: 2;
 			}
+
+			/* Remove original device-notch styles if they exist */
+			/* .device-notch { display: none; } */ 
+			/* Commented out as it was likely removed already */
 
 			/* Add fitness app mockup content */
 			.fitness-app {
@@ -1357,6 +1368,11 @@
 					font-weight: 900;
 				}
 			}
+
+			/* Contact Section Centering */
+			#contact .container {
+				max-width: 900px; /* Narrower container for centering */
+			}
 		</style>
 	</head>
 <body>
@@ -1554,8 +1570,8 @@
 						<ul class="skill-list">
 							<li>Test-Driven Development</li>
 							<li>SOLID Principles</li>
-							<li>Version Control with Git</li>
-							<li>Agile Development Methodologies</li>
+							<li>Git Version Control</li>
+							<li>Agile Development</li>
 						</ul>
 					</div>
 				</div>
@@ -1638,7 +1654,6 @@
 			</footer>
 
 	<div class="floating-device">
-		<div class="device-notch"></div>
 		<div class="device-screen" id="device-content">
 			<!-- Content will be inserted here -->
 		</div>
@@ -1711,9 +1726,9 @@
 			const deviceContent = document.getElementById('device-content');
 			const pageSections = document.querySelectorAll('section');
 			const devicePositions = {
-				hero: { top: '50%', left: '70%', transform: 'translateY(-50%)' },
-				about: { top: '30%', left: '10%', transform: 'rotate(-10deg)' },
-				work: { top: '40%', left: '60%', transform: 'rotate(10deg)' },
+				hero: { top: '60%', left: '70%', transform: 'translateY(-50%)' },
+				about: { top: '30%', left: '5%', transform: 'rotate(-10deg)' },
+				work: { top: '40%', left: '70%', transform: 'rotate(10deg)' },
 				experience: { top: '20%', left: '80%', transform: 'rotate(5deg)' },
 				contact: { top: '30%', left: '3%', transform: 'rotate(0deg)' }
 			};
