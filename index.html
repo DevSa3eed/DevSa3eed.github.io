@@ -14,14 +14,14 @@
 	<link rel="icon" type="image/png" href="src/images/favicon.png">
 		<style>
 			:root {
-				--primary: #FFFFFF;
-				--primary-dark: #E5E5E5;
+				--primary: #3B82F6;
+				--primary-dark: #2563EB;
 				--secondary: #A1A1AA;
 				--text: #FFFFFF;
 				--text-secondary: #71717A;
 				--background: #000000;
 				--background-light: #18181B;
-				--accent: #E4E4E7;
+				--accent: #3B82F6;
 				--border: rgba(63, 63, 70, 0.4);
 				--success: #22C55E;
 				--error: #EF4444;
@@ -81,11 +81,11 @@
 				letter-spacing: -0.03em;
 				background: linear-gradient(
 					to right,
-					#FFFFFF,
-					#E5E5E5,
-					#D4D4D8,
-					#E5E5E5,
-					#FFFFFF
+					#3B82F6,
+					#8B5CF6,
+					#EC4899,
+					#8B5CF6,
+					#3B82F6
 				);
 				background-size: 400% 100%;
 				-webkit-background-clip: text;
@@ -592,35 +592,49 @@
 
 			.screenshot-gallery-container {
 				display: flex;
-				gap: 24px;
-				animation: scroll 30s linear infinite;
+				gap: 16px; /* Slightly smaller gap */
+				/* Remove explicit width and animation */
+				/* Allow wrapping for thumbnails */
+				flex-wrap: wrap;
+				justify-content: center; /* Center thumbnails */
 			}
 
-			.screenshot-gallery:hover .screenshot-gallery-container {
+			/* Remove hover pause */
+			/* .screenshot-gallery:hover .screenshot-gallery-container {
 				animation-play-state: paused;
-			}
+			} */
 
 			.screenshot-gallery img {
-				width: auto;
-				height: 500px;
-				border-radius: 12px;
-				box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-				transition: transform 0.3s ease;
+				/* Make thumbnails larger */
+				height: 300px; 
+				width: auto; /* Maintain aspect ratio */
+				border-radius: 8px;
+				/* Remove border styling related to selected state */
+				transition: transform 0.2s ease;
 				flex-shrink: 0;
+				/* Remove cursor pointer */
 			}
 
 			.screenshot-gallery img:hover {
-				transform: scale(1.02);
+				/* Increase hover scale */
+				transform: scale(1.1);
 			}
 
-			@keyframes scroll {
+			/* Remove selected state style */
+			/* .screenshot-gallery img.selected {
+				border-color: var(--primary);
+				transform: scale(1.03);
+			} */
+
+			/* Remove scroll animation */
+			/* @keyframes scroll {
 				0% {
 					transform: translateX(0);
 				}
 				100% {
-					transform: translateX(calc(-100% - 24px));
+					transform: translateX(-50%); 
 				}
-			}
+			} */
 
 			@media (max-width: 768px) {
 				.screenshot-gallery img {
@@ -633,7 +647,8 @@
 				}
 			}
 
-			.device-mockup {
+			/* Remove unused device-mockup styles and the duplicate keyframes rule */
+			/* .device-mockup {
 				position: relative;
 				width: 300px;
 				height: 600px;
@@ -643,20 +658,20 @@
 				box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 				flex-shrink: 0;
 				animation: scroll 15s linear infinite;
-			}
+			} */
 
-			.screenshot-gallery:hover .device-mockup {
+			/* .screenshot-gallery:hover .device-mockup {
 				animation-play-state: paused;
-			}
+			} */
 
-			@keyframes scroll {
+			/* @keyframes scroll {
 				0% {
 					transform: translateX(0);
 				}
 				100% {
 					transform: translateX(calc(-1 * (100% / 2)));
 				}
-			}
+			} */
 
 			.device-screen {
 				width: 100%;
@@ -1525,7 +1540,6 @@
 
 						<div class="technologies">
 							<span class="tech-tag">Flutter</span>
-							<span class="tech-tag">Firebase</span>
 							<span class="tech-tag">Google Maps</span>
 							<span class="tech-tag">Payment Gateway</span>
 							<span class="tech-tag">Clean Architecture</span>
@@ -1655,138 +1669,138 @@
 
 	<div class="floating-device">
 		<div class="device-screen" id="device-content">
-			<!-- Content will be inserted here -->
+			<!-- Content removed, no longer interacts with thumbnails -->
 		</div>
-		</div>
+	</div>
 
-		<script>
-		document.addEventListener('DOMContentLoaded', function() {
-			// Add smooth scrolling
-			document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-				anchor.addEventListener('click', function (e) {
-					e.preventDefault();
-					const targetId = this.getAttribute('href');
-					if (targetId === '#') return;
-					const targetElement = document.querySelector(targetId);
-					if (targetElement) {
-						targetElement.scrollIntoView({
-							behavior: 'smooth'
-						});
-					}
-				});
-			});
-
-			// Set current year in footer
-			document.getElementById('currentYear').textContent = new Date().getFullYear();
-
-			// Handle form submission
-			const form = document.getElementById('contact-form');
-			const formStatus = document.getElementById('form-status');
-
-			form.addEventListener('submit', async (e) => {
+	<script>
+	document.addEventListener('DOMContentLoaded', function() {
+		// Add smooth scrolling
+		document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+			anchor.addEventListener('click', function (e) {
 				e.preventDefault();
-				
-				// Show loading state
-				const submitButton = form.querySelector('button[type="submit"]');
-				const originalText = submitButton.textContent;
-				submitButton.disabled = true;
-				submitButton.textContent = 'Sending...';
-				
-				try {
-					const response = await fetch(form.action, {
-						method: 'POST',
-						body: new FormData(form),
-						headers: {
-							'Accept': 'application/json'
-						}
+				const targetId = this.getAttribute('href');
+				if (targetId === '#') return;
+				const targetElement = document.querySelector(targetId);
+				if (targetElement) {
+					targetElement.scrollIntoView({
+						behavior: 'smooth'
 					});
-
-					if (response.ok) {
-						formStatus.style.display = 'block';
-						formStatus.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
-						formStatus.style.color = 'var(--success)';
-						formStatus.textContent = 'Thank you! Your message has been sent successfully.';
-						form.reset();
-					} else {
-						throw new Error('Network response was not ok');
-					}
-				} catch (error) {
-					formStatus.style.display = 'block';
-					formStatus.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
-					formStatus.style.color = 'var(--error)';
-					formStatus.textContent = 'Oops! There was a problem sending your message. Please try again.';
-				} finally {
-					submitButton.disabled = false;
-					submitButton.textContent = originalText;
 				}
 			});
+		});
 
-			// Floating device implementation
-			const device = document.querySelector('.floating-device');
-			const deviceContent = document.getElementById('device-content');
-			const pageSections = document.querySelectorAll('section');
-			const devicePositions = {
-				hero: { top: '60%', left: '70%', transform: 'translateY(-50%)' },
-				about: { top: '30%', left: '5%', transform: 'rotate(-10deg)' },
-				work: { top: '40%', left: '70%', transform: 'rotate(10deg)' },
-				experience: { top: '20%', left: '80%', transform: 'rotate(5deg)' },
-				contact: { top: '30%', left: '3%', transform: 'rotate(0deg)' }
-			};
-			
-			const deviceContentMap = {
-				hero: 'src/images/mockups/budget.png',
-				about: 'src/images/mockups/cards.png',
-				work: 'src/images/mockups/transfer.png',
-				experience: 'src/images/mockups/info.png',
-				contact: 'src/images/mockups/transparent.png'
-			};
+		// Set current year in footer
+		document.getElementById('currentYear').textContent = new Date().getFullYear();
 
-			let currentSection = 'hero';
+		// Handle form submission
+		const form = document.getElementById('contact-form');
+		const formStatus = document.getElementById('form-status');
+
+		form.addEventListener('submit', async (e) => {
+			e.preventDefault();
 			
-			// Set initial position and content
-			Object.assign(device.style, devicePositions.hero);
-			deviceContent.innerHTML = `<img src="${deviceContentMap.hero}" alt="App Preview">`;
+			// Show loading state
+			const submitButton = form.querySelector('button[type="submit"]');
+			const originalText = submitButton.textContent;
+			submitButton.disabled = true;
+			submitButton.textContent = 'Sending...';
 			
-			// Handle scroll
-			window.addEventListener('scroll', () => {
-				const scrollPosition = window.scrollY + window.innerHeight / 2;
-				
-				pageSections.forEach(section => {
-					const sectionTop = section.offsetTop;
-					const sectionHeight = section.offsetHeight;
-					const sectionId = section.id || 'hero';
-					
-					if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-						if (currentSection !== sectionId) {
-							currentSection = sectionId;
-							
-							// Update position
-							Object.assign(device.style, devicePositions[sectionId]);
-							
-							// Update content
-							const deviceContent = document.querySelector('.device-screen');
-							if (deviceContent) {
-								// Remove any existing content
-								deviceContent.innerHTML = '';
-								// Add the new content
-								deviceContent.innerHTML = `<img src="${deviceContentMap[sectionId]}" alt="App Preview">`;
-							}
-							
-							// Add animation class
-							device.classList.add('device-transition');
-							setTimeout(() => {
-								device.classList.remove('device-transition');
-							}, 800);
-						}
+			try {
+				const response = await fetch(form.action, {
+					method: 'POST',
+					body: new FormData(form),
+					headers: {
+						'Accept': 'application/json'
 					}
 				});
-			});
+
+				if (response.ok) {
+					formStatus.style.display = 'block';
+					formStatus.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
+					formStatus.style.color = 'var(--success)';
+					formStatus.textContent = 'Thank you! Your message has been sent successfully.';
+					form.reset();
+				} else {
+					throw new Error('Network response was not ok');
+				}
+			} catch (error) {
+				formStatus.style.display = 'block';
+				formStatus.style.backgroundColor = 'rgba(239, 68, 68, 0.1)';
+				formStatus.style.color = 'var(--error)';
+				formStatus.textContent = 'Oops! There was a problem sending your message. Please try again.';
+			} finally {
+				submitButton.disabled = false;
+				submitButton.textContent = originalText;
+			}
+		});
+
+		// Floating device implementation
+		const device = document.querySelector('.floating-device');
+		const deviceContent = document.getElementById('device-content');
+		const pageSections = document.querySelectorAll('section');
+		const devicePositions = {
+			hero: { top: '60%', left: '70%', transform: 'translateY(-50%)' },
+			about: { top: '30%', left: '5%', transform: 'rotate(-10deg)' },
+			work: { top: '40%', left: '70%', transform: 'rotate(10deg)' },
+			experience: { top: '20%', left: '80%', transform: 'rotate(5deg)' },
+			contact: { top: '30%', left: '3%', transform: 'rotate(0deg)' }
+		};
+		
+		const deviceContentMap = {
+			hero: 'src/images/mockups/budget.png',
+			about: 'src/images/mockups/cards.png',
+			work: 'src/images/mockups/transfer.png',
+			experience: 'src/images/mockups/info.png',
+			contact: 'src/images/mockups/transparent.png'
+		};
+
+		let currentSection = 'hero';
+		
+		// Set initial position and content
+		Object.assign(device.style, devicePositions.hero);
+		deviceContent.innerHTML = `<img src="${deviceContentMap.hero}" alt="App Preview">`;
+		
+		// Handle scroll
+		window.addEventListener('scroll', () => {
+			const scrollPosition = window.scrollY + window.innerHeight / 2;
 			
-			// Handle resize
-			window.addEventListener('resize', () => {
-				Object.assign(device.style, devicePositions[currentSection]);
+			pageSections.forEach(section => {
+				const sectionTop = section.offsetTop;
+				const sectionHeight = section.offsetHeight;
+				const sectionId = section.id || 'hero';
+				
+				if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+					if (currentSection !== sectionId) {
+						currentSection = sectionId;
+						
+						// Update position
+						Object.assign(device.style, devicePositions[sectionId]);
+						
+						// Update content
+						const deviceContent = document.querySelector('.device-screen');
+						if (deviceContent) {
+							// Remove any existing content
+							deviceContent.innerHTML = '';
+							// Add the new content
+							deviceContent.innerHTML = `<img src="${deviceContentMap[sectionId]}" alt="App Preview">`;
+						}
+						
+						// Add animation class
+						device.classList.add('device-transition');
+						setTimeout(() => {
+							device.classList.remove('device-transition');
+						}, 800);
+					}
+				}
 			});
 		});
+		
+		// Handle resize
+		window.addEventListener('resize', () => {
+			Object.assign(device.style, devicePositions[currentSection]);
+		});
+	});
 	</script>
 	</body>
 </html>
