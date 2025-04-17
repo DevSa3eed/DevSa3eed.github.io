@@ -189,12 +189,62 @@
 			}
 
 			h2 {
-				font-size: 2rem;
+				font-size: 3.5rem;
 				margin-bottom: 48px;
-				letter-spacing: -0.02em;
+				letter-spacing: -0.03em;
 				position: relative;
 				display: inline-block;
-				font-weight: 700;
+				font-weight: 800;
+				background: linear-gradient(
+					to right,
+					var(--text),
+					var(--text-secondary)
+				);
+				-webkit-background-clip: text;
+				background-clip: text;
+				color: transparent;
+				text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			}
+
+			h2::after {
+				content: '';
+				position: absolute;
+				bottom: -12px;
+				left: 0;
+				width: 60px;
+				height: 3px;
+				background: linear-gradient(
+					to right,
+					var(--primary),
+					var(--primary-dark)
+				);
+				border-radius: 2px;
+				box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+			}
+
+			.section-title {
+				font-size: 3.5rem;
+				margin-bottom: 16px;
+				font-weight: 800;
+				letter-spacing: -0.03em;
+				background: linear-gradient(
+					to right,
+					var(--text),
+					var(--text-secondary)
+				);
+				-webkit-background-clip: text;
+				background-clip: text;
+				color: transparent;
+				text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+			}
+
+			.section-subtitle {
+				font-size: 1.25rem;
+				color: var(--text-secondary);
+				margin-bottom: 48px;
+				font-weight: 500;
+				letter-spacing: -0.01em;
+				max-width: 600px;
 			}
 
 			.hero p {
@@ -332,17 +382,6 @@
 				right: 0;
 				height: 1px;
 				background: linear-gradient(to right, transparent, var(--border), transparent);
-			}
-
-			h2::after {
-				content: '';
-				position: absolute;
-				bottom: -12px;
-				left: 0;
-				width: 60px;
-				height: 3px;
-				background: var(--text);
-				border-radius: 2px;
 			}
 
 			.work-grid {
@@ -537,7 +576,7 @@
 					font-size: 3rem;
 				}
 
-				h2 {
+				h2, .section-title {
 					font-size: 2.5rem;
 				}
 
@@ -556,6 +595,10 @@
 				.hero-stats {
 					grid-template-columns: repeat(2, 1fr);
 					gap: 24px;
+				}
+
+				.section-subtitle {
+					font-size: 1.1rem;
 				}
 			}
 
@@ -1172,19 +1215,6 @@
 				border-radius: 12px;
 				padding: 12px;
 				text-align: center;
-				font-weight: 500;
-			}
-
-			.section-title {
-				font-size: 2rem;
-				margin-bottom: 16px;
-				font-weight: 700;
-			}
-
-			.section-subtitle {
-				font-size: 1.25rem;
-				color: var(--text-secondary);
-				margin-bottom: 48px;
 				font-weight: 500;
 			}
 
