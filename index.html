@@ -648,14 +648,24 @@
 			} */
 
 			.screenshot-gallery img {
-				/* Make thumbnails larger */
 				height: 300px; 
-				width: auto; /* Maintain aspect ratio */
+				width: auto;
 				border-radius: 8px;
-				/* Remove border styling related to selected state */
 				transition: transform 0.2s ease;
 				flex-shrink: 0;
-				/* Remove cursor pointer */
+				border: 2px solid var(--border);
+				background-color: var(--surface-1);
+				object-fit: cover;
+			}
+
+			.screenshot-gallery img:not([src]) {
+				background-color: var(--error);
+				opacity: 0.5;
+			}
+
+			.screenshot-gallery img[src=""] {
+				background-color: var(--warning);
+				opacity: 0.5;
 			}
 
 			.screenshot-gallery img:hover {
@@ -1520,12 +1530,12 @@
 						
 						<div class="screenshot-gallery">
 							<div class="screenshot-gallery-container">
-								<img src="src/images/sharm/Splash.png" alt="Sharm Taxi Splash Screen" loading="lazy">
-								<img src="src/images/sharm/Login.png" alt="Sharm Taxi Login Screen" loading="lazy">
-								<img src="src/images/sharm/Sign Up.png" alt="Sharm Taxi Sign Up Screen" loading="lazy">
-								<img src="src/images/sharm/Map.png" alt="Sharm Taxi Map View" loading="lazy">
-								<img src="src/images/sharm/Booking.png" alt="Sharm Taxi Booking Screen" loading="lazy">
-								<img src="src/images/sharm/Trips.png" alt="Sharm Taxi Trips History" loading="lazy">
+								<img src="./src/images/sharm/Splash.png" alt="Sharm Taxi Splash Screen" loading="lazy">
+								<img src="./src/images/sharm/Login.png" alt="Sharm Taxi Login Screen" loading="lazy">
+								<img src="./src/images/sharm/Sign Up.png" alt="Sharm Taxi Sign Up Screen" loading="lazy">
+								<img src="./src/images/sharm/Map.png" alt="Sharm Taxi Map View" loading="lazy">
+								<img src="./src/images/sharm/Booking.png" alt="Sharm Taxi Booking Screen" loading="lazy">
+								<img src="./src/images/sharm/Trips.png" alt="Sharm Taxi Trips History" loading="lazy">
 							</div>
 						</div>
 
