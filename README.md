@@ -1,4 +1,4 @@
-# Mohamed Saeed - Portfolio Website
+# Sa3eed - Portfolio Website
 
 A modern, responsive portfolio website showcasing my work as a Flutter & iOS Developer. Built with clean, semantic HTML5, modern CSS3, and vanilla JavaScript.
 
@@ -86,7 +86,7 @@ git clone https://github.com/devsa3eed/DevSa3eed.github.io.git
 
 ## 📝 License
 
-Copyright © 2024 Mohamed Saeed. All rights reserved.
+Copyright © 2024 Sa3eed. All rights reserved.
 
 ## 📞 Contact
 
