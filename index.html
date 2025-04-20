@@ -328,9 +328,9 @@
 				align-items: center;
 				justify-content: center;
 				padding: 12px 24px;
-				border-radius: 8px;
-				font-weight: 500;
-				transition: var(--transition);
+				border-radius: 10px;
+				font-weight: 600;
+				transition: all 0.2s ease;
 				cursor: pointer;
 				gap: 8px;
 				text-decoration: none;
@@ -339,6 +339,8 @@
 				height: 44px;
 				position: relative;
 				overflow: hidden;
+				-webkit-tap-highlight-color: transparent;
+				user-select: none;
 			}
 
 			.btn::before {
@@ -350,7 +352,7 @@
 				bottom: 0;
 				background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
 				transform: translateX(-100%);
-				transition: var(--transition);
+				transition: transform 0.3s ease;
 			}
 
 			.btn:hover::before {
@@ -358,35 +360,67 @@
 			}
 
 			.btn-primary {
-				background: var(--text);
-				color: var(--background);
-				box-shadow: none;
+				background: var(--primary);
+				color: white;
+				box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 			}
 
 			.btn-primary:hover {
 				background: var(--primary-dark);
-				transform: translateY(-2px);
+				transform: translateY(-1px);
+				box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+			}
+
+			.btn-primary:active {
+				transform: translateY(0);
+				box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
 			}
 
 			.btn-secondary {
-				background: var(--surface-1);
+				background: rgba(255, 255, 255, 0.1);
 				color: var(--text);
-				border: 1px solid var(--border);
+				border: 1px solid rgba(255, 255, 255, 0.2);
+				backdrop-filter: blur(10px);
+				-webkit-backdrop-filter: blur(10px);
 			}
 
 			.btn-secondary:hover {
-				background: var(--surface-2);
-				border-color: var(--primary);
+				background: rgba(255, 255, 255, 0.15);
+				border-color: rgba(255, 255, 255, 0.3);
+				transform: translateY(-1px);
+			}
+
+			.btn-secondary:active {
+				transform: translateY(0);
 			}
 
 			.btn:disabled {
 				opacity: 0.5;
 				cursor: not-allowed;
 				transform: none;
+				box-shadow: none;
 			}
 
 			.btn i {
 				font-size: 1.1em;
+			}
+
+			/* iOS-style button press effect */
+			.btn:active {
+				transform: scale(0.98);
+			}
+
+			/* Mobile-specific button styles */
+			@media (max-width: 768px) {
+				.btn {
+					height: 48px;
+					font-size: 1.1rem;
+					border-radius: 12px;
+				}
+
+				.btn-primary {
+					box-shadow: 0 2px 6px rgba(59, 130, 246, 0.3);
+				}
 			}
 
 			.hero-stats {
@@ -537,14 +571,15 @@
 			}
 
 			.form-group {
-				margin-bottom: 24px;
+				margin-bottom: 32px;
 			}
 
 			.form-group label {
 				display: block;
-				margin-bottom: 8px;
+				margin-bottom: 12px;
 				color: var(--text);
-				font-weight: 500;
+				font-weight: 600;
+				font-size: 1.1rem;
 			}
 
 			.form-group input,
@@ -1518,6 +1553,73 @@
 			#contact .container {
 				max-width: 900px; /* Narrower container for centering */
 			}
+
+			.button-group {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				margin-top: 8px;
+			}
+
+			.button-group-item {
+				flex: 1;
+				min-width: 100px;
+				padding: 14px 16px;
+				background: rgba(255, 255, 255, 0.05);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 12px;
+				color: var(--text);
+				text-align: center;
+				cursor: pointer;
+				transition: all 0.2s ease;
+				font-size: 1rem;
+				font-weight: 500;
+				user-select: none;
+				-webkit-tap-highlight-color: transparent;
+			}
+
+			.button-group input[type="radio"] {
+				display: none;
+			}
+
+			.button-group input[type="radio"]:checked + .button-group-item {
+				background: var(--primary);
+				color: white;
+				border-color: var(--primary);
+				box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+			}
+
+			.button-group-item:hover {
+				background: rgba(255, 255, 255, 0.1);
+				border-color: rgba(255, 255, 255, 0.2);
+			}
+
+			.button-group-item:active {
+				transform: scale(0.98);
+			}
+
+			@media (max-width: 768px) {
+				.button-group {
+					flex-direction: column;
+				}
+				
+				.button-group-item {
+					width: 100%;
+					padding: 16px;
+					font-size: 1.1rem;
+				}
+				
+				.form-group {
+					margin-bottom: 24px;
+				}
+			}
+
+			.currency-note {
+				font-size: 0.8em;
+				color: var(--text-secondary);
+				font-weight: normal;
+				margin-left: 4px;
+			}
 		</style>
 	</head>
 <body>
@@ -1534,7 +1636,7 @@
 	</header>
 
 	<main>
-		<section class="hero">
+		<section id="hero" class="hero">
 			<div class="hero-bg">
 				<div class="gradient-overlay"></div>
 			</div>
@@ -1729,36 +1831,45 @@
 				
 				<form id="contact-form" class="contact-form" action="https://formspree.io/f/mohamed.saeed.youssef@gmail.com" method="POST">
 					<div class="form-group">
-								<label for="name">Name</label>
+						<label for="name">Name</label>
 						<input type="text" id="name" name="name" required>
-							</div>
+					</div>
 					
 					<div class="form-group">
-								<label for="email">Email</label>
+						<label for="email">Email</label>
 						<input type="email" id="email" name="email" required>
-							</div>
+					</div>
 					
 					<div class="form-group">
-						<label for="project">Project Type</label>
-						<select id="project" name="project" required>
-							<option value="" disabled selected>Select a project type</option>
-							<option value="new-app">New App Development</option>
-							<option value="existing-app">Existing App Improvement</option>
-							<option value="mvp">MVP Development</option>
-							<option value="consultation">Technical Consultation</option>
-						</select>
-							</div>
-					
-					<div class="form-group">
-						<label for="budget">Estimated Budget</label>
-						<select id="budget" name="budget">
-							<option value="" disabled selected>Select a budget range</option>
-							<option value="<5k">Less than $5,000</option>
-							<option value="5-10k">$5,000 - $10,000</option>
-							<option value="10-25k">$10,000 - $25,000</option>
-							<option value="25k+">$25,000+</option>
-						</select>
+						<label for="project">What do you need?</label>
+						<div class="button-group" role="group" aria-label="Project Type">
+							<input type="radio" id="new-app" name="project" value="new-app" required>
+							<label for="new-app" class="button-group-item">New App</label>
+							
+							<input type="radio" id="existing-app" name="project" value="existing-app">
+							<label for="existing-app" class="button-group-item">Improve Existing</label>
+							
+							<input type="radio" id="consultation" name="project" value="consultation">
+							<label for="consultation" class="button-group-item">Consultation</label>
 						</div>
+					</div>
+					
+					<div class="form-group">
+						<label for="budget">What's your budget? <span class="currency-note">(in AED)</span></label>
+						<div class="button-group" role="group" aria-label="Estimated Budget">
+							<input type="radio" id="budget-5k" name="budget" value="<5k">
+							<label for="budget-5k" class="button-group-item">5K AED</label>
+							
+							<input type="radio" id="budget-10k" name="budget" value="5-10k">
+							<label for="budget-10k" class="button-group-item">10K AED</label>
+							
+							<input type="radio" id="budget-20k" name="budget" value="10-20k">
+							<label for="budget-20k" class="button-group-item">20K AED</label>
+							
+							<input type="radio" id="budget-not-sure" name="budget" value="not-sure">
+							<label for="budget-not-sure" class="button-group-item">Not Sure</label>
+						</div>
+					</div>
 					
 					<div class="form-group">
 						<label for="message">Project Details</label>
@@ -1766,7 +1877,7 @@
 					</div>
 					
 					<button type="submit" class="btn btn-primary">Send Project Request</button>
-					</form>
+				</form>
 				
 				<div id="form-status" style="display: none; margin-top: 24px; padding: 16px; border-radius: 8px; text-align: center;"></div>
 				
@@ -1786,7 +1897,7 @@
 					<a href="https://github.com/devsa3eed" target="_blank" rel="noopener noreferrer" class="social-link" title="GitHub">
 						<i class="fab fa-github"></i>
 					</a>
-			</div>
+				</div>
 			</div>
 		</section>
 	</main>
@@ -1795,7 +1906,7 @@
 		<div class="container">
 			<p>&copy; <span id="currentYear"></span> Sa3eed. All rights reserved.</p>
 		</div>
-			</footer>
+	</footer>
 
 	<div class="floating-device">
 		<div class="device-screen" id="device-content">
@@ -1837,9 +1948,18 @@
 			submitButton.textContent = 'Sending...';
 			
 			try {
+				const formData = new FormData(form);
+				
+				// Add radio button values to form data
+				const projectType = form.querySelector('input[name="project"]:checked');
+				const budget = form.querySelector('input[name="budget"]:checked');
+				
+				if (projectType) formData.set('project', projectType.value);
+				if (budget) formData.set('budget', budget.value);
+				
 				const response = await fetch(form.action, {
 					method: 'POST',
-					body: new FormData(form),
+					body: formData,
 					headers: {
 						'Accept': 'application/json'
 					}
