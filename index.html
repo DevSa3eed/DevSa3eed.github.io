@@ -17,7 +17,7 @@
 	
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="src/css/style.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	<link rel="icon" type="image/png" href="src/images/favicon.png">
@@ -83,8 +83,9 @@
 			}
 
 			.logo {
-				font-weight: 800;
-				font-size: 2.5rem;
+				font-family: 'Dancing Script', cursive;
+				font-weight: 700;
+				font-size: 3.5rem;
 				text-decoration: none;
 				text-shadow: none;
 				letter-spacing: -0.03em;
@@ -101,7 +102,35 @@
 				background-clip: text;
 				color: transparent;
 				animation: gradientShift 12s linear infinite;
-				padding: 8px 0;
+				padding: 8px 16px;
+				transform: rotate(-5deg);
+				display: inline-block;
+				margin-right: 12px;
+				position: relative;
+			}
+
+			.logo::after {
+				content: '';
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				width: 100%;
+				height: 4px;
+				background: linear-gradient(
+					to right,
+					#3B82F6,
+					#8B5CF6,
+					#EC4899,
+					#8B5CF6,
+					#3B82F6
+				);
+				background-size: 400% 100%;
+				animation: gradientShift 12s linear infinite;
+				border-radius: 50% 50% 0 0;
+				transform: rotate(-5deg) scaleY(2);
+				opacity: 0.9;
+				mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+				-webkit-mask-image: linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
 			}
 
 			@keyframes gradientShift {
@@ -124,7 +153,7 @@
 			nav a {
 				color: var(--text-secondary);
 				text-decoration: none;
-				font-size: 0.9rem;
+				font-size: 1rem;
 				font-weight: 500;
 				transition: all 0.2s ease;
 				position: relative;
@@ -190,16 +219,24 @@
 			}
 
 			h1 {
-				font-size: 2.5rem;
-				line-height: 1.2;
+				font-size: 3.5rem;
+				line-height: 1.1;
 				margin-bottom: 24px;
-				font-weight: 700;
-				letter-spacing: -0.02em;
+				font-weight: 800;
+				letter-spacing: -0.03em;
+				background: linear-gradient(
+					to right,
+					var(--text),
+					var(--text-secondary)
+				);
+				-webkit-background-clip: text;
+				background-clip: text;
+				color: transparent;
 			}
 
 			h2 {
-				font-size: 3.5rem;
-				margin-bottom: 48px;
+				font-size: 3rem;
+				margin-bottom: 40px;
 				letter-spacing: -0.03em;
 				position: relative;
 				display: inline-block;
@@ -220,7 +257,7 @@
 				position: absolute;
 				bottom: -12px;
 				left: 0;
-				width: 60px;
+				width: 80px;
 				height: 3px;
 				background: linear-gradient(
 					to right,
@@ -248,27 +285,30 @@
 			}
 
 			.section-subtitle {
-				font-size: 1.25rem;
+				font-size: 1.5rem;
 				color: var(--text-secondary);
 				margin-bottom: 48px;
-				font-weight: 500;
+				font-weight: 400;
 				letter-spacing: -0.01em;
-				max-width: 600px;
+				max-width: 700px;
+				line-height: 1.6;
 			}
 
 			.hero p {
-				font-size: 1.25rem;
+				font-size: 1.5rem;
 				color: var(--text-secondary);
 				margin-bottom: 40px;
-				max-width: 600px;
+				max-width: 700px;
+				line-height: 1.6;
+				font-weight: 400;
 			}
 
 			.hero-badge {
 				background: rgba(63, 63, 70, 0.3);
 				color: var(--text);
-				font-size: 0.875rem;
+				font-size: 1rem;
 				font-weight: 600;
-				padding: 8px 16px;
+				padding: 10px 20px;
 				border-radius: 20px;
 				margin-bottom: 24px;
 				display: inline-block;
@@ -434,14 +474,17 @@
 			}
 
 			.work-item h3 {
-				font-size: 1.5rem;
+				font-size: 2rem;
 				margin-bottom: 16px;
 				font-weight: 700;
+				letter-spacing: -0.02em;
 			}
 
 			.work-item p {
 				color: var(--text-secondary);
 				margin-bottom: 24px;
+				font-size: 1.1rem;
+				line-height: 1.6;
 			}
 
 			.skills-grid {
@@ -467,9 +510,10 @@
 			}
 
 			.skill-category h3 {
-				font-size: 1.25rem;
+				font-size: 1.5rem;
 				margin-bottom: 24px;
 				font-weight: 700;
+				letter-spacing: -0.02em;
 			}
 
 			.skill-list {
@@ -482,6 +526,7 @@
 				display: flex;
 				align-items: center;
 				gap: 8px;
+				font-size: 1.1rem;
 			}
 
 			.skill-list li::before {
@@ -582,11 +627,11 @@
 
 			@media (max-width: 768px) {
 				h1 {
-					font-size: 3rem;
+					font-size: 2.5rem;
 				}
 
 				h2, .section-title {
-					font-size: 2.5rem;
+					font-size: 2rem;
 				}
 
 				section {
@@ -607,7 +652,40 @@
 				}
 
 				.section-subtitle {
-					font-size: 1.1rem;
+					font-size: 1.25rem;
+				}
+
+				.logo {
+					font-size: 2.5rem;
+				}
+
+				.hero p {
+					font-size: 1.25rem;
+				}
+
+				.hero-badge {
+					font-size: 0.875rem;
+					padding: 8px 16px;
+				}
+
+				.section-subtitle {
+					font-size: 1.25rem;
+				}
+
+				.about-lead {
+					font-size: 1.5rem;
+				}
+
+				.service-card h3,
+				.work-item h3,
+				.skill-category h3 {
+					font-size: 1.25rem;
+				}
+
+				.service-card p,
+				.work-item p,
+				.skill-list li {
+					font-size: 1rem;
 				}
 			}
 
@@ -766,11 +844,12 @@
 			}
 
 			.about-lead {
-				font-size: 1.5rem;
+				font-size: 1.75rem;
 				color: var(--text);
 				margin-bottom: 48px;
 				max-width: 800px;
 				font-weight: 400;
+				line-height: 1.6;
 			}
 
 			.service-cards {
@@ -811,14 +890,16 @@
 			}
 
 			.service-card h3 {
-				font-size: 1.25rem;
+				font-size: 1.5rem;
 				margin-bottom: 16px;
 				font-weight: 700;
+				letter-spacing: -0.02em;
 			}
 
 			.service-card p {
 				color: var(--text-secondary);
 				line-height: 1.6;
+				font-size: 1.1rem;
 			}
 
 			.client-quote {
@@ -1253,7 +1334,7 @@
 				}
 
 				.logo {
-					font-size: 1.75rem;
+					font-size: 2.5rem;
 				}
 
 				/* Navigation */
@@ -1294,17 +1375,17 @@
 				}
 
 				.hero-badge {
-					font-size: 0.75rem;
-					padding: 6px 12px;
+					font-size: 0.875rem;
+					padding: 8px 16px;
 				}
 
 				h1 {
-					font-size: 2rem;
+					font-size: 2.5rem;
 					margin-bottom: 16px;
 				}
 
 				.hero p {
-					font-size: 1rem;
+					font-size: 1.25rem;
 					margin-bottom: 24px;
 				}
 
