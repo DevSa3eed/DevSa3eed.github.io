@@ -1620,6 +1620,182 @@
 				font-weight: normal;
 				margin-left: 4px;
 			}
+
+			/* Features UI */
+			.features-selection {
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+				gap: 12px;
+				margin-top: 8px;
+			}
+
+			.feature-item {
+				background: var(--surface-1);
+				border: 1px solid var(--border);
+				border-radius: 8px;
+				padding: 12px;
+				cursor: pointer;
+				transition: var(--transition);
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+			}
+
+			.feature-item:hover {
+				border-color: var(--primary);
+				transform: translateY(-1px);
+			}
+
+			.feature-item.locked {
+				background: var(--primary-light);
+				border-color: var(--primary);
+				cursor: default;
+			}
+
+			.feature-item.selected {
+				background: var(--primary);
+				border-color: var(--primary);
+				color: white;
+			}
+
+			.feature-info {
+				flex: 1;
+			}
+
+			.feature-name {
+				font-weight: 500;
+				margin-bottom: 4px;
+			}
+
+			.feature-details {
+				font-size: 0.85em;
+				color: var(--text-secondary);
+			}
+
+			.feature-item.selected .feature-details {
+				color: rgba(255, 255, 255, 0.8);
+			}
+
+			.feature-cost {
+				font-weight: 600;
+				font-size: 1.1em;
+				color: var(--primary);
+			}
+
+			.feature-item.selected .feature-cost {
+				color: white;
+			}
+
+			.tags-list {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+				margin-top: 12px;
+			}
+
+			.tag-chip {
+				border: 1px solid rgba(255,255,255,0.15);
+				background: rgba(255,255,255,0.06);
+				padding: 6px 10px;
+				border-radius: 999px;
+				font-size: 0.9rem;
+				color: var(--text);
+				cursor: pointer;
+				transition: var(--transition);
+			}
+
+			.tag-chip.locked {
+				background: rgba(59,130,246,0.15);
+				border-color: rgba(59,130,246,0.5);
+				color: var(--primary);
+				cursor: default;
+			}
+
+			.tag-chip.selectable:hover {
+				background: rgba(255,255,255,0.12);
+				border-color: var(--primary);
+			}
+
+			.tag-chip.selectable.selected {
+				background: var(--primary);
+				border-color: var(--primary);
+				color: white;
+			}
+
+			.tag-optional {
+				border-color: rgba(59,130,246,0.35);
+			}
+
+			.estimate-summary {
+				background: var(--surface-1);
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				padding: 16px;
+				margin-top: 16px;
+				display: grid;
+				grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+				gap: 12px;
+			}
+
+			.estimate-item {
+				display: flex;
+				flex-direction: column;
+				gap: 4px;
+			}
+
+			.estimate-label {
+				color: var(--text-secondary);
+				font-size: 0.85rem;
+			}
+
+			.estimate-value {
+				font-weight: 700;
+				font-size: 1.1rem;
+			}
+
+			.questionnaire {
+				margin-top: 16px;
+				display: grid;
+				gap: 16px;
+			}
+
+			.question {
+				background: var(--surface-1);
+				border: 1px solid var(--border);
+				border-radius: 12px;
+				padding: 16px;
+			}
+
+			.question h5 {
+				margin: 0 0 10px 0;
+				font-size: 1rem;
+			}
+
+			.option-list {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 8px;
+			}
+
+			.option-item {
+				background: rgba(255, 255, 255, 0.05);
+				border: 1px solid rgba(255, 255, 255, 0.1);
+				border-radius: 12px;
+				padding: 10px 12px;
+				cursor: pointer;
+				user-select: none;
+			}
+
+			.option-input { display: none; }
+
+			.option-input:checked + .option-item {
+				background: var(--primary);
+				border-color: var(--primary);
+			}
+
+			@media (max-width: 768px) {
+				.tier-cards { grid-template-columns: 1fr; }
+			}
 		</style>
 	</head>
 <body>
@@ -1839,43 +2015,41 @@
 						<label for="email">Email</label>
 						<input type="email" id="email" name="email" required>
 					</div>
-					
+
 					<div class="form-group">
-						<label for="project">What do you need?</label>
-						<div class="button-group" role="group" aria-label="Project Type">
-							<input type="radio" id="new-app" name="project" value="new-app" required>
-							<label for="new-app" class="button-group-item">New App</label>
+						<label>Choose Platform</label>
+						<div class="button-group" role="group" aria-label="Platform">
+							<input type="radio" id="platform-mobile" name="platform" value="mobile" checked>
+							<label for="platform-mobile" class="button-group-item">Mobile App Only</label>
 							
-							<input type="radio" id="existing-app" name="project" value="existing-app">
-							<label for="existing-app" class="button-group-item">Improve Existing</label>
+							<input type="radio" id="platform-web" name="platform" value="web">
+							<label for="platform-web" class="button-group-item">Website Only</label>
 							
-							<input type="radio" id="consultation" name="project" value="consultation">
-							<label for="consultation" class="button-group-item">Consultation</label>
+							<input type="radio" id="platform-combo" name="platform" value="combo">
+							<label for="platform-combo" class="button-group-item">Both (Mobile + Website)</label>
 						</div>
 					</div>
-					
+
 					<div class="form-group">
-						<label for="budget">What's your budget? <span class="currency-note">(in AED)</span></label>
-						<div class="button-group" role="group" aria-label="Estimated Budget">
-							<input type="radio" id="budget-5k" name="budget" value="<5k">
-							<label for="budget-5k" class="button-group-item">5K AED</label>
-							
-							<input type="radio" id="budget-10k" name="budget" value="5-10k">
-							<label for="budget-10k" class="button-group-item">10K AED</label>
-							
-							<input type="radio" id="budget-20k" name="budget" value="10-20k">
-							<label for="budget-20k" class="button-group-item">20K AED</label>
-							
-							<input type="radio" id="budget-not-sure" name="budget" value="not-sure">
-							<label for="budget-not-sure" class="button-group-item">Not Sure</label>
-						</div>
+						<label>Select Features</label>
+						<div id="features-selection" class="features-selection"></div>
 					</div>
-					
+
+					<div id="estimate-summary" class="estimate-summary" aria-live="polite"></div>
+
+
 					<div class="form-group">
 						<label for="message">Project Details</label>
 						<textarea id="message" name="message" required></textarea>
 					</div>
-					
+
+					<input type="hidden" id="hidden-platform" name="platform">
+					<input type="hidden" id="hidden-features" name="selected_features">
+					<input type="hidden" id="hidden-hours" name="estimated_hours">
+					<input type="hidden" id="hidden-budget-min" name="estimated_budget_min">
+					<input type="hidden" id="hidden-budget-max" name="estimated_budget_max">
+					<input type="hidden" id="hidden-currency" name="currency" value="AED">
+
 					<button type="submit" class="btn btn-primary">Send Project Request</button>
 				</form>
 				
@@ -1934,6 +2108,220 @@
 		// Set current year in footer
 		document.getElementById('currentYear').textContent = new Date().getFullYear();
 
+		// Platform-based pricing config
+		const platformsConfig = {
+			platforms: [
+				{
+					id: "mobile",
+					name: "Mobile App Only",
+					description: "iOS + Android mobile app",
+					features: [
+						{ name: "📱 Mobile App Core", locked: true, hours: 40, cost: 3000 },
+						{ name: "🔐 Authentication", locked: true, hours: 10, cost: 500 },
+						{ name: "📦 Data Storage / Uploads", locked: true, hours: 10, cost: 500 },
+						{ name: "💳 Payments Integration", locked: false, hours: 15, cost: 2000 },
+						{ name: "📊 Dashboard / Admin", locked: false, hours: 20, cost: 1500 },
+						{ name: "🔔 Notifications", locked: false, hours: 10, cost: 1000 },
+						{ name: "🌍 Multi-language", locked: false, hours: 15, cost: 1500 },
+						{ name: "💻 Desktop Build", locked: false, hours: 20, cost: 2000 }
+					]
+				},
+				{
+					id: "web",
+					name: "Website Only",
+					description: "Flutter web or standard website",
+					features: [
+						{ name: "💻 Website Core", locked: true, hours: 30, cost: 2500 },
+						{ name: "🔐 Authentication", locked: true, hours: 10, cost: 500 },
+						{ name: "📦 Data Storage / Uploads", locked: true, hours: 10, cost: 500 },
+						{ name: "💳 Payments Integration", locked: false, hours: 15, cost: 2000 },
+						{ name: "📊 Dashboard / Admin", locked: false, hours: 20, cost: 1500 },
+						{ name: "🔔 Notifications", locked: false, hours: 10, cost: 1000 },
+						{ name: "🌍 Multi-language", locked: false, hours: 15, cost: 1500 },
+						{ name: "💻 Desktop Build", locked: false, hours: 20, cost: 2000 }
+					]
+				},
+				{
+					id: "combo",
+					name: "Both (Mobile + Website)",
+					description: "Full project with mobile app + website",
+					features: [
+						{ name: "📱 Mobile App Core", locked: true, hours: 40, cost: 3000 },
+						{ name: "💻 Website Core", locked: true, hours: 30, cost: 2500 },
+						{ name: "🔐 Authentication", locked: true, hours: 10, cost: 500 },
+						{ name: "📦 Data Storage / Uploads", locked: true, hours: 10, cost: 500 },
+						{ name: "💳 Payments Integration", locked: false, hours: 15, cost: 2000 },
+						{ name: "📊 Dashboard / Admin", locked: false, hours: 20, cost: 1500 },
+						{ name: "🔔 Notifications", locked: false, hours: 10, cost: 1000 },
+						{ name: "🌍 Multi-language", locked: false, hours: 15, cost: 1500 },
+						{ name: "💻 Desktop Build", locked: false, hours: 20, cost: 2000 }
+					]
+				}
+			]
+		};
+
+		const platformRadios = Array.from(document.querySelectorAll('input[name="platform"]'));
+		const featuresEl = document.getElementById('features-selection');
+		const estimateEl = document.getElementById('estimate-summary');
+		const hiddenPlatform = document.getElementById('hidden-platform');
+		const hiddenFeatures = document.getElementById('hidden-features');
+		const hiddenHours = document.getElementById('hidden-hours');
+		const hiddenBudgetMin = document.getElementById('hidden-budget-min');
+		const hiddenBudgetMax = document.getElementById('hidden-budget-max');
+		const hiddenCurrency = document.getElementById('hidden-currency');
+
+		const state = {
+			selectedPlatform: (platformRadios.find(r => r.checked)?.value) || 'mobile',
+			selectedFeatures: new Set()
+		};
+
+		function getPlatformConfig() {
+			return platformsConfig.platforms.find(p => p.id === state.selectedPlatform);
+		}
+
+		function calculateDeliveryTimeline(platform, selectedFeatures) {
+			// Separate core features from add-ons
+			const coreFeatures = [];
+			const addOnFeatures = [];
+			
+			platform.features.forEach(feature => {
+				if (feature.locked || selectedFeatures.has(feature.name)) {
+					// Core features: App Core, Website Core, Authentication, Storage
+					if (feature.name.includes('Core') || 
+						feature.name.includes('Authentication') || 
+						feature.name.includes('Storage')) {
+						coreFeatures.push(feature);
+					} else {
+						addOnFeatures.push(feature);
+					}
+				}
+			});
+
+			// Calculate core hours (sequential)
+			const coreHours = coreFeatures.reduce((sum, f) => sum + f.hours, 0);
+			
+			// Calculate add-on hours with overlap (parallel work)
+			const addOnHours = addOnFeatures.reduce((sum, f) => sum + f.hours, 0);
+			const effectiveAddOnHours = Math.round(addOnHours * 0.3); // 30% overlap factor
+			
+			const totalEffectiveHours = coreHours + effectiveAddOnHours;
+			
+			// New timeline buckets
+			if (totalEffectiveHours <= 40) return '2 weeks';
+			if (totalEffectiveHours <= 80) return '3-4 weeks';
+			if (totalEffectiveHours <= 160) return '5-7 weeks';
+			if (totalEffectiveHours <= 240) return '8-10 weeks';
+			return '10+ weeks';
+		}
+
+		function renderFeatures() {
+			const platform = getPlatformConfig();
+			if (!platform) return;
+
+			featuresEl.innerHTML = platform.features.map(feature => {
+				const isLocked = feature.locked;
+				const isSelected = state.selectedFeatures.has(feature.name);
+				const classes = `feature-item ${isLocked ? 'locked' : ''} ${isSelected ? 'selected' : ''}`;
+				
+				return `
+					<div class="${classes}" data-feature="${feature.name}">
+						<div class="feature-info">
+							<div class="feature-name">${feature.name}</div>
+							<div class="feature-details">${feature.hours}h development</div>
+						</div>
+						<div class="feature-cost">${feature.cost.toLocaleString()} AED</div>
+					</div>
+				`;
+			}).join('');
+
+			// Bind feature clicks
+			featuresEl.querySelectorAll('.feature-item:not(.locked)').forEach(item => {
+				item.addEventListener('click', () => {
+					const featureName = item.getAttribute('data-feature');
+					if (state.selectedFeatures.has(featureName)) {
+						state.selectedFeatures.delete(featureName);
+						item.classList.remove('selected');
+					} else {
+						state.selectedFeatures.add(featureName);
+						item.classList.add('selected');
+					}
+					renderEstimate();
+				});
+			});
+		}
+
+
+		function renderEstimate() {
+			const platform = getPlatformConfig();
+			if (!platform) return;
+
+			// Calculate totals from selected features
+			let totalHours = 0;
+			let totalCost = 0;
+			const selectedFeatures = [];
+
+			platform.features.forEach(feature => {
+				if (feature.locked || state.selectedFeatures.has(feature.name)) {
+					totalHours += feature.hours;
+					totalCost += feature.cost;
+					selectedFeatures.push(feature.name);
+				}
+			});
+
+			const deliveryTimeline = calculateDeliveryTimeline(platform, state.selectedFeatures);
+
+			estimateEl.innerHTML = `
+				<div class="estimate-item">
+					<div class="estimate-label">Platform</div>
+					<div class="estimate-value">${platform.name}</div>
+				</div>
+				<div class="estimate-item">
+					<div class="estimate-label">Total Cost (AED)</div>
+					<div class="estimate-value">${totalCost.toLocaleString()}</div>
+				</div>
+				<div class="estimate-item">
+					<div class="estimate-label">Estimated Delivery</div>
+					<div class="estimate-value">${deliveryTimeline}</div>
+				</div>
+				<div class="estimate-item" style="grid-column: 1 / -1;">
+					<div class="estimate-label">Selected Features</div>
+					<div class="tags-list">${selectedFeatures.map(f => `<span class="tag-chip">${f}</span>`).join('')}</div>
+				</div>
+			`;
+
+			updateHiddenFields({ 
+				platform: platform.id, 
+				features: selectedFeatures, 
+				hours: totalHours, 
+				budgetMin: totalCost, 
+				budgetMax: totalCost, 
+				currency: 'AED' 
+			});
+		}
+
+		function updateHiddenFields({ platform, features, hours, budgetMin, budgetMax, currency }) {
+			hiddenPlatform.value = platform || '';
+			hiddenFeatures.value = JSON.stringify(features || []);
+			hiddenHours.value = hours || 0;
+			hiddenBudgetMin.value = budgetMin || 0;
+			hiddenBudgetMax.value = budgetMax || 0;
+			hiddenCurrency.value = currency || 'AED';
+		}
+
+
+		platformRadios.forEach(r => {
+			r.addEventListener('change', () => {
+				state.selectedPlatform = r.value;
+				state.selectedFeatures.clear();
+				renderFeatures();
+				renderEstimate();
+			});
+		});
+
+		// Initial render
+		renderFeatures();
+		renderEstimate();
+
 		// Handle form submission
 		const form = document.getElementById('contact-form');
 		const formStatus = document.getElementById('form-status');
@@ -1948,14 +2336,10 @@
 			submitButton.textContent = 'Sending...';
 			
 			try {
+				// Ensure hidden fields are up to date
+				// (recompute details just before submit)
+				renderDetails();
 				const formData = new FormData(form);
-				
-				// Add radio button values to form data
-				const projectType = form.querySelector('input[name="project"]:checked');
-				const budget = form.querySelector('input[name="budget"]:checked');
-				
-				if (projectType) formData.set('project', projectType.value);
-				if (budget) formData.set('budget', budget.value);
 				
 				const response = await fetch(form.action, {
 					method: 'POST',
