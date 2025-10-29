@@ -1,6 +1,6 @@
-# Sa3eed - Portfolio Website
+# nzayn - Company Website
 
-A modern, responsive portfolio website showcasing my work as a Flutter & iOS Developer. Built with clean, semantic HTML5, modern CSS3, and vanilla JavaScript.
+A modern, high-end company website for nzayn, a full-stack software development company based in Dubai, UAE. The website showcases services in mobile app development, web development, backend services, and cloud solutions. Built with clean, semantic HTML5, modern CSS3, and vanilla JavaScript.
 
 ## 🚀 Features
 
@@ -12,6 +12,7 @@ A modern, responsive portfolio website showcasing my work as a Flutter & iOS Dev
   - Smooth transitions and animations
   - Dynamic navigation
   - Responsive image galleries
+  - Interactive pricing calculator
 - **Performance Optimized**:
   - Lazy loading images
   - Optimized assets
@@ -29,11 +30,21 @@ A modern, responsive portfolio website showcasing my work as a Flutter & iOS Dev
 
 ### Key Components
 - Responsive navigation with mobile-optimized bottom bar
-- Interactive project showcases with image galleries
-- Contact form with form validation
+- Company services and expertise showcase
+- Portfolio/case studies section
+- Interactive contact form with pricing calculator
 - Social media integration
 - Dynamic floating device mockup
 - Optimized for SEO
+
+## 💼 Services
+
+nzayn offers comprehensive software development services:
+
+- **Mobile App Development**: Flutter, iOS, Android
+- **Web Development**: Frontend and backend solutions
+- **Backend Services**: APIs, microservices, cloud infrastructure
+- **Full-Stack Solutions**: End-to-end development from concept to deployment
 
 ## 📱 Mobile Optimization
 
@@ -84,13 +95,14 @@ git clone https://github.com/devsa3eed/DevSa3eed.github.io.git
 
 2. Open `index.html` in your browser
 
-## 📝 License
-
-Copyright © 2024 Sa3eed. All rights reserved.
-
 ## 📞 Contact
 
+- Location: Dubai, UAE
 - Phone: +971507778931
 - Email: mohamed.saeed.youssef@gmail.com
 - LinkedIn: [mohamed-saeed-youssef](https://www.linkedin.com/in/mohamed-saeed-youssef/)
 - GitHub: [devsa3eed](https://github.com/devsa3eed)
+
+## 📝 License
+
+Copyright © 2024 nzayn. All rights reserved.
