@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - NZwash | Car Wash App</title>
+    <meta name="description" content="Privacy Policy for NZwash - Premium car wash at your doorstep mobile application.">
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../src/assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../src/assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../src/assets/favicon/favicon-16x16.png">
+    <meta name="theme-color" content="#0EA5E9">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #0EA5E9;
+            --primary-dark: #0284C7;
+            --secondary: #10B981;
+            --text: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --background: #0A0F1A;
+            --surface-1: rgba(255, 255, 255, 0.03);
+            --surface-2: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.08);
+            --gradient-primary: linear-gradient(135deg, #0EA5E9 0%, #10B981 100%);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 0;
+            background: rgba(10, 15, 26, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .back-link:hover {
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        main {
+            padding: 120px 0 80px;
+        }
+
+        .policy-header {
+            text-align: center;
+            margin-bottom: 64px;
+            padding-bottom: 48px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .policy-header h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+        }
+
+        .policy-header h1 span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .policy-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .policy-meta strong {
+            color: var(--text-secondary);
+        }
+
+        /* Content Sections */
+        .policy-content {
+            max-width: 100%;
+        }
+
+        .policy-section {
+            margin-bottom: 48px;
+        }
+
+        .policy-section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .policy-section h2 i {
+            width: 40px;
+            height: 40px;
+            background: var(--surface-2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--primary);
+        }
+
+        .policy-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 24px 0 12px;
+            color: var(--text);
+        }
+
+        .policy-section p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .policy-section ul {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+
+        .policy-section li {
+            margin-bottom: 8px;
+        }
+
+        .policy-section strong {
+            color: var(--text);
+        }
+
+        /* Highlight boxes */
+        .highlight-box {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin: 24px 0;
+        }
+
+        .highlight-box.warning {
+            border-left-color: #F59E0B;
+        }
+
+        .highlight-box.success {
+            border-left-color: var(--secondary);
+        }
+
+        .highlight-box p {
+            margin-bottom: 0;
+        }
+
+        /* Table of Contents */
+        .toc {
+            background: var(--surface-1);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px 32px;
+            margin-bottom: 48px;
+        }
+
+        .toc h3 {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .toc ol {
+            padding-left: 20px;
+            color: var(--text-secondary);
+        }
+
+        .toc li {
+            margin-bottom: 8px;
+        }
+
+        .toc a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .toc a:hover {
+            color: var(--primary);
+        }
+
+        /* Contact Card */
+        .contact-card {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 32px;
+            margin-top: 48px;
+            text-align: center;
+        }
+
+        .contact-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .contact-card p {
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .contact-card a {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .contact-card a:hover {
+            color: var(--secondary);
+        }
+
+        /* Footer */
+        footer {
+            padding: 32px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        footer p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        footer a:hover {
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            main {
+                padding: 100px 0 60px;
+            }
+
+            .policy-header h1 {
+                font-size: 1.75rem;
+            }
+
+            .policy-section h2 {
+                font-size: 1.25rem;
+            }
+
+            .policy-section h2 i {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .toc {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-car-side"></i>
+                </div>
+                <span class="logo-text">NZwash</span>
+            </a>
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Back to App
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="policy-header">
+                <h1>Privacy <span>Policy</span></h1>
+                <p class="policy-meta">
+                    <strong>Last Updated:</strong> December 16, 2024<br>
+                    <strong>Effective Date:</strong> December 16, 2024
+                </p>
+            </div>
+
+            <nav class="toc">
+                <h3>Table of Contents</h3>
+                <ol>
+                    <li><a href="#introduction">Introduction</a></li>
+                    <li><a href="#information-collected">Information We Collect</a></li>
+                    <li><a href="#how-we-use">How We Use Your Information</a></li>
+                    <li><a href="#data-sharing">Data Sharing and Disclosure</a></li>
+                    <li><a href="#data-storage">Data Storage and Security</a></li>
+                    <li><a href="#your-rights">Your Rights</a></li>
+                    <li><a href="#third-party">Third-Party Services</a></li>
+                    <li><a href="#children">Children's Privacy</a></li>
+                    <li><a href="#changes">Changes to This Policy</a></li>
+                    <li><a href="#contact">Contact Us</a></li>
+                </ol>
+            </nav>
+
+            <div class="policy-content">
+                <section id="introduction" class="policy-section">
+                    <h2><i class="fas fa-shield-alt"></i> 1. Introduction</h2>
+                    <p>
+                        Welcome to NZwash ("we," "our," or "us"). NZwash is a premium on-demand car wash service application operated by nzayn, based in Dubai, UAE. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and services.
+                    </p>
+                    <p>
+                        By using NZwash, you agree to the collection and use of information in accordance with this policy. If you do not agree with our policies and practices, please do not use our application.
+                    </p>
+                    <div class="highlight-box success">
+                        <p><strong>Our Commitment:</strong> We are committed to protecting your privacy and ensuring the security of your personal information. We only collect data that is necessary to provide you with our car wash services.</p>
+                    </div>
+                </section>
+
+                <section id="information-collected" class="policy-section">
+                    <h2><i class="fas fa-database"></i> 2. Information We Collect</h2>
+                    
+                    <h3>2.1 Information You Provide</h3>
+                    <ul>
+                        <li><strong>Account Information:</strong> Phone number (for authentication via OTP), name</li>
+                        <li><strong>Vehicle Information:</strong> Vehicle make, model, year, color, license plate number, vehicle type (sedan, SUV, hatchback, luxury)</li>
+                        <li><strong>Location Data:</strong> Service addresses you save (villa/apartment number, area, city, GPS coordinates)</li>
+                        <li><strong>Payment Information:</strong> Credit/debit card details processed securely through Stripe (we do not store full card numbers)</li>
+                        <li><strong>Service Preferences:</strong> Selected packages, scheduled times, special instructions</li>
+                    </ul>
+
+                    <h3>2.2 Information Collected Automatically</h3>
+                    <ul>
+                        <li><strong>Device Information:</strong> Device type, operating system version, unique device identifiers</li>
+                        <li><strong>Usage Data:</strong> App interaction data, feature usage, crash reports</li>
+                        <li><strong>Location Data:</strong> Real-time location for order tracking and service delivery (only when app is in use and with your permission)</li>
+                    </ul>
+
+                    <h3>2.3 Information from Third Parties</h3>
+                    <ul>
+                        <li><strong>Vehicle Data:</strong> We may use third-party APIs to auto-detect vehicle type based on make and model</li>
+                        <li><strong>Payment Verification:</strong> Stripe provides us with payment confirmation status</li>
+                    </ul>
+                </section>
+
+                <section id="how-we-use" class="policy-section">
+                    <h2><i class="fas fa-cogs"></i> 3. How We Use Your Information</h2>
+                    <p>We use the information we collect to:</p>
+                    <ul>
+                        <li><strong>Provide Services:</strong> Process bookings, dispatch specialists, track orders, and deliver car wash services</li>
+                        <li><strong>Process Payments:</strong> Charge for services and manage refunds</li>
+                        <li><strong>Communicate:</strong> Send booking confirmations, specialist arrival notifications, service updates, and support responses</li>
+                        <li><strong>Improve Our Services:</strong> Analyze usage patterns to enhance app features and user experience</li>
+                        <li><strong>Customer Support:</strong> Address inquiries, complaints, and feedback</li>
+                        <li><strong>Safety & Security:</strong> Detect fraud, prevent abuse, and maintain platform integrity</li>
+                        <li><strong>Legal Compliance:</strong> Comply with applicable laws and regulations</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <p><strong>We do NOT:</strong> Sell your personal information to third parties, use your data for unrelated advertising, or share your location data except as necessary for service delivery.</p>
+                    </div>
+                </section>
+
+                <section id="data-sharing" class="policy-section">
+                    <h2><i class="fas fa-share-alt"></i> 4. Data Sharing and Disclosure</h2>
+                    <p>We may share your information with:</p>
+                    
+                    <h3>4.1 Service Providers</h3>
+                    <ul>
+                        <li><strong>Car Wash Specialists:</strong> Name, vehicle details, and service address to perform the requested service</li>
+                        <li><strong>Payment Processors:</strong> Stripe for secure payment processing</li>
+                        <li><strong>Cloud Services:</strong> Supabase for secure data storage and authentication</li>
+                        <li><strong>Analytics:</strong> Sentry for crash reporting and app performance monitoring</li>
+                    </ul>
+
+                    <h3>4.2 Legal Requirements</h3>
+                    <p>We may disclose your information if required by law, court order, or government request, or to protect the rights, property, or safety of NZwash, our users, or the public.</p>
+
+                    <h3>4.3 Business Transfers</h3>
+                    <p>In the event of a merger, acquisition, or sale of assets, your information may be transferred. We will notify you of any such change.</p>
+                </section>
+
+                <section id="data-storage" class="policy-section">
+                    <h2><i class="fas fa-lock"></i> 5. Data Storage and Security</h2>
+                    
+                    <h3>5.1 Data Storage</h3>
+                    <p>Your data is stored securely using Supabase cloud infrastructure with servers located in secure data centers. We retain your data for as long as your account is active or as needed to provide services.</p>
+
+                    <h3>5.2 Security Measures</h3>
+                    <ul>
+                        <li>End-to-end encryption for data in transit (HTTPS/TLS)</li>
+                        <li>Encrypted data at rest</li>
+                        <li>Secure authentication via phone OTP</li>
+                        <li>PCI-DSS compliant payment processing through Stripe</li>
+                        <li>Row-level security policies for database access</li>
+                        <li>Regular security audits and updates</li>
+                    </ul>
+
+                    <div class="highlight-box warning">
+                        <p><strong>Important:</strong> While we implement robust security measures, no method of transmission over the internet is 100% secure. We cannot guarantee absolute security of your data.</p>
+                    </div>
+                </section>
+
+                <section id="your-rights" class="policy-section">
+                    <h2><i class="fas fa-user-shield"></i> 6. Your Rights</h2>
+                    <p>You have the right to:</p>
+                    <ul>
+                        <li><strong>Access:</strong> Request a copy of your personal data</li>
+                        <li><strong>Correction:</strong> Update or correct inaccurate information</li>
+                        <li><strong>Deletion:</strong> Request deletion of your account and associated data</li>
+                        <li><strong>Data Portability:</strong> Receive your data in a structured, commonly used format</li>
+                        <li><strong>Withdraw Consent:</strong> Revoke permissions (e.g., location access) at any time through your device settings</li>
+                        <li><strong>Opt-Out:</strong> Unsubscribe from promotional communications</li>
+                    </ul>
+
+                    <h3>How to Exercise Your Rights</h3>
+                    <p>To exercise any of these rights, contact us at <a href="mailto:privacy@nzayn.com" style="color: var(--primary);">privacy@nzayn.com</a> or through the in-app support feature. We will respond within 30 days.</p>
+                </section>
+
+                <section id="third-party" class="policy-section">
+                    <h2><i class="fas fa-external-link-alt"></i> 7. Third-Party Services</h2>
+                    <p>Our app integrates with the following third-party services, each with their own privacy policies:</p>
+                    <ul>
+                        <li><strong>Supabase:</strong> Backend and authentication - <a href="https://supabase.com/privacy" target="_blank" rel="noopener" style="color: var(--primary);">Privacy Policy</a></li>
+                        <li><strong>Stripe:</strong> Payment processing - <a href="https://stripe.com/privacy" target="_blank" rel="noopener" style="color: var(--primary);">Privacy Policy</a></li>
+                        <li><strong>Google Maps:</strong> Location services - <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color: var(--primary);">Privacy Policy</a></li>
+                        <li><strong>Sentry:</strong> Error tracking - <a href="https://sentry.io/privacy/" target="_blank" rel="noopener" style="color: var(--primary);">Privacy Policy</a></li>
+                    </ul>
+                </section>
+
+                <section id="children" class="policy-section">
+                    <h2><i class="fas fa-child"></i> 8. Children's Privacy</h2>
+                    <p>
+                        NZwash is not intended for use by children under the age of 18. We do not knowingly collect personal information from children. If you believe we have inadvertently collected information from a child, please contact us immediately at <a href="mailto:privacy@nzayn.com" style="color: var(--primary);">privacy@nzayn.com</a>.
+                    </p>
+                </section>
+
+                <section id="terms" class="policy-section">
+                    <h2><i class="fas fa-file-contract"></i> 9. Terms of Service</h2>
+                    
+                    <h3>9.1 Acceptance of Terms</h3>
+                    <p>By downloading, installing, or using NZwash, you agree to be bound by these Terms of Service. If you do not agree, do not use the application.</p>
+
+                    <h3>9.2 Service Description</h3>
+                    <p>NZwash provides on-demand car wash services through a network of independent specialists. We act as a platform connecting customers with service providers.</p>
+
+                    <h3>9.3 User Responsibilities</h3>
+                    <ul>
+                        <li>Provide accurate account and vehicle information</li>
+                        <li>Ensure vehicle accessibility at the scheduled time</li>
+                        <li>Make timely payments for services rendered</li>
+                        <li>Treat specialists with respect</li>
+                        <li>Report any issues promptly through the app</li>
+                    </ul>
+
+                    <h3>9.4 Payment Terms</h3>
+                    <ul>
+                        <li>Prices are displayed before booking confirmation</li>
+                        <li>Payment is processed upon booking completion</li>
+                        <li>Cancellation policy: Free cancellation up to 30 minutes before scheduled time</li>
+                        <li>Refunds are processed within 5-7 business days</li>
+                    </ul>
+
+                    <h3>9.5 Limitation of Liability</h3>
+                    <p>NZwash is not liable for any indirect, incidental, or consequential damages arising from use of our services. Our liability is limited to the amount paid for the specific service in question.</p>
+                </section>
+
+                <section id="data" class="policy-section">
+                    <h2><i class="fas fa-database"></i> 10. Data Protection</h2>
+                    <p>
+                        In accordance with UAE data protection regulations and international best practices, we implement comprehensive data protection measures:
+                    </p>
+                    <ul>
+                        <li>Data minimization - we only collect what's necessary</li>
+                        <li>Purpose limitation - data is used only for stated purposes</li>
+                        <li>Storage limitation - data is retained only as long as needed</li>
+                        <li>Accuracy - we provide means to update your information</li>
+                        <li>Security - technical and organizational measures protect your data</li>
+                    </ul>
+                </section>
+
+                <section id="changes" class="policy-section">
+                    <h2><i class="fas fa-history"></i> 11. Changes to This Policy</h2>
+                    <p>
+                        We may update this Privacy Policy from time to time. We will notify you of any material changes by:
+                    </p>
+                    <ul>
+                        <li>Posting the new policy on this page</li>
+                        <li>Updating the "Last Updated" date</li>
+                        <li>Sending an in-app notification for significant changes</li>
+                    </ul>
+                    <p>
+                        We encourage you to review this policy periodically. Your continued use of NZwash after any changes constitutes acceptance of the updated policy.
+                    </p>
+                </section>
+
+                <section id="contact" class="policy-section">
+                    <h2><i class="fas fa-envelope"></i> 12. Contact Us</h2>
+                    <p>If you have questions about this Privacy Policy or our data practices, please contact us:</p>
+                    
+                    <div class="contact-card">
+                        <h3>NZwash Privacy Team</h3>
+                        <p>nzayn Software Studio<br>Dubai, United Arab Emirates</p>
+                        <a href="mailto:privacy@nzayn.com">
+                            <i class="fas fa-envelope"></i>
+                            privacy@nzayn.com
+                        </a>
+                        <br><br>
+                        <a href="mailto:hello@nzayn.com">
+                            <i class="fas fa-headset"></i>
+                            General Support: hello@nzayn.com
+                        </a>
+                        <br><br>
+                        <a href="https://wa.me/971507778931" target="_blank" rel="noopener">
+                            <i class="fab fa-whatsapp"></i>
+                            WhatsApp: +971 50 777 8931
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>
+                &copy; <span id="year"></span> NZwash by <a href="../">nzayn</a>. All rights reserved.<br>
+                <a href="index.html">Back to App</a> · <a href="../">nzayn.com</a>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const headerOffset = 100;
+                    const elementPosition = target.getBoundingClientRect().top;
+                    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NZwash - Premium Car Wash at Your Doorstep | Dubai, UAE</title>
+    <meta name="description" content="NZwash brings professional car washing directly to your location in Dubai, Sharjah, and Ajman. Book in seconds, track in real-time, pay seamlessly.">
+    <meta name="keywords" content="car wash, Dubai car wash, doorstep car wash, mobile car wash UAE, premium car wash, car detailing Dubai">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="NZwash - Premium Car Wash at Your Doorstep">
+    <meta property="og:description" content="Professional car washing at your location. Dubai, Sharjah, Ajman. Book in seconds.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nzayn.com/nzwash">
+    
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" href="../src/assets/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="../src/assets/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../src/assets/favicon/favicon-16x16.png">
+    <meta name="theme-color" content="#0EA5E9">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            /* Ocean Blue + Fresh Green palette */
+            --primary: #0EA5E9;
+            --primary-dark: #0284C7;
+            --secondary: #10B981;
+            --accent: #06B6D4;
+            --accent-purple: #8B5CF6;
+            
+            /* Text */
+            --text: #FFFFFF;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            
+            /* Backgrounds */
+            --background: #0A0F1A;
+            --surface-1: rgba(255, 255, 255, 0.03);
+            --surface-2: rgba(255, 255, 255, 0.06);
+            --surface-3: rgba(255, 255, 255, 0.09);
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #0EA5E9 0%, #10B981 50%, #06B6D4 100%);
+            --gradient-card: linear-gradient(145deg, rgba(14, 165, 233, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            
+            /* Effects */
+            --border: rgba(255, 255, 255, 0.08);
+            --glow-blue: rgba(14, 165, 233, 0.5);
+            --glow-green: rgba(16, 185, 129, 0.5);
+            
+            /* Transitions */
+            --transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            --transition-slow: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(14, 165, 233, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 70% 60%, rgba(16, 185, 129, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 50% 90%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+            animation: bgMove 25s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes bgMove {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(20px, -30px); }
+            66% { transform: translate(-30px, 20px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 0;
+            background: rgba(10, 15, 26, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            padding: 12px 0;
+            background: rgba(10, 15, 26, 0.95);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .logo-icon {
+            width: 44px;
+            height: 44px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 8px 24px rgba(14, 165, 233, 0.3);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        .header-cta {
+            display: flex;
+            gap: 12px;
+        }
+
+        nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        nav a:hover {
+            color: var(--text);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px;
+            align-items: center;
+        }
+
+        .hero-text {
+            max-width: 560px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 24px;
+        }
+
+        .hero-badge i {
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 24px;
+        }
+
+        h1 span {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .hero-description {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            line-height: 1.7;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 16px 28px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            min-height: 52px;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 16px 48px -8px rgba(14, 165, 233, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 24px 64px -8px rgba(14, 165, 233, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--surface-2);
+            color: white;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--surface-3);
+            border-color: var(--primary);
+            transform: translateY(-4px);
+        }
+
+        .btn i {
+            font-size: 1.2em;
+        }
+
+        /* Store badges */
+        .store-badges {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .store-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            transition: var(--transition);
+        }
+
+        .store-badge:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .store-badge i {
+            font-size: 28px;
+        }
+
+        .store-badge-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .store-badge-text small {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .store-badge-text span {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* Hero Phone Mockup */
+        .hero-visual {
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        .phone-mockup {
+            position: relative;
+            width: 280px;
+            height: 580px;
+            background: linear-gradient(145deg, #1a1f2e, #0d1119);
+            border-radius: 44px;
+            padding: 12px;
+            box-shadow: 
+                0 50px 100px -20px rgba(0, 0, 0, 0.5),
+                0 30px 60px -30px rgba(14, 165, 233, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #0EA5E9 0%, #10B981 100%);
+            border-radius: 36px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .phone-notch {
+            width: 120px;
+            height: 28px;
+            background: #0d1119;
+            border-radius: 0 0 16px 16px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .phone-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .phone-logo {
+            font-size: 2rem;
+            margin-bottom: 16px;
+        }
+
+        .phone-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .phone-subtitle {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Floating cards around phone */
+        .floating-card {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 16px 20px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+            animation: float 6s ease-in-out infinite;
+            color: #1a1f2e;
+        }
+
+        .floating-card:nth-child(1) {
+            top: 10%;
+            left: -40px;
+            animation-delay: 0s;
+        }
+
+        .floating-card:nth-child(2) {
+            top: 50%;
+            right: -60px;
+            animation-delay: 2s;
+        }
+
+        .floating-card:nth-child(3) {
+            bottom: 15%;
+            left: -20px;
+            animation-delay: 4s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        .floating-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .floating-title {
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 2px;
+        }
+
+        .floating-value {
+            font-size: 0.75rem;
+            color: #64748B;
+        }
+
+        /* Features Section */
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 640px;
+            margin: 0 auto 64px;
+        }
+
+        .section-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(14, 165, 233, 0.1);
+            border: 1px solid rgba(14, 165, 233, 0.2);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        .feature-card {
+            background: var(--gradient-card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 24px;
+            padding: 1px;
+            background: var(--gradient-primary);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 60px -15px rgba(14, 165, 233, 0.2);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px -10px rgba(14, 165, 233, 0.4);
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Services Section */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 32px;
+        }
+
+        .service-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            padding: 40px;
+            text-align: center;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .service-card.featured {
+            border-color: var(--primary);
+            background: linear-gradient(145deg, rgba(14, 165, 233, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+        }
+
+        .service-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-primary);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .service-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.3);
+        }
+
+        .service-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin: 0 auto 24px;
+            box-shadow: 0 16px 40px -10px rgba(14, 165, 233, 0.4);
+        }
+
+        .service-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .service-price {
+            font-size: 2rem;
+            font-weight: 800;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .service-price span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .service-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 24px;
+        }
+
+        .service-features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .service-features li:last-child {
+            border-bottom: none;
+        }
+
+        .service-features li i {
+            color: var(--secondary);
+            font-size: 14px;
+        }
+
+        /* Cities Section */
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .city-card {
+            position: relative;
+            border-radius: 24px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .city-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+            z-index: 1;
+        }
+
+        .city-card:hover {
+            transform: scale(1.03);
+        }
+
+        .city-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .city-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 24px;
+            z-index: 2;
+        }
+
+        .city-info h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .city-info p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid var(--border);
+            border-radius: 32px;
+            padding: 80px 40px;
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cta-section h2 {
+            margin-bottom: 16px;
+        }
+
+        .cta-section p {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 500px;
+            margin: 0 auto 32px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 0 30px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 48px;
+            margin-bottom: 48px;
+        }
+
+        .footer-brand p {
+            color: var(--text-secondary);
+            margin: 16px 0 24px;
+            max-width: 280px;
+        }
+
+        .footer-links h4 {
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .footer-links ul {
+            list-style: none;
+        }
+
+        .footer-links li {
+            margin-bottom: 12px;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 32px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-bottom p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 16px;
+        }
+
+        .footer-social a {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .footer-social a:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero-content {
+                grid-template-columns: 1fr;
+                gap: 48px;
+                text-align: center;
+            }
+
+            .hero-text {
+                max-width: 100%;
+            }
+
+            .hero-cta {
+                justify-content: center;
+            }
+
+            .store-badges {
+                justify-content: center;
+            }
+
+            .floating-card {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                display: none;
+            }
+
+            .hero {
+                padding: 100px 0 60px;
+            }
+
+            h1 {
+                font-size: 2.25rem;
+            }
+
+            .hero-description {
+                font-size: 1rem;
+            }
+
+            .hero-cta {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .store-badges {
+                flex-direction: column;
+            }
+
+            .phone-mockup {
+                width: 240px;
+                height: 500px;
+            }
+
+            .cities-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 32px;
+            }
+
+            .footer-bottom {
+                flex-direction: column;
+                gap: 24px;
+                text-align: center;
+            }
+
+            .cta-section {
+                padding: 48px 24px;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container header-content">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-car-side"></i>
+                </div>
+                <span class="logo-text">NZwash</span>
+            </a>
+            <nav>
+                <a href="#features">Features</a>
+                <a href="#services">Services</a>
+                <a href="#cities">Cities</a>
+                <a href="privacy.html">Privacy</a>
+            </nav>
+            <div class="header-cta">
+                <a href="#download" class="btn btn-primary">
+                    <i class="fas fa-download"></i>
+                    Get the App
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container hero-content">
+                <div class="hero-text">
+                    <div class="hero-badge">
+                        <i class="fas fa-sparkles"></i>
+                        Now Available in UAE
+                    </div>
+                    <h1>Premium Car Wash<br><span>at Your Doorstep</span></h1>
+                    <p class="hero-description">
+                        Professional car washing comes to you. Book in seconds, track your specialist in real-time, and enjoy a sparkling clean car—all from the comfort of your home.
+                    </p>
+                    <div class="hero-cta">
+                        <a href="#download" class="btn btn-primary">
+                            <i class="fas fa-mobile-alt"></i>
+                            Download App
+                        </a>
+                        <a href="#services" class="btn btn-secondary">
+                            <i class="fas fa-tags"></i>
+                            View Pricing
+                        </a>
+                    </div>
+                    <div class="store-badges" id="download">
+                        <a href="#" class="store-badge">
+                            <i class="fab fa-apple"></i>
+                            <div class="store-badge-text">
+                                <small>Download on the</small>
+                                <span>App Store</span>
+                            </div>
+                        </a>
+                        <a href="#" class="store-badge">
+                            <i class="fab fa-google-play"></i>
+                            <div class="store-badge-text">
+                                <small>Get it on</small>
+                                <span>Google Play</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="floating-card">
+                        <div class="floating-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="floating-title">Quick Booking</div>
+                        <div class="floating-value">Book in 60 seconds</div>
+                    </div>
+                    <div class="floating-card">
+                        <div class="floating-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="floating-title">Live Tracking</div>
+                        <div class="floating-value">Real-time updates</div>
+                    </div>
+                    <div class="floating-card">
+                        <div class="floating-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <div class="floating-title">Secure Payment</div>
+                        <div class="floating-value">Stripe powered</div>
+                    </div>
+                    <div class="phone-mockup">
+                        <div class="phone-screen">
+                            <div class="phone-notch"></div>
+                            <div class="phone-content">
+                                <div class="phone-logo">🚗✨</div>
+                                <div class="phone-title">NZwash</div>
+                                <div class="phone-subtitle">Premium Car Wash</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">
+                        <i class="fas fa-star"></i>
+                        Features
+                    </div>
+                    <h2>Why Choose NZwash?</h2>
+                    <p class="section-subtitle">Experience the most convenient way to keep your car looking pristine without leaving your home or office.</p>
+                </div>
+                <div class="features-grid">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h3>Doorstep Service</h3>
+                        <p>We come to you—home, office, or anywhere. No more driving to car wash stations and waiting in queues.</p>
+                    </div>
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <h3>Flexible Scheduling</h3>
+                        <p>Book instantly for ASAP service or schedule for a convenient time. Choose your preferred date and time slot.</p>
+                    </div>
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h3>Trusted Specialists</h3>
+                        <p>All our car wash specialists are verified, trained professionals delivering consistent quality every time.</p>
+                    </div>
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-location-arrow"></i>
+                        </div>
+                        <h3>Real-Time Tracking</h3>
+                        <p>Track your specialist's arrival in real-time. Know exactly when they'll reach your location.</p>
+                    </div>
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <h3>Secure Payments</h3>
+                        <p>Pay securely with your card through Stripe. Save payment methods for faster future bookings.</p>
+                    </div>
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h3>Multi-Language</h3>
+                        <p>Full Arabic and English support with RTL layout. Use the app in your preferred language.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="services" style="background: rgba(14, 165, 233, 0.02);">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">
+                        <i class="fas fa-spray-can-sparkles"></i>
+                        Services
+                    </div>
+                    <h2>Our Packages</h2>
+                    <p class="section-subtitle">Choose the perfect wash package for your vehicle. Prices vary by vehicle type and city.</p>
+                </div>
+                <div class="services-grid">
+                    <div class="service-card fade-in">
+                        <div class="service-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <h3>Premium Wash</h3>
+                        <p class="service-price">From 45 AED <span>/ wash</span></p>
+                        <ul class="service-features">
+                            <li><i class="fas fa-check"></i> Exterior shampoo wash</li>
+                            <li><i class="fas fa-check"></i> High-pressure water cleaning</li>
+                            <li><i class="fas fa-check"></i> Interior vacuuming</li>
+                            <li><i class="fas fa-check"></i> Rim polishing</li>
+                            <li><i class="fas fa-check"></i> Air freshener</li>
+                        </ul>
+                        <a href="#download" class="btn btn-secondary" style="width: 100%;">Book Now</a>
+                    </div>
+                    <div class="service-card featured fade-in">
+                        <div class="service-icon">
+                            <i class="fas fa-gem"></i>
+                        </div>
+                        <h3>VIP Diamond</h3>
+                        <p class="service-price">From 75 AED <span>/ wash</span></p>
+                        <ul class="service-features">
+                            <li><i class="fas fa-check"></i> Everything in Premium</li>
+                            <li><i class="fas fa-check"></i> Premium wax coating</li>
+                            <li><i class="fas fa-check"></i> Dashboard polish</li>
+                            <li><i class="fas fa-check"></i> Leather conditioning</li>
+                            <li><i class="fas fa-check"></i> Premium perfuming</li>
+                        </ul>
+                        <a href="#download" class="btn btn-primary" style="width: 100%;">Book Now</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="cities">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-badge">
+                        <i class="fas fa-map-marker-alt"></i>
+                        Coverage
+                    </div>
+                    <h2>Available Cities</h2>
+                    <p class="section-subtitle">NZwash is currently serving these UAE cities with more locations coming soon.</p>
+                </div>
+                <div class="cities-grid">
+                    <div class="city-card fade-in">
+                        <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600&h=400&fit=crop" alt="Dubai skyline">
+                        <div class="city-info">
+                            <h3>Dubai</h3>
+                            <p>All areas covered</p>
+                        </div>
+                    </div>
+                    <div class="city-card fade-in">
+                        <img src="https://images.unsplash.com/photo-1578895101408-1a36b834405b?w=600&h=400&fit=crop" alt="Sharjah">
+                        <div class="city-info">
+                            <h3>Sharjah</h3>
+                            <p>Full coverage</p>
+                        </div>
+                    </div>
+                    <div class="city-card fade-in">
+                        <img src="https://images.unsplash.com/photo-1565967511849-76a60a516170?w=600&h=400&fit=crop" alt="Ajman">
+                        <div class="city-info">
+                            <h3>Ajman</h3>
+                            <p>Now available</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="container">
+                <div class="cta-section fade-in">
+                    <h2>Ready for a Spotless Car?</h2>
+                    <p>Download NZwash today and get your first wash with a special discount.</p>
+                    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                        <a href="#download" class="btn btn-primary">
+                            <i class="fab fa-apple"></i>
+                            App Store
+                        </a>
+                        <a href="#download" class="btn btn-primary">
+                            <i class="fab fa-google-play"></i>
+                            Google Play
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <div class="logo-icon">
+                            <i class="fas fa-car-side"></i>
+                        </div>
+                        <span class="logo-text">NZwash</span>
+                    </a>
+                    <p>Premium car wash at your doorstep. Serving Dubai, Sharjah, and Ajman.</p>
+                    <div class="store-badges" style="margin-top: 0;">
+                        <a href="#download" class="store-badge" style="padding: 8px 12px;">
+                            <i class="fab fa-apple" style="font-size: 20px;"></i>
+                            <span style="font-weight: 600; font-size: 0.875rem;">iOS</span>
+                        </a>
+                        <a href="#download" class="store-badge" style="padding: 8px 12px;">
+                            <i class="fab fa-google-play" style="font-size: 20px;"></i>
+                            <span style="font-weight: 600; font-size: 0.875rem;">Android</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-links">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="../">About nzayn</a></li>
+                        <li><a href="../#contact">Contact</a></li>
+                        <li><a href="../#portfolio">Portfolio</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="privacy.html">Privacy Policy</a></li>
+                        <li><a href="privacy.html#terms">Terms of Service</a></li>
+                        <li><a href="privacy.html#data">Data Protection</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="year"></span> NZwash by nzayn. All rights reserved.</p>
+                <div class="footer-social">
+                    <a href="https://wa.me/971507778931" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+                        <i class="fab fa-whatsapp"></i>
+                    </a>
+                    <a href="mailto:hello@nzayn.com" aria-label="Email">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Set current year
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Header scroll effect
+        const header = document.querySelector('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Fade in animation
+        const fadeElements = document.querySelectorAll('.fade-in');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        fadeElements.forEach(el => observer.observe(el));
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
