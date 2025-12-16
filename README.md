@@ -1,88 +1,108 @@
-# nzayn - Company Website
+# nzayn - Software Studio Website
 
-A modern, high-end company website for nzayn, a full-stack software development company based in Dubai, UAE. The website showcases services in mobile app development, web development, backend services, and cloud solutions. Built with clean, semantic HTML5, modern CSS3, and vanilla JavaScript.
+A modern, high-end website for **nzayn**, a full-stack software development studio based in Dubai, UAE. Built with clean, semantic HTML5, modern CSS3, and vanilla JavaScript.
+
+🌐 **Live at**: [nzayn.ae](https://nzayn.ae)
 
 ## 🚀 Features
 
-- **Modern Design**: Clean, minimalist aesthetic inspired by Apple and Linear.app
+- **Framer-Inspired Design**: Bold gradients, glass morphism, animated mesh backgrounds
 - **Responsive Layout**: Optimized for all devices (mobile, tablet, desktop)
-- **Dark Theme**: Premium dark mode design with monochromatic color scheme
+- **Dark Theme**: Premium dark mode with vibrant gradient accents
 - **Interactive Elements**: 
-  - Floating device mockup that follows scroll
-  - Smooth transitions and animations
-  - Dynamic navigation
-  - Responsive image galleries
-  - Interactive pricing calculator
+  - Smooth scroll animations
+  - Hover effects with 3D tilt
+  - Animated gradient backgrounds
+  - Back-to-top button
+  - Scroll progress indicator
 - **Performance Optimized**:
   - Lazy loading images
-  - Optimized assets
-  - Smooth scrolling
+  - CSS-only animations where possible
   - Minimal dependencies
+
+## 📂 Site Structure
+
+| URL | Description |
+|-----|-------------|
+| `/` | Main nzayn portfolio & services |
+| `/nzwash/` | NZwash app landing page |
+| `/nzwash/privacy.html` | NZwash privacy policy (App Store ready) |
 
 ## 🛠 Technical Details
 
 ### Built With
 - HTML5
-- CSS3 (Custom properties, Flexbox, Grid)
+- CSS3 (Custom properties, Flexbox, Grid, Animations)
 - Vanilla JavaScript
 - Font Awesome Icons
-- Google Fonts (Inter)
+- Google Fonts (Inter, Plus Jakarta Sans)
 
 ### Key Components
-- Responsive navigation with mobile-optimized bottom bar
-- Company services and expertise showcase
-- Portfolio/case studies section
-- Interactive contact form with pricing calculator
+- Responsive navigation with mobile bottom bar
+- Services and expertise showcase
+- Portfolio/case studies with image galleries
+- Process timeline
+- Testimonials section
+- FAQ accordion
+- Contact form
 - Social media integration
-- Dynamic floating device mockup
-- Optimized for SEO
 
 ## 💼 Services
 
 nzayn offers comprehensive software development services:
 
-- **Mobile App Development**: Flutter, iOS, Android
-- **Web Development**: Frontend and backend solutions
-- **Backend Services**: APIs, microservices, cloud infrastructure
-- **Full-Stack Solutions**: End-to-end development from concept to deployment
+- **Mobile App Development**: Flutter, iOS (Swift/SwiftUI), Android
+- **Web Development**: React, Next.js, modern frontend
+- **Backend Services**: APIs, microservices, databases
+- **Cloud Solutions**: AWS, GCP, Azure, Supabase
 
-## 📱 Mobile Optimization
+## 📱 App Landing Pages
 
-The mobile version features:
-- Bottom navigation bar with icons
-- Optimized typography and spacing
-- Full-width cards and buttons
-- Touch-friendly interactive elements
-- Improved performance on mobile devices
+### NZwash - Premium Car Wash App
+- **Landing Page**: `/nzwash/`
+- **Privacy Policy**: `/nzwash/privacy.html`
+- On-demand car wash service in Dubai, Sharjah, Ajman
+- Features: Doorstep service, real-time tracking, Stripe payments
 
 ## 🎨 Design System
 
 ### Colors
 ```css
---primary: #FFFFFF
+--primary: #7C3AED        /* Purple */
+--secondary: #EC4899      /* Pink */
+--accent: #06B6D4         /* Cyan */
 --background: #000000
 --text: #FFFFFF
---text-secondary: #71717A
---surface-1: rgba(24, 24, 27, 0.5)
---border: rgba(63, 63, 70, 0.4)
+--text-secondary: #A1A1AA
 ```
 
 ### Typography
-- Primary Font: Inter
-- Fallback: -apple-system, BlinkMacSystemFont, sans-serif
-- Font Weights: 300, 400, 500, 600, 700
+- Primary: Inter (main site)
+- Secondary: Plus Jakarta Sans (app pages)
+- Weights: 400, 500, 600, 700, 800
 
 ## 📦 Project Structure
 
 ```
-├── index.html
+├── index.html              # Main nzayn website
+├── CNAME                   # Custom domain (nzayn.ae)
+├── nzwash/
+│   ├── index.html          # NZwash app landing page
+│   └── privacy.html        # NZwash privacy policy
 ├── src/
+│   ├── assets/
+│   │   ├── css/
+│   │   ├── favicon/
+│   │   ├── js/
+│   │   └── webfonts/
 │   ├── css/
 │   │   └── style.css
 │   ├── images/
 │   │   ├── mockups/
-│   │   └── sharm/
+│   │   ├── sharm/
+│   │   └── NZwash.png
 │   └── js/
+│       └── script.js
 └── README.md
 ```
 
@@ -90,19 +110,27 @@ The mobile version features:
 
 1. Clone the repository
 ```bash
-git clone https://github.com/devsa3eed/DevSa3eed.github.io.git
+git clone https://github.com/DevSa3eed/DevSa3eed.github.io.git
 ```
 
 2. Open `index.html` in your browser
 
+### Custom Domain Setup
+
+The site is configured for `nzayn.ae`. DNS settings:
+```
+A Record:    @ → 185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153
+CNAME:       www → DevSa3eed.github.io
+```
+
 ## 📞 Contact
 
-- Location: Dubai, UAE
-- Phone: +971507778931
-- Email: mohamed.saeed.youssef@gmail.com
-- LinkedIn: [mohamed-saeed-youssef](https://www.linkedin.com/in/mohamed-saeed-youssef/)
-- GitHub: [devsa3eed](https://github.com/devsa3eed)
+- 🌐 Website: [nzayn.ae](https://nzayn.ae)
+- 📍 Location: Dubai, UAE
+- 📧 Email: [hello@nzayn.ae](mailto:hello@nzayn.ae)
+- 💬 WhatsApp: [+971 50 777 8931](https://wa.me/971507778931)
+- 💼 LinkedIn: [mohamed-saeed-youssef](https://www.linkedin.com/in/mohamed-saeed-youssef/)
 
 ## 📝 License
 
-Copyright © 2024 nzayn. All rights reserved.
+Copyright © 2025 nzayn. All rights reserved.
