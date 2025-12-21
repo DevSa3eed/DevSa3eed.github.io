@@ -4,6 +4,17 @@ A modern, high-end website for **nzayn**, a full-stack software development stud
 
 🌐 **Live at**: [nzayn.ae](https://nzayn.ae)
 
+## ☁️ Hosting
+
+Hosted on **Cloudflare Pages** with automatic deployments from GitHub.
+
+| Feature | Details |
+|---------|---------|
+| CDN | Cloudflare Global Edge Network |
+| SSL | Automatic HTTPS |
+| Deploys | Auto on push to `master` |
+| Domain | nzayn.ae (Cloudflare DNS) |
+
 ## 🚀 Features
 
 - **Framer-Inspired Design**: Bold gradients, glass morphism, animated mesh backgrounds
@@ -19,14 +30,15 @@ A modern, high-end website for **nzayn**, a full-stack software development stud
   - Lazy loading images
   - CSS-only animations where possible
   - Minimal dependencies
+  - Cloudflare CDN caching
 
 ## 📂 Site Structure
 
 | URL | Description |
 |-----|-------------|
-| `/` | Main nzayn portfolio & services |
-| `/nzwash/` | NZwash app landing page |
-| `/nzwash/privacy.html` | NZwash privacy policy (App Store ready) |
+| `https://nzayn.ae` | Main nzayn portfolio & services |
+| `https://nzayn.ae/nzwash/` | NZwash app landing page |
+| `https://nzayn.ae/nzwash/privacy.html` | NZwash privacy policy (App Store ready) |
 
 ## 🛠 Technical Details
 
@@ -62,7 +74,8 @@ nzayn offers comprehensive software development services:
 - **Landing Page**: `/nzwash/`
 - **Privacy Policy**: `/nzwash/privacy.html`
 - On-demand car wash service in Dubai, Sharjah, Ajman
-- Features: Doorstep service, real-time tracking, Stripe payments
+- Features: Doorstep service, real-time tracking, secure payments
+- Pricing: Premium (50 AED), VIP Diamond (110 AED)
 
 ## 🎨 Design System
 
@@ -85,7 +98,6 @@ nzayn offers comprehensive software development services:
 
 ```
 ├── index.html              # Main nzayn website
-├── CNAME                   # Custom domain (nzayn.ae)
 ├── nzwash/
 │   ├── index.html          # NZwash app landing page
 │   └── privacy.html        # NZwash privacy policy
@@ -106,21 +118,24 @@ nzayn offers comprehensive software development services:
 └── README.md
 ```
 
-## 🚀 Getting Started
+## 🚀 Development
 
-1. Clone the repository
+### Local Development
 ```bash
+# Clone the repository
 git clone https://github.com/DevSa3eed/DevSa3eed.github.io.git
+
+# Open in browser
+open index.html
 ```
 
-2. Open `index.html` in your browser
+### Deployment
+Push to `master` branch → Cloudflare Pages auto-deploys in ~30 seconds.
 
-### Custom Domain Setup
-
-The site is configured for `nzayn.ae`. DNS settings:
-```
-A Record:    @ → 185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153
-CNAME:       www → DevSa3eed.github.io
+```bash
+git add .
+git commit -m "Your changes"
+git push origin master
 ```
 
 ## 📞 Contact
