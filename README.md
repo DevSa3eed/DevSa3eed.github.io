@@ -1,6 +1,6 @@
 # Sa3eed - Portfolio Website
 
-A modern, responsive portfolio website showcasing my work as a Flutter & iOS Developer. Built with clean, semantic HTML5, modern CSS3, and vanilla JavaScript.
+A modern, responsive portfolio website showcasing my work as an iOS Developer. Built with clean, semantic HTML5, modern CSS3, and vanilla JavaScript.
 
 ## 🚀 Features
 
