@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80" role="img" aria-label="Barra">
+  <defs>
+    <linearGradient id="barraBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0d2c24"/>
+      <stop offset="1" stop-color="#061410"/>
+    </linearGradient>
+    <linearGradient id="barraSig" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#2dd4a7"/>
+      <stop offset="1" stop-color="#7df0d2"/>
+    </linearGradient>
+  </defs>
+  <rect width="80" height="80" rx="16" fill="url(#barraBg)"/>
+  <g fill="none" stroke="url(#barraSig)" stroke-linecap="round">
+    <path d="M26 51 A14 14 0 0 1 54 51" stroke-width="4.2" opacity="0.95"/>
+    <path d="M18 51 A22 22 0 0 1 62 51" stroke-width="4.2" opacity="0.55"/>
+    <path d="M10 51 A30 30 0 0 1 70 51" stroke-width="4.2" opacity="0.28"/>
+  </g>
+  <circle cx="40" cy="51" r="4.6" fill="#7df0d2"/>
+</svg>

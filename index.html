@@ -735,6 +735,362 @@
                 font-weight: 600;
             }
 
+            /* ---------- Section kicker (editorial index) ---------- */
+            .kicker {
+                font-family: var(--mono);
+                font-size: 0.78rem;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: var(--gold);
+                display: inline-flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 18px;
+            }
+            .kicker::before {
+                content: "";
+                width: 26px;
+                height: 1px;
+                background: var(--line-gold);
+            }
+            .kicker .ix {
+                color: var(--text-3);
+            }
+            .kicker.center {
+                justify-content: center;
+            }
+            .kicker.center::after {
+                content: "";
+                width: 26px;
+                height: 1px;
+                background: var(--line-gold);
+            }
+
+            /* ---------- Section background rhythm ---------- */
+            .work {
+                background: var(--bg-2);
+            }
+            .exp {
+                background: var(--bg-2);
+            }
+
+            /* ---------- Hero two-column + floating device ---------- */
+            .hero {
+                padding: 130px 0 46px;
+            }
+            .hero-grid {
+                display: grid;
+                grid-template-columns: 1.08fr 0.92fr;
+                gap: 44px;
+                align-items: center;
+            }
+            .hero-visual {
+                position: relative;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                perspective: 1400px;
+            }
+            .hero-visual::before {
+                content: "";
+                position: absolute;
+                width: 80%;
+                height: 80%;
+                background: radial-gradient(circle, var(--gold-soft), transparent 66%);
+                filter: blur(28px);
+                z-index: 0;
+            }
+            .hero-visual::after {
+                content: "";
+                position: absolute;
+                bottom: 1%;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 58%;
+                height: 38px;
+                background: radial-gradient(50% 100% at 50% 0%, rgba(0, 0, 0, 0.5), transparent 72%);
+                filter: blur(10px);
+                z-index: 0;
+            }
+            .hero-phone-wrap {
+                position: relative;
+                z-index: 1;
+                animation: floaty 6.5s ease-in-out infinite;
+            }
+            .hero-phone {
+                width: 236px;
+                transform: rotateY(-13deg) rotateX(3deg);
+                transition: transform 0.5s var(--ease-out);
+            }
+            .hero-phone:hover {
+                transform: rotateY(-6deg) rotateX(1deg);
+            }
+            @keyframes floaty {
+                0%,
+                100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-12px);
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .hero-phone-wrap,
+                .phone.center {
+                    animation: none;
+                }
+            }
+            @media (max-width: 860px) {
+                .hero-grid {
+                    grid-template-columns: 1fr;
+                }
+                .hero-visual {
+                    display: none;
+                }
+            }
+
+            /* ---------- Stats strip ---------- */
+            .stats {
+                padding: 6px 0 18px;
+            }
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 1px;
+                background: var(--line);
+                border: 1px solid var(--line);
+                border-radius: var(--r-lg);
+                overflow: hidden;
+            }
+            .stat {
+                background: var(--surface);
+                padding: 26px 24px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .stat-n {
+                font-family: var(--serif);
+                font-size: clamp(2rem, 4vw, 2.9rem);
+                font-weight: 600;
+                line-height: 1;
+                letter-spacing: -0.02em;
+                color: var(--gold-bright);
+            }
+            .stat-n .u {
+                color: var(--gold);
+                font-size: 0.66em;
+                margin-left: 1px;
+            }
+            .stat-l {
+                font-family: var(--mono);
+                font-size: 0.76rem;
+                letter-spacing: 0.02em;
+                text-transform: uppercase;
+                color: var(--text-3);
+                line-height: 1.4;
+            }
+            @media (max-width: 680px) {
+                .stats-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+                .stat {
+                    padding: 20px 18px;
+                }
+            }
+
+            /* ---------- Interactive work rows ---------- */
+            .row {
+                padding: 30px 22px;
+                margin: 0 -22px;
+                position: relative;
+                transition: background 0.3s var(--ease-out);
+            }
+            .row::before {
+                content: "";
+                position: absolute;
+                left: 0;
+                top: -1px;
+                bottom: 0;
+                width: 2px;
+                background: linear-gradient(var(--gold), var(--gold-bright));
+                transform: scaleY(0);
+                transform-origin: top;
+                transition: transform 0.35s var(--ease-out);
+            }
+            a.row:hover {
+                background: linear-gradient(90deg, var(--gold-soft), transparent 55%);
+            }
+            a.row:hover::before {
+                transform: scaleY(1);
+            }
+            .row .icon {
+                transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out);
+            }
+            a.row:hover .icon {
+                transform: scale(1.05);
+                box-shadow: 0 22px 46px rgba(0, 0, 0, 0.55);
+            }
+            .row h3 {
+                transition: color 0.25s ease;
+            }
+            a.row:hover h3 {
+                color: var(--gold-bright);
+            }
+            .go .arrow {
+                display: inline-block;
+                transition: transform 0.3s var(--ease-out);
+            }
+            a.row:hover .go {
+                color: var(--gold-bright);
+            }
+            a.row:hover .go .arrow {
+                transform: translateX(4px);
+            }
+
+            /* ---------- Skills: emphasize primary stack ---------- */
+            .skill-group.primary {
+                border-color: var(--line-gold);
+                background: linear-gradient(160deg, var(--gold-soft), rgba(212, 166, 86, 0.03));
+            }
+            .skill-group.primary h5 {
+                color: var(--gold-bright);
+            }
+            .skill-group.primary .skill-tags span {
+                border-color: var(--line-gold);
+                background: rgba(212, 166, 86, 0.1);
+            }
+
+            /* ---------- Contact glow ---------- */
+            .contact::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                background: radial-gradient(56% 60% at 50% 118%, var(--gold-soft), transparent 70%);
+            }
+
+            /* ---------- Showcase floor + float ---------- */
+            .stage::after {
+                content: "";
+                position: absolute;
+                left: 50%;
+                bottom: -6px;
+                transform: translateX(-50%);
+                width: 64%;
+                height: 44px;
+                background: radial-gradient(50% 100% at 50% 0%, rgba(0, 0, 0, 0.55), transparent 72%);
+                filter: blur(10px);
+                z-index: 0;
+            }
+            .phone.center {
+                animation: floaty 7s ease-in-out infinite;
+            }
+
+            /* ---------- Nav underline ---------- */
+            .nav-r a:not(.nav-cta) {
+                position: relative;
+            }
+            .nav-r a:not(.nav-cta)::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: -5px;
+                height: 1.5px;
+                border-radius: 2px;
+                background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+                transform: scaleX(0);
+                transform-origin: left;
+                transition: transform 0.28s var(--ease-out);
+            }
+            .nav-r a:not(.nav-cta):hover::after {
+                transform: scaleX(1);
+            }
+
+            /* ---------- Mobile menu ---------- */
+            .nav-toggle {
+                display: none;
+                width: 42px;
+                height: 42px;
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                background: rgba(245, 242, 234, 0.04);
+                cursor: pointer;
+                align-items: center;
+                justify-content: center;
+            }
+            .nav-toggle .ham,
+            .nav-toggle .ham::before,
+            .nav-toggle .ham::after {
+                display: block;
+                width: 18px;
+                height: 1.6px;
+                background: var(--text);
+                border-radius: 2px;
+                transition: transform 0.3s var(--ease-out), opacity 0.2s ease;
+            }
+            .nav-toggle .ham {
+                position: relative;
+            }
+            .nav-toggle .ham::before {
+                content: "";
+                position: absolute;
+                top: -6px;
+                left: 0;
+            }
+            .nav-toggle .ham::after {
+                content: "";
+                position: absolute;
+                top: 6px;
+                left: 0;
+            }
+            .nav-toggle[aria-expanded="true"] .ham {
+                background: transparent;
+            }
+            .nav-toggle[aria-expanded="true"] .ham::before {
+                transform: translateY(6px) rotate(45deg);
+            }
+            .nav-toggle[aria-expanded="true"] .ham::after {
+                transform: translateY(-6px) rotate(-45deg);
+            }
+            .mobile-menu {
+                display: none;
+                flex-direction: column;
+                padding: 6px 32px 16px;
+            }
+            .mobile-menu.open {
+                display: flex;
+            }
+            .mobile-menu a {
+                padding: 14px 4px;
+                color: var(--text-2);
+                font-size: 1.02rem;
+                border-bottom: 1px solid var(--line);
+            }
+            .mobile-menu a:last-child {
+                border-bottom: none;
+            }
+            .mobile-menu a.m-cta {
+                color: var(--gold-bright);
+                font-weight: 600;
+            }
+            header.menu-open {
+                background: rgba(16, 14, 10, 0.92);
+                backdrop-filter: saturate(160%) blur(18px);
+                -webkit-backdrop-filter: saturate(160%) blur(18px);
+                border-bottom: 1px solid var(--line);
+            }
+            @media (max-width: 680px) {
+                .nav-r {
+                    display: none;
+                }
+                .nav-toggle {
+                    display: inline-flex;
+                }
+            }
+
             /* ---------- Reveal motion ---------- */
             html.js .reveal {
                 opacity: 0;
@@ -785,6 +1141,13 @@
                     <a href="#experience">Experience</a>
                     <a href="#contact" class="nav-cta">Get in touch</a>
                 </nav>
+                <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu"><span class="ham"></span></button>
+            </div>
+            <div class="mobile-menu" id="mobileMenu">
+                <a href="#work">Work</a>
+                <a href="#about">About</a>
+                <a href="#experience">Experience</a>
+                <a href="#contact" class="m-cta">Get in touch</a>
             </div>
         </header>
 
@@ -793,26 +1156,48 @@
 
             <!-- ============ HERO ============ -->
             <section class="hero">
-                <div class="wrap">
-                    <div class="eyebrow reveal">Senior iOS Engineer — Dubai, UAE</div>
-                    <h1 class="reveal" style="--d: 60ms">
-                        I build <em>native</em> iOS apps and ship them to the App&nbsp;Store.
-                    </h1>
-                    <p class="hero-sub reveal" style="--d: 120ms">
-                        Ten years in software, the last few deep in Swift and
-                        SwiftUI. I design, build, and release end to end.
-                    </p>
-                    <div class="hero-actions reveal" style="--d: 170ms">
-                        <a href="#work" class="btn btn-primary">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M11 18h2"/></svg>
-                            View the work
-                        </a>
-                        <a href="#contact" class="btn btn-ghost">Get in touch</a>
+                <div class="wrap hero-grid">
+                    <div class="hero-copy">
+                        <div class="eyebrow reveal">Senior iOS Engineer — Dubai, UAE</div>
+                        <h1 class="reveal" style="--d: 60ms">
+                            I build <em>native</em> iOS apps and ship them to the App&nbsp;Store.
+                        </h1>
+                        <p class="hero-sub reveal" style="--d: 120ms">
+                            Ten years in software, the last few deep in Swift and
+                            SwiftUI. I design, build, and release end to end.
+                        </p>
+                        <div class="hero-actions reveal" style="--d: 170ms">
+                            <a href="#work" class="btn btn-primary">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3"/><path d="M11 18h2"/></svg>
+                                View the work
+                            </a>
+                            <a href="#contact" class="btn btn-ghost">Get in touch</a>
+                        </div>
+                        <div class="meta reveal" style="--d: 220ms">
+                            <span><b>Dubai, UAE</b></span>
+                            <span><b>Own residency visa</b></span>
+                            <span><b>Available immediately</b></span>
+                        </div>
                     </div>
-                    <div class="meta reveal" style="--d: 220ms">
-                        <span><b>Dubai, UAE</b></span>
-                        <span><b>Own residency visa</b></span>
-                        <span><b>Available immediately</b></span>
+                    <div class="hero-visual reveal" style="--d: 200ms" aria-hidden="true">
+                        <div class="hero-phone-wrap">
+                            <div class="phone hero-phone">
+                                <div class="isl"></div>
+                                <div class="scr"><img src="src/images/sharm/Map.png" alt="Sharm Taxi live ride-hailing map" loading="eager" /></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============ STATS ============ -->
+            <section class="stats">
+                <div class="wrap">
+                    <div class="stats-grid reveal">
+                        <div class="stat"><span class="stat-n">10<span class="u">+</span></span><span class="stat-l">Years in software</span></div>
+                        <div class="stat"><span class="stat-n">3</span><span class="stat-l">Apps on the App&nbsp;Store</span></div>
+                        <div class="stat"><span class="stat-n">60<span class="u">%</span></span><span class="stat-l">QoQ growth · Waraq</span></div>
+                        <div class="stat"><span class="stat-n">100<span class="u">+</span></span><span class="stat-l">Processes automated</span></div>
                     </div>
                 </div>
             </section>
@@ -822,8 +1207,8 @@
                 <div class="wrap">
                     <div class="stage reveal">
                         <div class="phone side left"><div class="isl"></div><div class="scr"><img src="src/images/sharm/Login.png" alt="Sharm Taxi sign-in screen" loading="lazy" /></div></div>
-                        <div class="phone center"><div class="isl"></div><div class="scr"><img src="src/images/sharm/Map.png" alt="Sharm Taxi live map with nearby cars" loading="lazy" /></div></div>
-                        <div class="phone side right"><div class="isl"></div><div class="scr"><img src="src/images/sharm/Booking.png" alt="Sharm Taxi booking and fare estimate" loading="lazy" /></div></div>
+                        <div class="phone center"><div class="isl"></div><div class="scr"><img src="src/images/sharm/Booking.png" alt="Sharm Taxi booking and fare estimate" loading="lazy" /></div></div>
+                        <div class="phone side right"><div class="isl"></div><div class="scr"><img src="src/images/sharm/Trips.png" alt="Sharm Taxi ride history" loading="lazy" /></div></div>
                     </div>
                     <p class="showcase-cap reveal"><b>Sharm Taxi</b> — live ride-hailing, shipped to the App Store · Flutter</p>
                 </div>
@@ -832,38 +1217,39 @@
             <!-- ============ WORK ============ -->
             <section id="work" class="work band">
                 <div class="wrap">
+                    <div class="kicker reveal"><span class="ix">01</span> Work</div>
                     <h2 class="sec-h reveal">Selected work</h2>
                     <p class="sec-s reveal">Native Swift and SwiftUI first, then cross-platform in Flutter. Every platform labeled honestly.</p>
 
-                    <div class="row reveal">
+                    <a class="row reveal" href="https://nzayn.ae/apps/waraq" target="_blank" rel="noopener">
                         <img class="icon" src="src/images/apps/waraq.png" alt="Waraq app icon" loading="lazy" />
                         <div>
                             <h3>Waraq</h3>
                             <div class="tags"><span class="tag n">Native iOS · SwiftUI</span><span class="tag">App Store</span><span class="tag">Solo build</span></div>
                             <p>A multi-game score tracker I designed, built, and published solo, with a growing international audience. <span class="m">60%</span> quarter-on-quarter organic download growth.</p>
                         </div>
-                        <a class="go" href="https://nzayn.ae/apps/waraq" target="_blank" rel="noopener">View ↗</a>
-                    </div>
+                        <span class="go">View <span class="arrow">↗</span></span>
+                    </a>
 
-                    <div class="row reveal">
-                        <img class="icon" src="src/images/apps/barra.png" alt="Barra app icon" loading="lazy" />
+                    <a class="row reveal" href="https://nzayn.ae/apps/barra" target="_blank" rel="noopener">
+                        <img class="icon" src="src/images/apps/barra.svg" alt="Barra app icon" loading="lazy" />
                         <div>
                             <h3>Barra</h3>
                             <div class="tags"><span class="tag n">Native iOS · SwiftUI</span><span class="tag">In development</span></div>
                             <p>A game-night companion with group coordination and built-in games, built from scratch on MVVM with Firebase real-time sync.</p>
                         </div>
-                        <a class="go" href="https://nzayn.ae/apps/barra" target="_blank" rel="noopener">View ↗</a>
-                    </div>
+                        <span class="go">View <span class="arrow">↗</span></span>
+                    </a>
 
-                    <div class="row reveal">
-                        <img class="icon pad" src="src/images/apps/nzwash.png" alt="NZWash app icon" loading="lazy" />
+                    <a class="row reveal" href="https://nzayn.ae/apps/nzwash" target="_blank" rel="noopener">
+                        <img class="icon" src="src/images/apps/nzwash.png" alt="NZWash app icon" loading="lazy" />
                         <div>
                             <h3>NZWash</h3>
                             <div class="tags"><span class="tag">Cross-platform · Flutter</span><span class="tag">App Store</span></div>
                             <p>The customer app of a three-app car-wash platform with real-time job tracking and Stripe payments on a Supabase backend.</p>
                         </div>
-                        <a class="go" href="https://nzayn.ae/apps/nzwash" target="_blank" rel="noopener">View ↗</a>
-                    </div>
+                        <span class="go">View <span class="arrow">↗</span></span>
+                    </a>
 
                     <div class="row reveal">
                         <img class="icon pad" src="src/images/apps/prism.png" alt="Prism app icon" loading="lazy" />
@@ -881,6 +1267,7 @@
             <section id="about" class="about band">
                 <div class="wrap about-grid">
                     <div>
+                        <div class="kicker reveal"><span class="ix">02</span> About</div>
                         <p class="about-lead reveal">
                             I am a senior mobile engineer with 10+ years in
                             software, the last few focused on native iOS.
@@ -906,7 +1293,7 @@
                         </div>
                     </div>
                     <div class="skills reveal" style="--d: 100ms">
-                        <div class="skill-group">
+                        <div class="skill-group primary">
                             <h5>iOS</h5>
                             <div class="skill-tags">
                                 <span>Swift</span><span>SwiftUI</span><span>UIKit</span>
@@ -937,6 +1324,7 @@
             <!-- ============ EXPERIENCE ============ -->
             <section id="experience" class="exp band">
                 <div class="wrap">
+                    <div class="kicker reveal"><span class="ix">03</span> Career</div>
                     <h2 class="sec-h reveal">Experience</h2>
                     <p class="sec-s reveal">A decade of shipping software in Dubai, the last stretch focused on mobile and iOS.</p>
                     <div class="timeline reveal">
@@ -966,6 +1354,7 @@
             <!-- ============ CONTACT ============ -->
             <section id="contact" class="contact band">
                 <div class="wrap">
+                    <div class="kicker center reveal"><span class="ix">04</span> Contact</div>
                     <h2 class="reveal">Let's talk</h2>
                     <p class="reveal" style="--d: 60ms">
                         I am open to senior iOS and mobile roles in the UAE and
@@ -1047,6 +1436,24 @@
                 );
                 items.forEach((el) => io.observe(el));
             }
+
+            // Mobile menu toggle
+            const navToggle = document.getElementById("navToggle");
+            const mobileMenu = document.getElementById("mobileMenu");
+            function setMenu(open) {
+                mobileMenu.classList.toggle("open", open);
+                header.classList.toggle("menu-open", open);
+                navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+            }
+            navToggle.addEventListener("click", () =>
+                setMenu(!mobileMenu.classList.contains("open"))
+            );
+            mobileMenu.querySelectorAll("a").forEach((a) =>
+                a.addEventListener("click", () => setMenu(false))
+            );
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 680) setMenu(false);
+            });
         </script>
     </body>
 </html>
