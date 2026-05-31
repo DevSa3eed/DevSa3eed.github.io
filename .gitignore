@@ -36,3 +36,12 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+
+# Local tooling / preview config (not part of the published site)
+.claude/
+
+# Internal design + strategy notes — must NOT be published to the live site
+PRODUCT.md
+
+# Design-exploration scratch (the A/B/C direction mockups)
+variants/
