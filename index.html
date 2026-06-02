@@ -44,7 +44,9 @@
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&display=swap" rel="stylesheet" />
+        <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+        <link href="https://api.fontshare.com/v2/css?f[]=clash-display@500,600,700&f[]=switzer@400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
         <style>
             /* ===========================================================
                Mohamed Saeed — Monochrome Black.
@@ -64,7 +66,14 @@
                 --gold-bright: #ffffff;
                 --gold-soft: rgba(255, 255, 255, 0.1);
 
-                --text: #f5f5f7;
+                /* nzayn brand accent — vermilion, used sparingly */
+                --accent: oklch(0.69 0.195 36);
+                --accent-hi: oklch(0.74 0.185 40);
+                --accent-ink: oklch(0.17 0.03 40);
+                --accent-quiet: oklch(0.69 0.195 36 / 0.16);
+                --accent-line: oklch(0.69 0.195 36 / 0.45);
+
+                --text: oklch(0.97 0.006 80);
                 --text-2: #a6a6ae;
                 --text-3: #6c6c74;
 
@@ -79,10 +88,10 @@
                 --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
                 --maxw: 1080px;
 
-                --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
-                --serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
-                --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, monospace;
-                --display: "Fraunces", ui-serif, "Iowan Old Style", Georgia, serif;
+                --font: "Switzer", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+                --serif: "Clash Display", "Switzer", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+                --mono: "JetBrains Mono", ui-monospace, "SF Mono", "SFMono-Regular", Menlo, monospace;
+                --display: "Clash Display", "Switzer", ui-sans-serif, system-ui, sans-serif;
             }
 
             *,
@@ -262,8 +271,8 @@
                 text-wrap: balance;
             }
             .hero h1 em {
-                font-style: italic;
-                color: var(--gold-bright);
+                font-style: normal;
+                color: var(--accent);
             }
             .hero-sub {
                 font-size: clamp(1.08rem, 2vw, 1.28rem);
@@ -318,6 +327,7 @@
                 display: flex;
                 flex-wrap: wrap;
                 gap: 8px 26px;
+                margin-bottom: 26px;
                 font-family: var(--mono);
                 font-size: 0.86rem;
                 color: var(--text-3);
@@ -495,7 +505,7 @@
                 max-width: 56ch;
             }
             .row p .m {
-                color: var(--gold-bright);
+                color: var(--accent);
                 font-weight: 600;
             }
             .row .go {
@@ -508,20 +518,70 @@
                 transition: color 0.2s ease;
             }
             .row .go:hover {
-                color: var(--gold-bright);
+                color: var(--accent);
+                border-bottom-color: var(--accent);
             }
             @media (max-width: 760px) {
                 .row {
-                    grid-template-columns: 72px 1fr;
+                    grid-template-columns: 72px 1fr auto;
                     gap: 18px;
+                    align-items: center;
+                    -webkit-tap-highlight-color: transparent;
                 }
                 .row .icon {
                     width: 72px;
                     height: 72px;
                     border-radius: 16px;
                 }
+                /* keep a tap affordance on mobile: collapse "View" to just the arrow */
                 .row .go {
+                    font-size: 0;
+                    border-bottom: 0;
+                    padding-bottom: 0;
+                    color: var(--text-3);
+                }
+                .row .go .arrow {
+                    font-size: 1.15rem;
+                }
+                a.row:active {
+                    background: rgba(255, 255, 255, 0.035);
+                }
+                .kicker .ix {
                     display: none;
+                }
+            }
+
+            /* desktop: spend the row's right-side space on a meta column (platform/status),
+               so the description stays at a readable width instead of leaving a dead zone */
+            @media (min-width: 761px) {
+                .row > div {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) auto;
+                    grid-template-areas:
+                        "name meta"
+                        "desc meta";
+                    column-gap: 44px;
+                    align-items: start;
+                }
+                .row > div > h3 {
+                    grid-area: name;
+                    margin-bottom: 10px;
+                }
+                .row > div > p {
+                    grid-area: desc;
+                    margin: 0;
+                }
+                .row > div > .tags {
+                    grid-area: meta;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    gap: 8px;
+                    margin: 0;
+                    align-self: start;
+                }
+                /* push résumé dates to the row's right edge (fills the timeline void) */
+                .tl-date {
+                    margin-left: auto;
                 }
             }
 
@@ -754,9 +814,11 @@
             }
             .kicker::before {
                 content: "";
-                width: 26px;
-                height: 1px;
-                background: var(--line-gold);
+                width: 7px;
+                height: 7px;
+                border-radius: 2px;
+                background: var(--accent);
+                box-shadow: 0 0 0 4px var(--accent-quiet);
             }
             .kicker .ix {
                 color: var(--text-3);
@@ -766,10 +828,22 @@
             }
             .kicker.center::after {
                 content: "";
-                width: 26px;
-                height: 1px;
-                background: var(--line-gold);
+                width: 7px;
+                height: 7px;
+                border-radius: 2px;
+                background: var(--accent);
+                box-shadow: 0 0 0 4px var(--accent-quiet);
             }
+
+            /* nzayn brand frame — crop marks */
+            .frame { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+            .frame .crop { position: absolute; width: 14px; height: 14px; border: 1px solid var(--line-gold); }
+            .frame .crop.tl { top: 18px; left: 18px; border-right: 0; border-bottom: 0; }
+            .frame .crop.tr { top: 18px; right: 18px; border-left: 0; border-bottom: 0; }
+            .frame .crop.bl { bottom: 18px; left: 18px; border-right: 0; border-top: 0; }
+            .frame .crop.br { bottom: 18px; right: 18px; border-left: 0; border-top: 0; }
+            /* crop frame is a large-canvas flourish — desktop only */
+            @media (max-width: 760px) { .frame { display: none; } }
 
             /* ---------- Section background rhythm ---------- */
             .work {
@@ -947,7 +1021,8 @@
                 transition: transform 0.3s var(--ease-out);
             }
             a.row:hover .go {
-                color: var(--gold-bright);
+                color: var(--accent);
+                border-bottom-color: var(--accent);
             }
             a.row:hover .go .arrow {
                 transform: translateX(4px);
@@ -1096,6 +1171,73 @@
                 }
             }
 
+            /* =====================================================
+               MOBILE DOCK — mirrors nzayn's MobileDock pattern.
+               Shown on touch / narrow screens; hamburger hidden
+               when dock is visible (they serve the same job).
+               ===================================================== */
+            .mdock {
+                display: none;
+            }
+            @media (max-width: 680px), (hover: none) and (pointer: coarse) {
+                /* suppress the hamburger — dock replaces it */
+                .nav-toggle { display: none !important; }
+                .mobile-menu { display: none !important; }
+
+                /* body breathing room so last section isn't obscured */
+                body { padding-bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
+
+                .mdock {
+                    display: flex;
+                    position: fixed;
+                    z-index: 200;
+                    left: 12px;
+                    right: 12px;
+                    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+                    max-width: 400px;
+                    margin: 0 auto;
+                    padding: 7px;
+                    background: oklch(0.13 0.005 265 / 0.88);
+                    border: 1px solid var(--line);
+                    border-radius: 18px;
+                    backdrop-filter: blur(18px) saturate(160%);
+                    -webkit-backdrop-filter: blur(18px) saturate(160%);
+                    box-shadow: 0 18px 44px -20px rgba(0, 0, 0, 0.85);
+                }
+            }
+            .mdock-tab {
+                flex: 1 1 0;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                padding: 7px 4px;
+                border-radius: 12px;
+                color: var(--text-3);
+                font-family: var(--mono);
+                font-size: 0.62rem;
+                letter-spacing: 0.04em;
+                text-transform: uppercase;
+                -webkit-tap-highlight-color: transparent;
+                transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out), transform 0.18s var(--ease-out);
+            }
+            .mdock-tab svg {
+                width: 21px;
+                height: 21px;
+                stroke-width: 1.8;
+            }
+            .mdock-tab.on {
+                color: var(--accent);
+                background: var(--accent-quiet);
+            }
+            .mdock-tab:active {
+                transform: scale(0.9);
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .mdock-tab { transition: color 0.2s, background 0.2s; }
+                .mdock-tab:active { transform: none; }
+            }
+
             /* ---------- Reveal motion ---------- */
             html.js .reveal {
                 opacity: 0;
@@ -1137,6 +1279,10 @@
         <a href="#main" class="skip">Skip to content</a>
         <div class="progress" id="progress" aria-hidden="true"></div>
 
+        <div class="frame" aria-hidden="true">
+            <span class="crop tl"></span><span class="crop tr"></span><span class="crop bl"></span><span class="crop br"></span>
+        </div>
+
         <header id="header">
             <div class="wrap nav">
                 <a href="#top" class="brand" aria-label="Mohamed Saeed, home">Mohamed Saeed<span class="dot">.</span></a>
@@ -1163,7 +1309,7 @@
             <section class="hero">
                 <div class="wrap hero-grid">
                     <div class="hero-copy">
-                        <div class="eyebrow reveal">Senior iOS Engineer — Dubai, UAE</div>
+                        <div class="eyebrow reveal">Senior iOS Engineer · Dubai, UAE</div>
                         <h1 class="reveal" style="--d: 60ms">
                             I build <em>native</em> iOS apps and ship them to the App&nbsp;Store.
                         </h1>
@@ -1177,11 +1323,6 @@
                                 View the work
                             </a>
                             <a href="#contact" class="btn btn-ghost">Get in touch</a>
-                        </div>
-                        <div class="meta reveal" style="--d: 220ms">
-                            <span><b>Dubai, UAE</b></span>
-                            <span><b>Own residency visa</b></span>
-                            <span><b>Available immediately</b></span>
                         </div>
                     </div>
                     <div class="hero-visual reveal" style="--d: 200ms" aria-hidden="true">
@@ -1198,9 +1339,14 @@
             <!-- ============ STATS ============ -->
             <section class="stats">
                 <div class="wrap">
+                    <div class="meta reveal">
+                        <span><b>Dubai, UAE</b></span>
+                        <span><b>Own residency visa</b></span>
+                        <span><b>Available immediately</b></span>
+                    </div>
                     <div class="stats-grid reveal">
                         <div class="stat"><span class="stat-n">10<span class="u">+</span></span><span class="stat-l">Years in software</span></div>
-                        <div class="stat"><span class="stat-n">3</span><span class="stat-l">Apps on the App&nbsp;Store</span></div>
+                        <div class="stat"><span class="stat-n">2</span><span class="stat-l">Apps on the App&nbsp;Store</span></div>
                         <div class="stat"><span class="stat-n">60<span class="u">%</span></span><span class="stat-l">QoQ growth · Waraq</span></div>
                         <div class="stat"><span class="stat-n">100<span class="u">+</span></span><span class="stat-l">Processes automated</span></div>
                     </div>
@@ -1215,7 +1361,7 @@
                         <div class="phone center"><div class="isl"></div><div class="scr"><img src="src/images/sharm/Booking.png" alt="Sharm Taxi booking and fare estimate" loading="lazy" /></div></div>
                         <div class="phone side right"><div class="isl"></div><div class="scr"><img src="src/images/sharm/Trips.png" alt="Sharm Taxi ride history" loading="lazy" /></div></div>
                     </div>
-                    <p class="showcase-cap reveal"><b>Sharm Taxi</b> — live ride-hailing, shipped to the App Store · Flutter</p>
+                    <p class="showcase-cap reveal"><b>Sharm Taxi</b>, live ride-hailing shipped to the App Store · Flutter</p>
                 </div>
             </section>
 
@@ -1241,7 +1387,7 @@
                         <div>
                             <h3>Barra</h3>
                             <div class="tags"><span class="tag n">Native iOS · SwiftUI</span><span class="tag">In development</span></div>
-                            <p>A game-night companion with group coordination and built-in games, built from scratch on MVVM with Firebase real-time sync.</p>
+                            <p>A privacy-first connectivity app for travellers: a fast, no-logs tunnel built to hold up on the networks where ordinary VPNs get blocked. Hysteria2 over QUIC, with Sign in with Apple.</p>
                         </div>
                         <span class="go">View <span class="arrow">↗</span></span>
                     </a>
@@ -1256,15 +1402,25 @@
                         <span class="go">View <span class="arrow">↗</span></span>
                     </a>
 
-                    <div class="row reveal">
+                    <a class="row reveal" href="https://nzayn.ae/apps/majlis-mafia" target="_blank" rel="noopener">
+                        <img class="icon" src="src/images/apps/majlis.png" alt="Majlis Mafia app icon" loading="lazy" />
+                        <div>
+                            <h3>Majlis Mafia</h3>
+                            <div class="tags"><span class="tag">Cross-platform · Flutter</span><span class="tag">In review</span></div>
+                            <p>A pass-the-phone party game that runs Mafia for the whole room, automating the night-and-day phases so nobody has to sit out and moderate. Fully offline, in Arabic and English.</p>
+                        </div>
+                        <span class="go">View <span class="arrow">↗</span></span>
+                    </a>
+
+                    <a class="row reveal" href="https://prism-ai-edu.vercel.app" target="_blank" rel="noopener">
                         <img class="icon pad" src="src/images/apps/prism.png" alt="Prism app icon" loading="lazy" />
                         <div>
                             <h3>Prism</h3>
                             <div class="tags"><span class="tag">Web · Next.js</span><span class="tag">AI</span></div>
                             <p>An AI lesson generator producing four learning-style formats, bilingual in English and Arabic.</p>
                         </div>
-                        <span class="go">Web app</span>
-                    </div>
+                        <span class="go">Visit <span class="arrow">↗</span></span>
+                    </a>
                 </div>
             </section>
 
@@ -1334,23 +1490,23 @@
                     <p class="sec-s reveal">A decade of shipping software in Dubai, the last stretch focused on mobile and iOS.</p>
                     <div class="timeline reveal">
                         <div class="tl-item current">
-                            <div class="tl-top"><h4>Founder &amp; iOS / Mobile Engineer</h4><span class="co">· NZayn</span><span class="tl-date">2025 — Present</span></div>
+                            <div class="tl-top"><h4>Founder &amp; iOS / Mobile Engineer</h4><span class="co">· NZayn</span><span class="tl-date">2025 - Present</span></div>
                             <p>Designing, building, and shipping native iOS (SwiftUI) and Flutter apps end to end. Published Waraq to the App Store and own its release lifecycle.</p>
                         </div>
                         <div class="tl-item">
-                            <div class="tl-top"><h4>Lead Software Development Engineer</h4><span class="co">· ENERCAP Holdings</span><span class="tl-date">2024 — 2025</span></div>
+                            <div class="tl-top"><h4>Lead Software Development Engineer</h4><span class="co">· ENERCAP Holdings</span><span class="tl-date">2024 - 2025</span></div>
                             <p>Built a SwiftUI iOS + macOS monitoring app for industrial battery systems over CoreBluetooth. Mentored engineers on modular iOS architecture.</p>
                         </div>
                         <div class="tl-item">
-                            <div class="tl-top"><h4>Senior Mobile Developer</h4><span class="co">· Trapeze Group AMEA</span><span class="tl-date">2023 — 2024</span></div>
+                            <div class="tl-top"><h4>Senior Mobile Developer</h4><span class="co">· Trapeze Group AMEA</span><span class="tl-date">2023 - 2024</span></div>
                             <p>Built and shipped Sharm Taxi (Flutter) to the App Store with live GPS, in-app payments, and push, plus the REST APIs powering it.</p>
                         </div>
                         <div class="tl-item">
-                            <div class="tl-top"><h4>Technical Solution Engineer</h4><span class="co">· Evolvant</span><span class="tl-date">2021 — 2023</span></div>
+                            <div class="tl-top"><h4>Technical Solution Engineer</h4><span class="co">· Evolvant</span><span class="tl-date">2021 - 2023</span></div>
                             <p>Engineered 100+ automated processes in Python for a major Saudi bank, under financial-sector security and compliance standards.</p>
                         </div>
                         <div class="tl-item">
-                            <p class="tl-more">Earlier: Technical Project Manager at Daman Solutions (2019–2021), Technical Project Coordinator at Etisalat (2016–2019), and Software Engineer at GE Oil &amp; Gas (2014–2016, Go / REST / Docker / CI/CD).</p>
+                            <p class="tl-more">Earlier: Technical Project Manager at Daman Solutions (2019-2021), Technical Project Coordinator at Etisalat (2016-2019), and Software Engineer at GE Oil &amp; Gas (2014-2016, Go / REST / Docker / CI/CD).</p>
                         </div>
                     </div>
                 </div>
@@ -1402,6 +1558,30 @@
                 </a>
             </div>
         </footer>
+
+        <!-- MOBILE DOCK -->
+        <nav class="mdock" id="mdock" aria-label="Sections">
+            <a class="mdock-tab on" href="#top" data-sec="top" aria-label="Home">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.2V21h14V9.2"/></svg>
+                <span>Home</span>
+            </a>
+            <a class="mdock-tab" href="#work" data-sec="work" aria-label="Work">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Work</span>
+            </a>
+            <a class="mdock-tab" href="#about" data-sec="about" aria-label="About">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c0-3.6 3.2-5.6 7-5.6s7 2 7 5.6"/></svg>
+                <span>About</span>
+            </a>
+            <a class="mdock-tab" href="#experience" data-sec="experience" aria-label="Experience">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+                <span>Career</span>
+            </a>
+            <a class="mdock-tab" href="#contact" data-sec="contact" aria-label="Contact">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>
+                <span>Contact</span>
+            </a>
+        </nav>
 
         <script>
             document.documentElement.classList.add("js");
@@ -1459,6 +1639,36 @@
             window.addEventListener("resize", () => {
                 if (window.innerWidth > 680) setMenu(false);
             });
+
+            // ── Mobile dock scroll-spy ──────────────────────────────
+            (function () {
+                const dock = document.getElementById("mdock");
+                if (!dock) return;
+                const tabs = [...dock.querySelectorAll(".mdock-tab[data-sec]")];
+                const sections = ["work", "about", "experience", "contact"].map(id => document.getElementById(id)).filter(Boolean);
+
+                function activateSec(id) {
+                    tabs.forEach(t => t.classList.toggle("on", t.dataset.sec === id));
+                }
+
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) activateSec(entry.target.id);
+                    });
+                }, { rootMargin: "-40% 0px -55% 0px" });
+
+                sections.forEach(s => io.observe(s));
+
+                // if scrolled near top, activate Home
+                function checkTop() {
+                    if (window.scrollY < 120) activateSec("top");
+                }
+                window.addEventListener("scroll", checkTop, { passive: true });
+                checkTop();
+
+                // close hamburger (safety — dock handles nav on mobile)
+                tabs.forEach(t => t.addEventListener("click", () => setMenu(false)));
+            })();
         </script>
     </body>
 </html>
