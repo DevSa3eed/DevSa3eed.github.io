@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>nzayn favicon</title>
+  <rect width="64" height="64" rx="14" fill="#1F1E1D"/>
+  <g transform="scale(0.32)">
+    <path d="M62 150 V88 A38 38 0 0 1 138 88 V150" fill="none" stroke="#F5F1E8" stroke-width="20" stroke-linecap="round"/>
+    <circle cx="100" cy="115" r="11" fill="#D85A30"/>
+  </g>
+</svg>
